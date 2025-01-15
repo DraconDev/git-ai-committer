@@ -11,7 +11,7 @@ let git: SimpleGit;
 let genAI: GoogleGenerativeAI;
 let model: any;
 
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
     console.log("Git AI Committer is now active!");
 
     // Initialize Git
@@ -23,10 +23,49 @@ export function activate(context: vscode.ExtensionContext) {
 
     git = simpleGit(workspaceFolders[0].uri.fsPath);
 
-    // Initialize Gemini
+    // Check if repository exists
+    try {
+        await git.checkIsRepo();
+    } catch (error) {
+        vscode.window.showErrorMessage(
+            "No Git repository found in the current workspace."
+        );
+        return;
+    }
+
+    // Check for Gemini API key
     const config = vscode.workspace.getConfiguration("gitAiCommitter");
     const apiKey = config.get<string>("geminiApiKey");
-    if (apiKey) {
+
+    if (!apiKey) {
+        const setKey = "Set API Key";
+        const getKey = "Get API Key";
+        const response = await vscode.window.showWarningMessage(
+            "Gemini API key is not set. You need to set it to use Git AI Committer.",
+            setKey,
+            getKey
+        );
+
+        if (response === setKey) {
+            await vscode.commands.executeCommand(
+                "git-ai-commiter.setGeminiApiKey"
+            );
+        } else if (response === getKey) {
+            vscode.env.openExternal(
+                vscode.Uri.parse("https://aistudio.google.com/apikey")
+            );
+        }
+    }
+
+    // Function to validate API key
+
+    // Initialize Gemini
+    if (await validateApiKey()) {
+        const apiKey = getApiKey();
+
+        if (!apiKey) {
+            return;
+        }
         genAI = new GoogleGenerativeAI(apiKey);
         model = genAI.getGenerativeModel({
             model: "gemini-2.0-flash-exp",
@@ -42,6 +81,11 @@ export function activate(context: vscode.ExtensionContext) {
                 placeHolder: "Paste your API key here",
                 password: true, // This hides the input
                 ignoreFocusOut: true, // Keeps the input box open when focus is lost
+                validateInput: (value) => {
+                    return value && value.trim().length > 0
+                        ? null
+                        : "API key cannot be empty";
+                },
             });
 
             if (key) {
@@ -84,6 +128,10 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 async function generateCommitMessage(): Promise<string> {
+    if (!(await validateApiKey())) {
+        return "";
+    }
+    const apiKey = getApiKey();
     try {
         const diff = await git.diff();
         if (!diff) {
@@ -236,4 +284,32 @@ function resetInactivityTimer() {
 
 export function deactivate() {
     disableAutoCommit();
+}
+
+async function validateApiKey(): Promise<boolean> {
+    const currentKey = vscode.workspace
+        .getConfiguration("gitAiCommitter")
+        .get<string>("geminiApiKey");
+    if (!currentKey) {
+        const setKey = "Set API Key";
+        const response = await vscode.window.showErrorMessage(
+            "Gemini API key is required for this operation.",
+            setKey
+        );
+        if (response === setKey) {
+            await vscode.commands.executeCommand(
+                "git-ai-commiter.setGeminiApiKey"
+            );
+            return validateApiKey(); // Check again after potentially setting the key
+        }
+        return false;
+    }
+    return true;
+}
+
+// Function to get API key
+export function getApiKey(): string | undefined {
+    return vscode.workspace
+        .getConfiguration("gitAiCommitter")
+        .get<string>("geminiApiKey");
 }
