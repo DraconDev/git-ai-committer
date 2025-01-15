@@ -42,7 +42,7 @@
                 "gitAiCommitter.geminiApiKey": {
                     "type": "string",
                     "default": "",
-                    "description": "Google Gemini API Key for generating commit messages. Get your API key from https://makersuite.google.com/app/apikey",
+                    "description": "Google Gemini API Key for generating commit messages. Get your API key from https://aistudio.google.com/apikey",
                     "scope": "application",
                     "order": 2
                 },
