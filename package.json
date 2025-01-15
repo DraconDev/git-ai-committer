@@ -27,6 +27,10 @@
             {
                 "command": "git-ai-commiter.commitNow",
                 "title": "Generate Commit Message and Commit Now"
+            },
+            {
+                "command": "git-ai-commiter.setGeminiApiKey",
+                "title": "Set Gemini API Key"
             }
         ],
         "configuration": {

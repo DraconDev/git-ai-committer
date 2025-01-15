@@ -34,7 +34,33 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
     // Register commands
+    let setGeminiApiKeyCommand = vscode.commands.registerCommand(
+        "git-ai-commiter.setGeminiApiKey",
+        async () => {
+            const key = await vscode.window.showInputBox({
+                prompt: "Enter your Gemini API Key",
+                placeHolder: "Paste your API key here",
+                password: true, // This hides the input
+                ignoreFocusOut: true, // Keeps the input box open when focus is lost
+            });
+
+            if (key) {
+                await vscode.workspace
+                    .getConfiguration("gitAiCommitter")
+                    .update(
+                        "geminiApiKey",
+                        key,
+                        vscode.ConfigurationTarget.Global
+                    );
+                vscode.window.showInformationMessage(
+                    "Gemini API Key has been set successfully!"
+                );
+            }
+        }
+    );
+
     context.subscriptions.push(
+        setGeminiApiKeyCommand,
         vscode.commands.registerCommand(
             "git-ai-commiter.enableAutoCommit",
             enableAutoCommit
@@ -73,14 +99,26 @@ async function generateCommitMessage(): Promise<string> {
 ${diff}`;
 
         const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const message = response.text();
+        if (!result || !result.response) {
+            console.log("error", "Empty response from Gemini");
+            throw new Error("Empty response from Gemini API");
+        }
+
+        if (
+            !result.response.candidates ||
+            !result.response.candidates[0] ||
+            !result.response.candidates[0].content ||
+            !result.response.candidates[0].content.parts ||
+            !result.response.candidates[0].content.parts[0]
+        ) {
+            console.log("error", "No candidates in response from Gemini");
+            throw new Error("No candidates in response from Gemini API");
+        }
+
+        const response = result?.response?.candidates[0].content.parts[0].text;
 
         // Clean up the message - remove quotes and newlines
-        const cleanMessage = message
-            .replace(/['"]/g, "")
-            .replace(/\n/g, " ")
-            .trim();
+        const cleanMessage = parseJsonResponse(response);
 
         // Ensure it follows conventional commit format
         if (!cleanMessage.match(/^[a-z]+(\([a-z-]+\))?: .+/)) {
@@ -92,6 +130,24 @@ ${diff}`;
         console.error("Error generating commit message:", error);
         return "feat: update files";
     }
+}
+
+function parseJsonResponse(aiResponse: string) {
+    const jsonMatch = aiResponse.match(/```json\n([\s\S]*?)\n```/) || [
+        null,
+        aiResponse,
+    ];
+    const responseText = jsonMatch[1];
+
+    let response;
+    try {
+        response = JSON.parse(responseText);
+        console.log("Parsed AI response:", response);
+    } catch (error) {
+        console.error("Failed to parse AI response:", error);
+        throw new Error("Invalid AI response format");
+    }
+    return response;
 }
 
 async function performCommit() {
