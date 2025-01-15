@@ -36,24 +36,32 @@
                     "type": "boolean",
                     "default": false,
                     "description": "Enable/disable automatic commits",
+                    "scope": "window",
                     "order": 1
                 },
                 "gitAiCommitter.geminiApiKey": {
                     "type": "string",
                     "default": "",
                     "description": "Google Gemini API Key for generating commit messages. Get your API key from https://makersuite.google.com/app/apikey",
+                    "scope": "application",
                     "order": 2
                 },
                 "gitAiCommitter.commitInterval": {
-                    "type": "number",
+                    "type": "integer",
                     "default": 300,
+                    "minimum": 0,
+                    "maximum": 3600,
                     "description": "Interval in seconds between automatic commits (0 to disable)",
+                    "scope": "window",
                     "order": 3
                 },
                 "gitAiCommitter.inactivityTimeout": {
-                    "type": "number",
+                    "type": "integer",
                     "default": 120,
+                    "minimum": 0,
+                    "maximum": 3600,
                     "description": "Trigger commit after this many seconds of inactivity (0 to disable)",
+                    "scope": "window",
                     "order": 4
                 }
             }
