@@ -34,9 +34,9 @@
             "properties": {
                 "gitAiCommitter.enabled": {
                     "type": "boolean",
-                    "default": false,
+                    "default": true,
                     "description": "Enable/disable automatic commits",
-                    "scope": "window",
+                    "scope": "application",
                     "order": 1
                 },
                 "gitAiCommitter.geminiApiKey": {
@@ -48,20 +48,20 @@
                 },
                 "gitAiCommitter.commitInterval": {
                     "type": "integer",
-                    "default": 300,
+                    "default": 60,
                     "minimum": 0,
                     "maximum": 3600,
                     "description": "Interval in seconds between automatic commits (0 to disable)",
-                    "scope": "window",
+                    "scope": "application",
                     "order": 3
                 },
                 "gitAiCommitter.inactivityTimeout": {
                     "type": "integer",
-                    "default": 120,
+                    "default": 10,
                     "minimum": 0,
                     "maximum": 3600,
                     "description": "Trigger commit after this many seconds of inactivity (0 to disable)",
-                    "scope": "window",
+                    "scope": "application",
                     "order": 4
                 }
             }
