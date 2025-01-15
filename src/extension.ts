@@ -202,53 +202,97 @@ async function performCommit() {
     try {
         const status = await git.status();
 
-        if (status.files.length === 0) {
+        // Check if there are any changes to commit
+        if (
+            !status.modified.length &&
+            !status.not_added.length &&
+            !status.deleted.length
+        ) {
+            console.log("No changes to commit");
             return;
         }
 
-        // Add all changes
+        // Stage all changes
         await git.add(".");
 
         // Generate commit message
         const commitMessage = await generateCommitMessage();
+        if (!commitMessage) {
+            console.log("No commit message generated");
+            return;
+        }
 
         // Commit changes
         await git.commit(commitMessage);
-
         vscode.window.showInformationMessage(
             `Changes committed: ${commitMessage}`
         );
-    } catch (error) {
-        vscode.window.showErrorMessage(`Failed to commit changes: ${error}`);
+    } catch (error: any) {
+        if (error.message === "No changes to commit") {
+            vscode.window.showInformationMessage("No changes to commit");
+            return;
+        }
+        console.error("Commit failed:", error);
+        vscode.window.showErrorMessage(
+            `Failed to commit changes: ${error.message}`
+        );
     }
 }
 
-function enableAutoCommit() {
+async function enableAutoCommit() {
+    // Validate Git and API key first
+    try {
+        await git.checkIsRepo();
+    } catch (error: any) {
+        vscode.window.showErrorMessage(
+            "No Git repository found in the current workspace."
+        );
+        return;
+    }
+
+    if (!(await validateApiKey())) {
+        return;
+    }
+
     const config = vscode.workspace.getConfiguration("gitAiCommitter");
-    const commitInterval = config.get<number>("commitInterval") || 300;
+
+    // Update the enabled setting
+    await config.update("enabled", true, vscode.ConfigurationTarget.Global);
+
+    const commitInterval = config.get<number>("commitInterval") || 60;
     const inactivityTimeoutValue =
-        config.get<number>("inactivityTimeout") || 120;
+        config.get<number>("inactivityTimeout") || 10;
 
     // Clear existing intervals if any
     disableAutoCommit();
 
     // Set up commit interval if enabled
     if (commitInterval > 0) {
-        autoCommitInterval = setInterval(
-            () => performCommit(),
-            commitInterval * 1000
-        );
+        autoCommitInterval = setInterval(async () => {
+            try {
+                await performCommit();
+            } catch (error) {
+                console.error("Auto-commit failed:", error);
+            }
+        }, commitInterval * 1000);
+        console.log(`Auto-commit interval set to ${commitInterval} seconds`);
     }
 
     // Set up inactivity detection if enabled
     if (inactivityTimeoutValue > 0) {
         resetInactivityTimer();
+        console.log(
+            `Inactivity timeout set to ${inactivityTimeoutValue} seconds`
+        );
     }
 
-    vscode.window.showInformationMessage("Auto-commit enabled");
+    vscode.window.showInformationMessage(
+        `Auto-commit enabled (interval: ${commitInterval}s, inactivity: ${inactivityTimeoutValue}s)`
+    );
 }
 
-function disableAutoCommit() {
+async function disableAutoCommit() {
+    // Clear intervals
     if (autoCommitInterval) {
         clearInterval(autoCommitInterval);
         autoCommitInterval = undefined;
@@ -257,26 +301,38 @@ function disableAutoCommit() {
         clearTimeout(inactivityTimeout);
         inactivityTimeout = undefined;
     }
+
+    // Update the setting
+    const config = vscode.workspace.getConfiguration("gitAiCommitter");
+    await config.update("enabled", false, vscode.ConfigurationTarget.Global);
+
     vscode.window.showInformationMessage("Auto-commit disabled");
 }
 
 function resetInactivityTimer() {
     const config = vscode.workspace.getConfiguration("gitAiCommitter");
     const inactivityTimeoutValue =
-        config.get<number>("inactivityTimeout") || 120;
+        config.get<number>("inactivityTimeout") || 10;
 
+    // Update last activity time
     lastActivityTime = Date.now();
 
+    // Clear existing timeout
     if (inactivityTimeout) {
         clearTimeout(inactivityTimeout);
     }
 
+    // Set new timeout if enabled
     if (inactivityTimeoutValue > 0) {
-        inactivityTimeout = setTimeout(() => {
+        inactivityTimeout = setTimeout(async () => {
             const timeSinceLastActivity =
                 (Date.now() - lastActivityTime) / 1000;
             if (timeSinceLastActivity >= inactivityTimeoutValue) {
-                performCommit();
+                try {
+                    await performCommit();
+                } catch (error) {
+                    console.error("Inactivity commit failed:", error);
+                }
             }
         }, inactivityTimeoutValue * 1000);
     }
