@@ -203,17 +203,26 @@ export async function activate(context: vscode.ExtensionContext) {
 
 async function generateCommitMessage(): Promise<string> {
     if (!(await validateApiKey())) {
-        return "";
+        throw new Error("API key not valid");
     }
-    const apiKey = getApiKey();
+
+    const status = await git.status();
+    if (
+        !status.modified.length &&
+        !status.not_added.length &&
+        !status.deleted.length
+    ) {
+        throw new Error("No changes to commit");
+    }
+
+    if (!model) {
+        return "feat: update files";
+    }
+
     try {
         const diff = await git.diff();
         if (!diff || diff === "") {
             throw new Error("No changes to commit");
-        }
-
-        if (!model) {
-            return "feat: update files";
         }
 
         const prompt = `Generate a concise commit message for the following git diff. Use conventional commit format (type(scope): description). Keep it short and descriptive. Here's the diff:
@@ -249,7 +258,7 @@ ${diff}`;
         return cleanMessage;
     } catch (error) {
         console.error("Error generating commit message:", error);
-        return "feat: update files";
+        throw error;
     }
 }
 
