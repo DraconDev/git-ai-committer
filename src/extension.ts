@@ -13,6 +13,8 @@ import {
     pushChanges,
     getGitDiff,
 } from "./git/gitOperations";
+import { registerCommands } from "./commands/commands";
+import { registerSettingsView } from "./settings/settings";
 import simpleGit from "simple-git";
 
 let gitInitialized = false;
