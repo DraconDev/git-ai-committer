@@ -2,7 +2,7 @@
     "name": "git-ai-commiter",
     "displayName": "Git AI Committer",
     "description": "Automatically generates commit messages and commits changes using AI",
-    "version": "0.0.1",
+    "version": "0.1.0",
     "engines": {
         "vscode": "^1.96.0"
     },
@@ -69,7 +69,29 @@
                     "order": 4
                 }
             }
-        }
+        },
+        "viewsContainers": {
+            "activitybar": {
+                "id": "gitAiCommitter",
+                "title": "Git AI Committer",
+                "icon": "media/icon.svg"
+            }
+        },
+        "views": {
+            "gitAiCommitter": [
+                {
+                    "id": "gitAiCommitter.settings",
+                    "name": "Settings",
+                    "contextualTitle": "Git AI Committer Settings"
+                }
+            ]
+        },
+        "viewsWelcome": [
+            {
+                "view": "gitAiCommitter.settings",
+                "contents": "Configure your Git AI Committer settings here.\n\n[Set API Key](command:git-ai-commiter.setGeminiApiKey)\n[Enable Auto Commit](command:git-ai-commiter.enableAutoCommit)\n[Disable Auto Commit](command:git-ai-commiter.disableAutoCommit)"
+            }
+        ]
     },
     "scripts": {
         "vscode:prepublish": "npm run package",
