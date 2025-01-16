@@ -12,7 +12,7 @@
     },
     "categories": [
         "Other",
-        "SCM"
+        "AI"
     ],
     "activationEvents": [
         "onCommand:git-ai-commiter.enableAutoCommit",
