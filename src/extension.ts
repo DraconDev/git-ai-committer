@@ -40,11 +40,12 @@ export async function activate(context: vscode.ExtensionContext) {
     // Check if repository exists
     try {
         await git.checkIsRepo();
+        gitInitialized = true;
     } catch (error) {
-        vscode.window.showErrorMessage(
-            "No Git repository found in the current workspace."
+        vscode.window.showWarningMessage(
+            "No Git repository found in the current workspace. Auto-commit will be enabled but won't work until a Git repository is initialized."
         );
-        return;
+        gitInitialized = false;
     }
 
     // Check for Gemini API key
@@ -175,43 +176,33 @@ export async function activate(context: vscode.ExtensionContext) {
         const interval = vscode.workspace
             .getConfiguration("gitAiCommitter")
             .get<number>("commitInterval", 60000); // Default to 1 minute
-        enableAutoCommit(interval);
+        try {
+            enableAutoCommit(interval);
+            // Periodically check for git repo initialization
+            setInterval(async () => {
+                if (!gitInitialized) {
+                    try {
+                        await git.checkIsRepo();
+                        gitInitialized = true;
+                        vscode.window.showInformationMessage(
+                            "Git repository detected! Auto-commit is now active."
+                        );
+                    } catch (error) {
+                        // Still no git repo
+                    }
+                }
+            }, 10000); // Check every 10 seconds
+        } catch (error) {
+            if (error instanceof Error) {
+                vscode.window.showErrorMessage(
+                    `Failed to enable auto-commit: ${error.message}`
+                );
+            }
+        }
     }
 
-    // Register settings view
-    context.subscriptions.push(
-        vscode.window.registerTreeDataProvider("gitAiCommitter.settings", {
-            getChildren: () => {
-                return [
-                    {
-                        label: "API Key",
-                        description: getApiKey() ? "*****" : "Not set",
-                        command: {
-                            command: "git-ai-commiter.setGeminiApiKey",
-                            title: "Set API Key",
-                        },
-                    },
-                    {
-                        label: "Auto Commit",
-                        description: vscode.workspace
-                            .getConfiguration("gitAiCommitter")
-                            .get<boolean>("enabled")
-                            ? "Enabled"
-                            : "Disabled",
-                        command: {
-                            command: vscode.workspace
-                                .getConfiguration("gitAiCommitter")
-                                .get<boolean>("enabled")
-                                ? "git-ai-commiter.disableAutoCommit"
-                                : "git-ai-commiter.enableAutoCommit",
-                            title: "Toggle Auto Commit",
-                        },
-                    },
-                ];
-            },
-            getTreeItem: (element) => element,
-        })
-    );
+    // Register commands
+    registerCommands(context);
 }
 
 async function generateCommitMessage(): Promise<string> {
