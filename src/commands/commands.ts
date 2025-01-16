@@ -13,7 +13,10 @@ export function registerCommands(context: vscode.ExtensionContext) {
             async () => {
                 console.log("enableAutoCommit command triggered");
                 try {
-                    await enableAutoCommit();
+                    const interval = vscode.workspace
+                        .getConfiguration("gitAiCommitter")
+                        .get<number>("commitInterval", 60000);
+                    await enableAutoCommit(interval);
                 } catch (error: any) {
                     console.error("Error enabling auto-commit:", error);
                     vscode.window.showErrorMessage(
