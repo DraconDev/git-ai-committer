@@ -52,10 +52,12 @@ export function disableAutoCommit(): void {
 
 export async function autoCommitChanges(): Promise<void> {
     try {
-        // Validate API key first
+        // Validate API key but don't block commits
         const isValid = await validateApiKey();
         if (!isValid) {
-            return;
+            vscode.window.showWarningMessage(
+                "Gemini API key not valid - using default commit messages"
+            );
         }
 
         // Check for changes
@@ -71,10 +73,18 @@ export async function autoCommitChanges(): Promise<void> {
 
         // Get diff and generate commit message
         const diff = await getGitDiff();
-        const message = await generateCommitMessage(diff);
-        if (!message) {
-            vscode.window.showErrorMessage("Failed to generate commit message");
-            return;
+        let message = "feat: update files";
+        if (isValid) {
+            try {
+                const generatedMessage = await generateCommitMessage(diff);
+                if (generatedMessage) {
+                    message = generatedMessage;
+                }
+            } catch (error) {
+                vscode.window.showWarningMessage(
+                    "Failed to generate commit message - using default"
+                );
+            }
         }
 
         // Stage and commit changes
