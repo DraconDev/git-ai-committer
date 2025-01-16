@@ -127,6 +127,29 @@ export async function activate(context: vscode.ExtensionContext) {
                     );
                 }
             }
+        ),
+        vscode.commands.registerCommand(
+            "git-ai-commiter.setGeminiApiKey",
+            async () => {
+                const apiKey = await vscode.window.showInputBox({
+                    prompt: "Enter your Gemini API Key",
+                    placeHolder: "Paste your API key here",
+                    password: true,
+                });
+
+                if (apiKey) {
+                    await vscode.workspace
+                        .getConfiguration("gitAiCommitter")
+                        .update(
+                            "geminiApiKey",
+                            apiKey,
+                            vscode.ConfigurationTarget.Global
+                        );
+                    vscode.window.showInformationMessage(
+                        "API Key saved successfully!"
+                    );
+                }
+            }
         )
     );
 
