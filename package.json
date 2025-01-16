@@ -75,11 +75,13 @@
             }
         },
         "viewsContainers": {
-            "activitybar": {
-                "id": "gitAiCommitter",
-                "title": "Git AI Committer",
-                "icon": "media/icon.svg"
-            }
+            "activitybar": [
+                {
+                    "id": "gitAiCommitter",
+                    "title": "Git AI Committer",
+                    "icon": "media/icon.svg"
+                }
+            ]
         },
         "views": {
             "gitAiCommitter": [
