@@ -1,13 +1,12 @@
+import simpleGit from "simple-git";
 import * as vscode from "vscode";
 
-export async function initializeGit(): Promise<void> {
-    const gitExtension = vscode.extensions.getExtension("vscode.git")?.exports;
-    if (!gitExtension) {
-        throw new Error("Git extension not available");
-    }
+export const git = simpleGit(vscode.workspace.workspaceFolders?.[0].uri.fsPath);
 
-    const api = gitExtension.getAPI(1);
-    if (!api.repositories.length) {
+export async function initializeGit(): Promise<void> {
+    try {
+        await git.checkIsRepo();
+    } catch (error) {
         throw new Error("No Git repository found");
     }
 }
@@ -17,92 +16,26 @@ export async function getGitStatus(): Promise<{
     not_added: string[];
     deleted: string[];
 }> {
-    const gitExtension = vscode.extensions.getExtension("vscode.git")?.exports;
-    if (!gitExtension) {
-        throw new Error("Git extension not available");
-    }
-
-    const api = gitExtension.getAPI(1);
-    if (!api.repositories.length) {
-        throw new Error("No Git repository found");
-    }
-
-    const repo = api.repositories[0];
-    const status = await repo.status();
-
+    const status = await git.status();
     return {
-        modified: status.state.workingTreeChanges.map(
-            (change: vscode.SourceControlResourceState) =>
-                change.resourceUri.fsPath
-        ),
-        not_added: status.state.untrackedChanges.map(
-            (change: vscode.SourceControlResourceState) =>
-                change.resourceUri.fsPath
-        ),
-        deleted: status.state.deletions.map(
-            (change: vscode.SourceControlResourceState) =>
-                change.resourceUri.fsPath
-        ),
+        modified: status.modified,
+        not_added: status.not_added,
+        deleted: status.deleted,
     };
 }
 
 export async function stageAllChanges(): Promise<void> {
-    const gitExtension = vscode.extensions.getExtension("vscode.git")?.exports;
-    if (!gitExtension) {
-        throw new Error("Git extension not available");
-    }
-
-    const api = gitExtension.getAPI(1);
-    if (!api.repositories.length) {
-        throw new Error("No Git repository found");
-    }
-
-    const repo = api.repositories[0];
-    await repo.add([]); // Empty array stages all changes
+    await git.add(".");
 }
 
 export async function commitChanges(message: string): Promise<void> {
-    const gitExtension = vscode.extensions.getExtension("vscode.git")?.exports;
-    if (!gitExtension) {
-        throw new Error("Git extension not available");
-    }
-
-    const api = gitExtension.getAPI(1);
-    if (!api.repositories.length) {
-        throw new Error("No Git repository found");
-    }
-
-    const repo = api.repositories[0];
-    await repo.commit(message);
+    await git.commit(message);
 }
 
 export async function pushChanges(): Promise<void> {
-    const gitExtension = vscode.extensions.getExtension("vscode.git")?.exports;
-    if (!gitExtension) {
-        throw new Error("Git extension not available");
-    }
-
-    const api = gitExtension.getAPI(1);
-    if (!api.repositories.length) {
-        throw new Error("No Git repository found");
-    }
-
-    const repo = api.repositories[0];
-    await repo.push();
+    await git.push();
 }
 
 export async function getGitDiff(): Promise<string> {
-    const gitExtension = vscode.extensions.getExtension("vscode.git")?.exports;
-    if (!gitExtension) {
-        throw new Error("Git extension not available");
-    }
-
-    const api = gitExtension.getAPI(1);
-    if (!api.repositories.length) {
-        throw new Error("No Git repository found");
-    }
-
-    const repo = api.repositories[0];
-    const diff = await repo.diff();
-    return diff;
+    return await git.diff();
 }
