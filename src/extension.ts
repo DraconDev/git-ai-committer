@@ -166,9 +166,6 @@ export async function activate(context: vscode.ExtensionContext) {
         )
     );
 
-    // Setup activity monitoring
-    vscode.workspace.onDidChangeTextDocument(() => resetInactivityTimer());
-
     // Initialize if enabled by default
     if (
         vscode.workspace
