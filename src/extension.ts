@@ -172,7 +172,10 @@ export async function activate(context: vscode.ExtensionContext) {
             .getConfiguration("gitAiCommitter")
             .get<boolean>("enabled")
     ) {
-        enableAutoCommit();
+        const interval = vscode.workspace
+            .getConfiguration("gitAiCommitter")
+            .get<number>("commitInterval", 60000); // Default to 1 minute
+        enableAutoCommit(interval);
     }
 
     // Register settings view
