@@ -1,14 +1,21 @@
 import * as vscode from "vscode";
-import { GitOperations } from "./git/gitOperations";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getApiKey, validateApiKey } from "./ai/geminiService";
 import {
     enableAutoCommit,
     disableAutoCommit,
 } from "./autoCommit/autoCommitService";
-import simpleGit, { SimpleGit } from "simple-git";
+import {
+    initializeGit,
+    getGitStatus,
+    stageAllChanges,
+    commitChanges,
+    pushChanges,
+    getGitDiff,
+} from "./git/gitOperations";
+import simpleGit from "simple-git";
 
-let git: SimpleGit;
+let gitInitialized = false;
 let genAI: GoogleGenerativeAI;
 let model: any;
 
