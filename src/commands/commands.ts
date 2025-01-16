@@ -13,7 +13,7 @@ export function registerCommands(context: vscode.ExtensionContext) {
             async () => {
                 console.log("enableAutoCommit command triggered");
                 try {
-                    await enableAutoCommit(context);
+                    await enableAutoCommit();
                 } catch (error: any) {
                     console.error("Error enabling auto-commit:", error);
                     vscode.window.showErrorMessage(
