@@ -1,74 +1,24 @@
 import * as vscode from "vscode";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { getApiKey, validateApiKey } from "../ai/geminiService";
+import {
+    getApiKey,
+    validateApiKey,
+    initializeModel,
+    generateCommitMessage,
+} from "../ai/geminiService";
 import { git } from "../git/gitOperations";
-
-let genAI: GoogleGenerativeAI;
-let model: any;
-
-export async function generateCommitMessage(): Promise<string> {
-    if (!(await validateApiKey())) {
-        throw new Error("API key not valid");
-    }
-
-    const status = await git.status();
-    if (
-        !status.modified.length &&
-        !status.not_added.length &&
-        !status.deleted.length
-    ) {
-        throw new Error("No changes to commit");
-    }
-
-    if (!model) {
-        return "feat: update files";
-    }
-
-    try {
-        const diff = await git.diff();
-        if (!diff || diff === "") {
-            throw new Error("No changes to commit");
-        }
-
-        const prompt = `Generate a concise commit message for the following git diff. Use conventional commit format (type(scope): description). Keep it short and descriptive. Here's the diff:
-
-${diff}`;
-
-        const result = await model.generateContent(prompt);
-        if (!result || !result.response) {
-            throw new Error("Empty response from Gemini API");
-        }
-
-        if (
-            !result.response.candidates ||
-            !result.response.candidates[0] ||
-            !result.response.candidates[0].content ||
-            !result.response.candidates[0].content.parts ||
-            !result.response.candidates[0].content.parts[0] ||
-            !result.response.candidates[0].content.parts[0].text
-        ) {
-            throw new Error("No candidates in response from Gemini API");
-        }
-
-        const response = result.response.candidates[0].content.parts[0].text;
-
-        // Clean up the message - remove quotes and newlines
-        const cleanMessage = response.replace(/["'\n\r]+/g, " ").trim();
-
-        // Ensure it follows conventional commit format
-        if (!cleanMessage.match(/^[a-z]+(\([a-z-]+\))?: .+/)) {
-            return "feat: update files";
-        }
-
-        return cleanMessage;
-    } catch (error) {
-        console.error("Error generating commit message:", error);
-        throw error;
-    }
-}
 
 export async function performCommit() {
     try {
+        if (!(await validateApiKey())) {
+            throw new Error("API key not valid");
+        }
+
+        // Initialize model with API key
+        const apiKey = getApiKey();
+        if (apiKey) {
+            initializeModel(apiKey);
+        }
+
         const status = await git.status();
 
         // Check if there are any changes to commit
@@ -85,7 +35,12 @@ export async function performCommit() {
         await git.add(".");
 
         // Generate commit message
-        const commitMessage = await generateCommitMessage();
+        const diff = await git.diff();
+        if (!diff || diff === "") {
+            throw new Error("No changes to commit");
+        }
+
+        const commitMessage = await generateCommitMessage(diff);
         if (!commitMessage) {
             console.log("No commit message generated");
             return;
