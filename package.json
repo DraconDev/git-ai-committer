@@ -15,7 +15,12 @@
         "SCM"
     ],
     "activationEvents": [
-        "*"
+        "onCommand:git-ai-commiter.enableAutoCommit",
+        "onCommand:git-ai-commiter.disableAutoCommit",
+        "onCommand:git-ai-commiter.commitNow",
+        "onCommand:git-ai-commiter.setGeminiApiKey",
+        "onView:gitAiCommitter.settings",
+        "onStartupFinished"
     ],
     "main": "./dist/extension.js",
     "contributes": {
