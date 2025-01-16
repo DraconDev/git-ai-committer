@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { simpleGit, SimpleGit } from "simple-git";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { getApiKey, validateApiKey } from "./ai/geminiService";
 
 let autoCommitInterval: NodeJS.Timeout | undefined;
 let inactivityTimeout: NodeJS.Timeout | undefined;
@@ -414,37 +415,4 @@ function resetInactivityTimer() {
 
 export function deactivate() {
     disableAutoCommit();
-}
-
-async function validateApiKey(): Promise<boolean> {
-    const currentKey = getApiKey();
-    if (!currentKey) {
-        vscode.window.showErrorMessage(
-            "Please set your Gemini API key in the extension settings."
-        );
-        return false;
-    }
-
-    // Test the API key by making a simple request
-    try {
-        const testAI = new GoogleGenerativeAI(currentKey);
-        const testModel = testAI.getGenerativeModel({
-            model: "gemini-2.0-flash-exp",
-        });
-        await testModel.generateContent("Test");
-        return true;
-    } catch (error) {
-        console.error("API key validation failed:", error);
-        vscode.window.showErrorMessage(
-            "Invalid API key. Please check your key and try again."
-        );
-        return false;
-    }
-}
-
-// Function to get API key
-export function getApiKey(): string | undefined {
-    return vscode.workspace
-        .getConfiguration("gitAiCommitter")
-        .get<string>("geminiApiKey");
 }

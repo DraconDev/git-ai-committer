@@ -73,7 +73,27 @@ export function registerCommands(context: vscode.ExtensionContext) {
                 try {
                     await initializeGit();
                     if (await validateApiKey()) {
-                        await enableAutoCommit();
+                        const config =
+                            vscode.workspace.getConfiguration("gitAiCommitter");
+                        const intervalSeconds = config.get<number>(
+                            "commitInterval",
+                            60
+                        );
+
+                        if (intervalSeconds <= 0) {
+                            vscode.window.showErrorMessage(
+                                "Auto-commit interval must be greater than 0"
+                            );
+                            return;
+                        }
+
+                        const intervalMinutes = Math.ceil(intervalSeconds / 60);
+                        enableAutoCommit(intervalMinutes);
+                        vscode.window.showInformationMessage(
+                            `Auto-commit enabled (every ${intervalMinutes} minute${
+                                intervalMinutes > 1 ? "s" : ""
+                            })`
+                        );
                     }
                 } catch (error: any) {
                     console.error("Error enabling auto-commit:", error);
