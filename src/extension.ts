@@ -220,7 +220,16 @@ async function generateCommitMessage(): Promise<string> {
     }
 
     if (!model) {
-        return "feat: update files";
+        const status = await git.status();
+        const changedFiles = [
+            ...status.modified,
+            ...status.not_added,
+            ...status.deleted,
+        ];
+        const timestamp = new Date().toISOString().split("T")[1].slice(0, 5);
+        return `feat: update ${changedFiles.length} files (${changedFiles
+            .slice(0, 3)
+            .join(", ")}) at ${timestamp}`;
     }
 
     try {
@@ -256,7 +265,19 @@ ${diff}`;
 
         // Ensure it follows conventional commit format
         if (!cleanMessage.match(/^[a-z]+(\([a-z-]+\))?: .+/)) {
-            return "feat: update files";
+            const status = await git.status();
+            const changedFiles = [
+                ...status.modified,
+                ...status.not_added,
+                ...status.deleted,
+            ];
+            const timestamp = new Date()
+                .toISOString()
+                .split("T")[1]
+                .slice(0, 5);
+            return `feat: update ${changedFiles.length} files (${changedFiles
+                .slice(0, 3)
+                .join(", ")}) at ${timestamp}`;
         }
 
         return cleanMessage;
