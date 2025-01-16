@@ -8,11 +8,25 @@ import {
 import { generateCommitMessage, validateApiKey } from "../ai/geminiService";
 
 let autoCommitInterval: NodeJS.Timeout | null = null;
+let inactivityTimeout: NodeJS.Timeout | null = null;
+const INACTIVITY_DELAY = 5 * 60 * 1000; // 5 minutes
+
+function resetInactivityTimer() {
+    if (inactivityTimeout) {
+        clearTimeout(inactivityTimeout);
+    }
+    inactivityTimeout = setTimeout(() => {
+        autoCommitChanges();
+    }, INACTIVITY_DELAY);
+}
 
 export function enableAutoCommit(intervalMinutes?: number): void {
     if (autoCommitInterval) {
         clearInterval(autoCommitInterval);
     }
+
+    // Setup activity monitoring
+    vscode.workspace.onDidChangeTextDocument(() => resetInactivityTimer());
 
     autoCommitInterval = setInterval(async () => {
         await autoCommitChanges();
