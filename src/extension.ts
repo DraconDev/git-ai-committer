@@ -12,7 +12,10 @@ let genAI: GoogleGenerativeAI;
 let model: any;
 
 export async function activate(context: vscode.ExtensionContext) {
-    console.log("Git AI Committer is now active!");
+    console.log(
+        "Git AI Committer is now active! Starting to register commands..."
+    );
+    vscode.window.showInformationMessage("Git AI Committer activated!");
 
     // Initialize Git
     const workspaceFolders = vscode.workspace.workspaceFolders;
@@ -76,28 +79,58 @@ export async function activate(context: vscode.ExtensionContext) {
     let setGeminiApiKeyCommand = vscode.commands.registerCommand(
         "git-ai-commiter.setGeminiApiKey",
         async () => {
-            const key = await vscode.window.showInputBox({
-                prompt: "Enter your Gemini API Key",
-                placeHolder: "Paste your API key here",
-                password: true, // This hides the input
-                ignoreFocusOut: true, // Keeps the input box open when focus is lost
-                validateInput: (value) => {
-                    return value && value.trim().length > 0
-                        ? null
-                        : "API key cannot be empty";
-                },
-            });
+            console.log("setGeminiApiKey command triggered");
+            try {
+                console.log("Showing API key input box...");
+                const key = await vscode.window.showInputBox({
+                    prompt: "Enter your Gemini API Key",
+                    placeHolder: "Paste your API key here",
+                    password: true,
+                    ignoreFocusOut: true,
+                    validateInput: (value) => {
+                        if (!value || value.trim().length === 0) {
+                            console.log("Empty API key entered");
+                            return "API key cannot be empty";
+                        }
+                        return null;
+                    },
+                });
+                console.log(
+                    "Input box closed. Key received:",
+                    key ? "***" : "null"
+                );
 
-            if (key) {
-                await vscode.workspace
-                    .getConfiguration("gitAiCommitter")
-                    .update(
-                        "geminiApiKey",
-                        key,
-                        vscode.ConfigurationTarget.Global
-                    );
-                vscode.window.showInformationMessage(
-                    "Gemini API Key has been set successfully!"
+                if (key) {
+                    await vscode.workspace
+                        .getConfiguration("gitAiCommitter")
+                        .update(
+                            "geminiApiKey",
+                            key,
+                            vscode.ConfigurationTarget.Global
+                        );
+
+                    // Validate and reinitialize Gemini client
+                    if (await validateApiKey()) {
+                        genAI = new GoogleGenerativeAI(key);
+                        model = genAI.getGenerativeModel({
+                            model: "gemini-2.0-flash-exp",
+                        });
+                        vscode.window.showInformationMessage(
+                            "Gemini API Key has been set and validated successfully!"
+                        );
+                        console.log("API key set and validated successfully");
+                    } else {
+                        vscode.window.showErrorMessage(
+                            "Failed to validate API key. Please check your key and try again."
+                        );
+                    }
+                } else {
+                    console.log("API key setting cancelled by user");
+                }
+            } catch (error: any) {
+                console.error("Error setting API key:", error);
+                vscode.window.showErrorMessage(
+                    "Failed to set API key: " + error.message
                 );
             }
         }
@@ -107,14 +140,45 @@ export async function activate(context: vscode.ExtensionContext) {
         setGeminiApiKeyCommand,
         vscode.commands.registerCommand(
             "git-ai-commiter.enableAutoCommit",
-            enableAutoCommit
+            async () => {
+                console.log("enableAutoCommit command triggered");
+                try {
+                    await enableAutoCommit();
+                } catch (error: any) {
+                    console.error("Error enabling auto-commit:", error);
+                    vscode.window.showErrorMessage(
+                        "Failed to enable auto-commit: " + error.message
+                    );
+                }
+            }
         ),
         vscode.commands.registerCommand(
             "git-ai-commiter.disableAutoCommit",
-            disableAutoCommit
+            async () => {
+                console.log("disableAutoCommit command triggered");
+                try {
+                    await disableAutoCommit();
+                } catch (error: any) {
+                    console.error("Error disabling auto-commit:", error);
+                    vscode.window.showErrorMessage(
+                        "Failed to disable auto-commit: " + error.message
+                    );
+                }
+            }
         ),
-        vscode.commands.registerCommand("git-ai-commiter.commitNow", () =>
-            performCommit()
+        vscode.commands.registerCommand(
+            "git-ai-commiter.commitNow",
+            async () => {
+                console.log("commitNow command triggered");
+                try {
+                    await performCommit();
+                } catch (error: any) {
+                    console.error("Error performing commit:", error);
+                    vscode.window.showErrorMessage(
+                        "Failed to commit: " + error.message
+                    );
+                }
+            }
         )
     );
 
@@ -271,7 +335,7 @@ async function enableAutoCommit() {
         autoCommitInterval = setInterval(async () => {
             try {
                 await performCommit();
-            } catch (error) {
+            } catch (error: any) {
                 console.error("Auto-commit failed:", error);
             }
         }, commitInterval * 1000);
@@ -330,7 +394,7 @@ function resetInactivityTimer() {
             if (timeSinceLastActivity >= inactivityTimeoutValue) {
                 try {
                     await performCommit();
-                } catch (error) {
+                } catch (error: any) {
                     console.error("Inactivity commit failed:", error);
                 }
             }
@@ -346,6 +410,7 @@ async function validateApiKey(): Promise<boolean> {
     const currentKey = vscode.workspace
         .getConfiguration("gitAiCommitter")
         .get<string>("geminiApiKey");
+
     if (!currentKey) {
         const setKey = "Set API Key";
         const response = await vscode.window.showErrorMessage(
@@ -360,7 +425,22 @@ async function validateApiKey(): Promise<boolean> {
         }
         return false;
     }
-    return true;
+
+    // Test the API key by making a simple request
+    try {
+        const testAI = new GoogleGenerativeAI(currentKey);
+        const testModel = testAI.getGenerativeModel({
+            model: "gemini-2.0-flash-exp",
+        });
+        await testModel.generateContent("Test");
+        return true;
+    } catch (error) {
+        console.error("API key validation failed:", error);
+        vscode.window.showErrorMessage(
+            "Invalid API key. Please check your key and try again."
+        );
+        return false;
+    }
 }
 
 // Function to get API key

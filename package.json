@@ -11,7 +11,7 @@
         "SCM"
     ],
     "activationEvents": [
-        "workspaceContains:.git"
+        "*"
     ],
     "main": "./dist/extension.js",
     "contributes": {
