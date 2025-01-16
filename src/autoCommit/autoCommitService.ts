@@ -9,14 +9,14 @@ import { generateCommitMessage, validateApiKey } from "../ai/geminiService";
 
 let autoCommitInterval: NodeJS.Timeout | null = null;
 
-export function enableAutoCommit(intervalMinutes: number): void {
+export function enableAutoCommit(intervalMinutes?: number): void {
     if (autoCommitInterval) {
         clearInterval(autoCommitInterval);
     }
 
     autoCommitInterval = setInterval(async () => {
         await autoCommitChanges();
-    }, intervalMinutes * 60 * 1000);
+    }, intervalMinutes ?? 1 * 60 * 1000);
 }
 
 export function disableAutoCommit(): void {
