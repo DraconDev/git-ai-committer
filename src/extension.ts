@@ -2,10 +2,11 @@ import * as vscode from "vscode";
 import { simpleGit, SimpleGit } from "simple-git";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getApiKey, validateApiKey } from "./ai/geminiService";
+import {
+    enableAutoCommit,
+    disableAutoCommit,
+} from "./autoCommit/autoCommitService";
 
-let autoCommitInterval: NodeJS.Timeout | undefined;
-let inactivityTimeout: NodeJS.Timeout | undefined;
-let lastActivityTime: number = Date.now();
 let git: SimpleGit;
 let genAI: GoogleGenerativeAI;
 let model: any;
