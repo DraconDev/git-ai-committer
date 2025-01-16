@@ -20,7 +20,7 @@ import simpleGit from "simple-git";
 let gitInitialized = false;
 let genAI: GoogleGenerativeAI;
 let model: any;
-let git: ReturnType<typeof simpleGit>;
+export let git: ReturnType<typeof simpleGit>;
 
 export async function activate(context: vscode.ExtensionContext) {
     console.log(

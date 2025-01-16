@@ -1,7 +1,10 @@
 import * as vscode from "vscode";
-import { git } from "../extension";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getApiKey, validateApiKey } from "../ai/geminiService";
+import { git } from "../git/gitOperations";
+
+let genAI: GoogleGenerativeAI;
+let model: any;
 
 export async function generateCommitMessage(): Promise<string> {
     if (!(await validateApiKey())) {
