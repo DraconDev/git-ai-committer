@@ -209,7 +209,7 @@ async function generateCommitMessage(): Promise<string> {
     try {
         const diff = await git.diff();
         if (!diff || diff === "") {
-            return "No changes to commit";
+            throw new Error("No changes to commit");
         }
 
         if (!model) {
