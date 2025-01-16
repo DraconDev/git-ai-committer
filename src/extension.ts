@@ -249,7 +249,7 @@ ${diff}`;
         return cleanMessage;
     } catch (error) {
         console.error("Error generating commit message:", error);
-        throw error;
+        return "feat: update files";
     }
 }
 
