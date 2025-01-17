@@ -21,6 +21,9 @@ export async function performCommit() {
     }
     try {
         if (!(await validateApiKey())) {
+            vscode.window.showErrorMessage(
+                "Invalid API key. Please check your settings."
+            );
             throw new Error("API key not valid");
         }
 
@@ -40,10 +43,12 @@ export async function performCommit() {
         }
 
         const commitMessage = await generateCommitMessage(diff);
+
         if (!commitMessage) {
             console.log("No commit message generated");
             return;
         }
+        vscode.window.showErrorMessage(commitMessage);
 
         // Commit changes
         await git.commit(commitMessage);
