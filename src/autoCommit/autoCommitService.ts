@@ -35,7 +35,7 @@ function resetInactivityTimer(event?: vscode.TextDocumentChangeEvent) {
     }
     inactivityTimeout = setTimeout(() => {
         processChangeQueue();
-    }, INACTIVITY_DELAY);
+    }, getInactivityDelay());
 }
 
 export function enableAutoCommit(intervalMs?: number): void {
@@ -60,7 +60,7 @@ export function enableAutoCommit(intervalMs?: number): void {
             return;
         }
         await processChangeQueue();
-    }, intervalMs ?? DEFAULT_INTERVAL);
+    }, intervalMs ?? getAutoCommitInterval());
 }
 
 async function processChangeQueue(): Promise<void> {
