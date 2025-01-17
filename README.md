@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="media/logo.svg" alt="Git AI Committer Logo" width="100">
+  <img src="media/logo.png" alt="Git AI Committer Logo" width="100">
   
   # Git AI Committer
   
