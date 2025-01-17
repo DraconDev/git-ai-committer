@@ -52,9 +52,8 @@ export async function performCommit() {
         }
 
         // Commit changes
-        if (!(await commitChanges(commitMessage))) {
-            return;
-        }
+        await commitChanges(commitMessage);
+
         // vscode.window.showInformationMessage(
         //     `Changes committed: ${commitMessage}`
         // );
