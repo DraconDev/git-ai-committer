@@ -16,13 +16,25 @@ export function registerSettingsView(context: vscode.ExtensionContext) {
                     webviewView.webview.onDidReceiveMessage((message) => {
                         switch (message.command) {
                             case "saveSettings":
-                                vscode.workspace
-                                    .getConfiguration("gitAiCommitter")
-                                    .update(
-                                        "autoCommitInterval",
-                                        message.interval,
-                                        vscode.ConfigurationTarget.Global
+                                const config =
+                                    vscode.workspace.getConfiguration(
+                                        "gitAiCommitter"
                                     );
+                                config.update(
+                                    "autoCommitInterval",
+                                    message.interval,
+                                    vscode.ConfigurationTarget.Global
+                                );
+                                config.update(
+                                    "inactivityDelay",
+                                    message.inactivity,
+                                    vscode.ConfigurationTarget.Global
+                                );
+                                config.update(
+                                    "minCommitDelay",
+                                    message.minDelay,
+                                    vscode.ConfigurationTarget.Global
+                                );
                                 break;
                         }
                     });
