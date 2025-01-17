@@ -3,8 +3,9 @@ import {
     enableAutoCommit,
     disableAutoCommit,
 } from "../autoCommit/autoCommitService";
-import { performCommit } from "../commit/commitService";
+
 import { getApiKey } from "../ai/geminiService";
+import { commitService } from "../commit/commitService";
 
 export function registerCommands(context: vscode.ExtensionContext) {
     context.subscriptions.push(
@@ -44,7 +45,7 @@ export function registerCommands(context: vscode.ExtensionContext) {
             async () => {
                 console.log("commitNow command triggered");
                 try {
-                    await performCommit();
+                    await commitService.performCommit();
                 } catch (error: any) {
                     console.error("Error performing commit:", error);
                     vscode.window.showErrorMessage(

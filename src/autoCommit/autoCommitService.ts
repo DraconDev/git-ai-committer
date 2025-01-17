@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { pushChanges } from "../git/gitOperations";
-import { performCommit } from "../commit/commitService";
+import { commitService } from "../commit/commitService";
 
 let autoCommitInterval: NodeJS.Timeout | null = null;
 let inactivityTimeout: NodeJS.Timeout | null = null;
@@ -54,7 +54,7 @@ export function disableAutoCommit(): void {
 
 export async function autoCommitChanges(): Promise<void> {
     try {
-        await performCommit();
+        await commitService.performCommit();
     } catch (error: any) {
         console.error("Error committing changes", error);
     }

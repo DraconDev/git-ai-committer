@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { getApiKey, performCommit } from "./ai/geminiService";
+import { getApiKey } from "./ai/geminiService";
 import {
     enableAutoCommit,
     disableAutoCommit,
@@ -16,6 +16,7 @@ import {
 import { registerCommands } from "./commands/commands";
 import { registerSettingsView } from "./settings/settings";
 import simpleGit from "simple-git";
+import { commitService } from "./commit/commitService";
 
 let gitInitialized = false;
 let genAI: GoogleGenerativeAI;
@@ -127,7 +128,7 @@ export async function activate(context: vscode.ExtensionContext) {
             async () => {
                 console.log("commitNow command triggered");
                 try {
-                    await performCommit();
+                    await commitService.performCommit();
                 } catch (error: any) {
                     console.error("Error performing commit:", error);
                     vscode.window.showErrorMessage(
