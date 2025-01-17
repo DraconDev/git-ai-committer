@@ -5,6 +5,6 @@
         "dbaeumer.vscode-eslint",
         "connor4312.esbuild-problem-matchers",
         "ms-vscode.extension-test-runner",
-        "undefined_publisher.git-ai-commiter"
+        "undefined_publisher.git-ai-committer"
     ]
 }

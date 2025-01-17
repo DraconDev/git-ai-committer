@@ -96,7 +96,7 @@ export async function activate(context: vscode.ExtensionContext) {
             }
         }),
         vscode.commands.registerCommand(
-            "git-ai-commiter.enableAutoCommit",
+            "git-ai-committer.enableAutoCommit",
             async () => {
                 console.log("enableAutoCommit command triggered");
                 try {
@@ -110,7 +110,7 @@ export async function activate(context: vscode.ExtensionContext) {
             }
         ),
         vscode.commands.registerCommand(
-            "git-ai-commiter.disableAutoCommit",
+            "git-ai-committer.disableAutoCommit",
             async () => {
                 console.log("disableAutoCommit command triggered");
                 try {
@@ -124,7 +124,7 @@ export async function activate(context: vscode.ExtensionContext) {
             }
         ),
         vscode.commands.registerCommand(
-            "git-ai-commiter.commitNow",
+            "git-ai-committer.commitNow",
             async () => {
                 console.log("commitNow command triggered");
                 try {
@@ -138,7 +138,7 @@ export async function activate(context: vscode.ExtensionContext) {
             }
         ),
         vscode.commands.registerCommand(
-            "git-ai-commiter.setGeminiApiKey",
+            "git-ai-committer.setGeminiApiKey",
             async () => {
                 const apiKey = await vscode.window.showInputBox({
                     prompt: "Enter your Gemini API Key",

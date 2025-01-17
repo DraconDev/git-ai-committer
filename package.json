@@ -1,5 +1,5 @@
 {
-    "name": "git-ai-commiter",
+    "name": "git-ai-committer",
     "displayName": "Git AI Committer",
     "description": "Automatically generates commit messages and commits changes using AI",
     "version": "0.1.6",
@@ -8,7 +8,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/DraconDev/git-ai-commiter"
+        "url": "https://github.com/DraconDev/git-ai-committer"
     },
     "categories": [
         "Other",
@@ -21,27 +21,27 @@
     "contributes": {
         "commands": [
             {
-                "command": "git-ai-commiter.enableAutoCommit",
+                "command": "git-ai-committer.enableAutoCommit",
                 "title": "Enable Auto Commit"
             },
             {
-                "command": "git-ai-commiter.disableAutoCommit",
+                "command": "git-ai-committer.disableAutoCommit",
                 "title": "Disable Auto Commit"
             },
             {
-                "command": "git-ai-commiter.commitNow",
+                "command": "git-ai-committer.commitNow",
                 "title": "Commit Now"
             },
             {
-                "command": "git-ai-commiter.setGeminiApiKey",
+                "command": "git-ai-committer.setGeminiApiKey",
                 "title": "Set Gemini API Key"
             },
             {
-                "command": "git-ai-commiter.setCommitInterval",
+                "command": "git-ai-committer.setCommitInterval",
                 "title": "Set Commit Interval"
             },
             {
-                "command": "git-ai-commiter.setInactivityDelay",
+                "command": "git-ai-committer.setInactivityDelay",
                 "title": "Set Inactivity Delay"
             }
         ],
