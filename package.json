@@ -2,7 +2,7 @@
     "name": "git-ai-committer",
     "displayName": "Git AI Committer",
     "description": "Automatically generates commit messages and commits changes using AI",
-    "version": "0.1.6",
+    "version": "1.1.6",
     "icon": "media/logo.png",
     "galleryBanner": {
         "color": "#1E1E1E",
