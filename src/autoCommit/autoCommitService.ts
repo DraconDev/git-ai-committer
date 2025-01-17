@@ -69,7 +69,7 @@ async function processChangeQueue(): Promise<void> {
     }
 
     const now = Date.now();
-    if (now - lastCommitTime < MIN_COMMIT_DELAY) {
+    if (now - lastCommitTime < getMinCommitDelay()) {
         return;
     }
 
@@ -82,7 +82,7 @@ async function processChangeQueue(): Promise<void> {
     } catch (error) {
         console.error("Error processing changes:", error);
         // Retry after delay
-        setTimeout(() => processChangeQueue(), MIN_COMMIT_DELAY);
+        setTimeout(() => processChangeQueue(), getMinCommitDelay());
     } finally {
         isProcessingQueue = false;
     }
