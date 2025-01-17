@@ -14,7 +14,6 @@ import {
     getGitDiff,
 } from "./git/gitOperations";
 import { registerCommands } from "./commands/commands";
-import { registerSettingsView } from "./settings/settings";
 import simpleGit from "simple-git";
 import { commitService } from "./commit/commitService";
 
@@ -192,7 +191,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
     // Register commands and settings view
     registerCommands(context);
-    registerSettingsView(context);
 }
 
 export function deactivate() {
