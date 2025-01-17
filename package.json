@@ -3,6 +3,11 @@
     "displayName": "Git AI Committer",
     "description": "Automatically generates commit messages and commits changes using AI",
     "version": "0.1.6",
+    "icon": "media/logo.svg",
+    "galleryBanner": {
+        "color": "#1E1E1E",
+        "theme": "dark"
+    },
     "engines": {
         "vscode": "^1.96.0"
     },
