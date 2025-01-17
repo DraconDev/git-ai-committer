@@ -74,6 +74,82 @@
                 }
             }
         },
+{
+    "name": "git-ai-commiter",
+    "displayName": "Git AI Committer",
+    "description": "Automatically generates commit messages and commits changes using AI",
+    "version": "0.1.6",
+    "engines": {
+        "vscode": "^1.96.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DraconDev/git-ai-commiter"
+    },
+    "categories": [
+        "Other",
+        "AI"
+    ],
+    "activationEvents": [
+        "*"
+    ],
+    "main": "./dist/extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "git-ai-commiter.enableAutoCommit",
+                "title": "Enable Auto Commit"
+            },
+            {
+                "command": "git-ai-commiter.disableAutoCommit",
+                "title": "Disable Auto Commit"
+            },
+            {
+                "command": "git-ai-commiter.commitNow",
+                "title": "Commit Now"
+            },
+            {
+                "command": "git-ai-commiter.setGeminiApiKey",
+                "title": "Set Gemini API Key"
+            }
+        ],
+        "configuration": {
+            "title": "Git AI Committer",
+            "properties": {
+                "gitAiCommitter.enabled": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enable/disable automatic commits",
+                    "scope": "application",
+                    "order": 1
+                },
+                "gitAiCommitter.geminiApiKey": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Google Gemini API Key for generating commit messages. Get your API key from https://aistudio.google.com/apikey",
+                    "scope": "application",
+                    "order": 2
+                },
+                "gitAiCommitter.commitInterval": {
+                    "type": "integer",
+                    "default": 60,
+                    "minimum": 0,
+                    "maximum": 3600,
+                    "description": "Interval in seconds between automatic commits (0 to disable)",
+                    "scope": "application",
+                    "order": 3
+                },
+                "gitAiCommitter.inactivityTimeout": {
+                    "type": "integer",
+                    "default": 10,
+                    "minimum": 0,
+                    "maximum": 3600,
+                    "description": "Trigger commit after this many seconds of inactivity (0 to disable)",
+                    "scope": "application",
+                    "order": 4
+                }
+            }
+        },
         "viewsContainers": {
             "activitybar": [
                 {
