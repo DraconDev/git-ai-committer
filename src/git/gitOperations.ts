@@ -24,18 +24,57 @@ export async function getGitStatus(): Promise<{
     };
 }
 
-export async function stageAllChanges(): Promise<void> {
-    await git.add(".");
+export async function stageAllChanges(): Promise<boolean> {
+    try {
+        await git.add(".");
+        return true;
+    } catch (error) {
+        vscode.window.showErrorMessage(
+            `Failed to stage changes: ${
+                error instanceof Error ? error.message : "Unknown error"
+            }`
+        );
+        return false;
+    }
 }
 
-export async function commitChanges(message: string): Promise<void> {
-    await git.commit(message);
+export async function commitChanges(message: string): Promise<boolean> {
+    try {
+        await git.commit(message);
+        return true;
+    } catch (error) {
+        vscode.window.showErrorMessage(
+            `Failed to commit changes: ${
+                error instanceof Error ? error.message : "Unknown error"
+            }`
+        );
+        return false;
+    }
 }
 
-export async function pushChanges(): Promise<void> {
-    await git.push();
+export async function pushChanges(): Promise<boolean> {
+    try {
+        await git.push();
+        return true;
+    } catch (error) {
+        vscode.window.showErrorMessage(
+            `Failed to push changes: ${
+                error instanceof Error ? error.message : "Unknown error"
+            }`
+        );
+        return false;
+    }
 }
 
 export async function getGitDiff(): Promise<string> {
-    return await git.diff();
+    try {
+        return await git.diff();
+    } catch (error) {
+        vscode.window.showErrorMessage(
+            `Failed to get diff: ${
+                error instanceof Error ? error.message : "Unknown error"
+            }`
+        );
+        return "";
+    }
 }

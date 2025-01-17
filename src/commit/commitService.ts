@@ -1,11 +1,10 @@
 import * as vscode from "vscode";
 import {
     getApiKey,
-    validateApiKey,
     initializeModel,
     generateCommitMessage,
 } from "../ai/geminiService";
-import { git } from "../git/gitOperations";
+import { getGitDiff, git, stageAllChanges } from "../git/gitOperations";
 
 export async function performCommit() {
     const status = await git.status();
@@ -20,12 +19,12 @@ export async function performCommit() {
         return;
     }
     try {
-        if (!(await validateApiKey())) {
-            vscode.window.showErrorMessage(
-                "Invalid API key. Please check your settings."
-            );
-            throw new Error("API key not valid");
-        }
+        // if (!(await validateApiKey())) {
+        //     vscode.window.showErrorMessage(
+        //         "Invalid API key. Please check your settings."
+        //     );
+        //     return;
+        // }
 
         // Initialize model with API key
         const apiKey = getApiKey();
@@ -34,13 +33,10 @@ export async function performCommit() {
         }
 
         // Stage all changes
-        await git.add(".");
+        await stageAllChanges();
 
         // Generate commit message
-        const diff = await git.diff();
-        if (!diff || diff === "") {
-            throw new Error("No changes to commit");
-        }
+        const diff = await getGitDiff();
 
         const commitMessage = await generateCommitMessage(diff);
 

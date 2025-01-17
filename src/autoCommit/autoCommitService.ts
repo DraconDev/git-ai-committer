@@ -1,6 +1,5 @@
 import * as vscode from "vscode";
 import { pushChanges } from "../git/gitOperations";
-import { validateApiKey } from "../ai/geminiService";
 import { performCommit } from "../commit/commitService";
 
 let autoCommitInterval: NodeJS.Timeout | null = null;
@@ -50,17 +49,8 @@ export function disableAutoCommit(): void {
 
 export async function autoCommitChanges(): Promise<void> {
     try {
-        // Validate API key but don't block commits
-        const isValid = await validateApiKey();
-        if (!isValid) {
-            vscode.window.showWarningMessage(
-                "Gemini API key not valid - using default commit messages"
-            );
-        }
-
-        // Use centralized commit function
         await performCommit();
     } catch (error: any) {
-        vscode.window.showErrorMessage(`Auto-commit failed: ${error.message}`);
+        console.error("Error committing changes", error);
     }
 }

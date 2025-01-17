@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { getApiKey, performCommit, validateApiKey } from "./ai/geminiService";
+import { getApiKey, performCommit } from "./ai/geminiService";
 import {
     enableAutoCommit,
     disableAutoCommit,
@@ -57,27 +57,21 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.env.openExternal(
             vscode.Uri.parse("https://aistudio.google.com/apikey")
         );
+        return;
     }
 
-    // Initialize Gemini
-    if (await validateApiKey()) {
-        const apiKey = getApiKey();
-
-        if (!apiKey) {
-            return;
-        }
-        genAI = new GoogleGenerativeAI(apiKey);
-        model = genAI.getGenerativeModel({
-            model: "gemini-2.0-flash-exp",
-        });
-    }
+    genAI = new GoogleGenerativeAI(apiKey);
+    model = genAI.getGenerativeModel({
+        model: "gemini-2.0-flash-exp",
+    });
+    // }
 
     // Watch for configuration changes
     context.subscriptions.push(
         vscode.workspace.onDidChangeConfiguration(async (e) => {
             if (e.affectsConfiguration("gitAiCommitter.geminiApiKey")) {
                 const apiKey = getApiKey();
-                if (apiKey && (await validateApiKey())) {
+                if (apiKey) {
                     genAI = new GoogleGenerativeAI(apiKey);
                     model = genAI.getGenerativeModel({
                         model: "gemini-2.0-flash-exp",

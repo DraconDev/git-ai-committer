@@ -11,42 +11,42 @@ export function getApiKey(): string | undefined {
         .get<string>("geminiApiKey");
 }
 
-export async function validateApiKey(silent: boolean = true): Promise<boolean> {
-    const currentKey = getApiKey();
-    if (!currentKey) {
-        if (!silent) {
-            vscode.window.showErrorMessage(
-                "Please set your Gemini API key in the extension settings."
-            );
-        }
-        return false;
-    }
+// export async function validateApiKey(silent: boolean = true): Promise<boolean> {
+//     const currentKey = getApiKey();
+//     if (!currentKey) {
+//         if (!silent) {
+//             vscode.window.showErrorMessage(
+//                 "Please set your Gemini API key in the extension settings."
+//             );
+//         }
+//         return false;
+//     }
 
-    try {
-        const testAI = new GoogleGenerativeAI(currentKey);
-        const testModel = testAI.getGenerativeModel({
-            model: "gemini-2.0-flash-exp",
-        });
-        await testModel.generateContent("Test");
-        return true;
-    } catch (error: any) {
-        const timestamp = new Date().toISOString();
-        const errorDetails = {
-            timestamp,
-            message: error.message,
-            status: error.response?.status,
-            code: error.code,
-            stack: error.stack,
-        };
-        console.debug("API key validation failed:", errorDetails);
-        if (!silent) {
-            vscode.window.showErrorMessage(
-                `Invalid API key (${timestamp}). Please check your key and try again. Details: ${error.message}`
-            );
-        }
-        return false;
-    }
-}
+//     try {
+//         const testAI = new GoogleGenerativeAI(currentKey);
+//         const testModel = testAI.getGenerativeModel({
+//             model: "gemini-2.0-flash-exp",
+//         });
+//         await testModel.generateContent("Test");
+//         return true;
+//     } catch (error: any) {
+//         const timestamp = new Date().toISOString();
+//         const errorDetails = {
+//             timestamp,
+//             message: error.message,
+//             status: error.response?.status,
+//             code: error.code,
+//             stack: error.stack,
+//         };
+//         console.debug("API key validation failed:", errorDetails);
+//         if (!silent) {
+//             vscode.window.showErrorMessage(
+//                 `Invalid API key (${timestamp}). Please check your key and try again. Details: ${error.message}`
+//             );
+//         }
+//         return false;
+//     }
+// }
 
 export function initializeModel(apiKey: string) {
     genAI = new GoogleGenerativeAI(apiKey);
@@ -62,10 +62,10 @@ export async function generateCommitMessage(diff: string): Promise<string> {
             throw new TypeError("diff must be a string");
         }
 
-        // Validate API key
-        if (!(await validateApiKey())) {
-            throw new Error("API key not valid");
-        }
+        // // Validate API key
+        // if (!(await validateApiKey())) {
+        //     throw new Error("API key not valid");
+        // }
 
         // Check git status
         const status = await git.status();
