@@ -1,9 +1,9 @@
 <div align="center">
-  <img src="media/logo.png" alt="Git AI Committer Logo" width="100">
-  
-  # Git AI Committer
-  
-  ### AI-powered automatic commit message generation and committing
+
+# Git AI Committer
+
+### AI-powered automatic commit message generation and committing
+
 </div>
 
 [![Version](https://img.shields.io/badge/version-0.1.6-blue.svg)](https://github.com/DraconDev/git-ai-committer)
