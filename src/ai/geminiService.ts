@@ -159,55 +159,55 @@ ${diff}`;
     }
 }
 
-export async function performCommit() {
-    try {
-        const status = await git.status();
+// export async function performCommit() {
+//     try {
+//         const status = await git.status();
 
-        // Check if there are any changes to commit
-        if (
-            !status.modified.length &&
-            !status.not_added.length &&
-            !status.deleted.length
-        ) {
-            // console.log("No changes to commit");
-            return;
-        }
+//         // Check if there are any changes to commit
+//         if (
+//             !status.modified.length &&
+//             !status.not_added.length &&
+//             !status.deleted.length
+//         ) {
+//             // console.log("No changes to commit");
+//             return;
+//         }
 
-        // Stage all changes
-        await git.add(".");
+//         // Stage all changes
+//         await git.add(".");
 
-        // Get git diff and generate commit message
-        const diff = await git.diff();
-        const commitMessage = await generateCommitMessage(diff);
-        if (!commitMessage) {
-            console.log("No commit message generated");
-            return;
-        }
+//         // Get git diff and generate commit message
+//         const diff = await git.diff();
+//         const commitMessage = await generateCommitMessage(diff);
+//         if (!commitMessage) {
+//             console.log("No commit message generated");
+//             return;
+//         }
 
-        // Commit changes
-        await git.commit(commitMessage);
-        // vscode.window.showInformationMessage(
-        //     `Changes committed: ${commitMessage}`
-        // );
+//         // Commit changes
+//         await git.commit(commitMessage);
+//         // vscode.window.showInformationMessage(
+//         //     `Changes committed: ${commitMessage}`
+//         // );
 
-        // Push changes
-        try {
-            await git.push();
-            // vscode.window.showInformationMessage("Changes pushed successfully");
-        } catch (error: any) {
-            console.error("Push failed:", error);
-            vscode.window.showErrorMessage(
-                `Failed to push changes: ${error.message}`
-            );
-        }
-    } catch (error: any) {
-        if (error.message === "No changes to commit") {
-            // vscode.window.showInformationMessage("No changes to commit");
-            return;
-        }
-        console.error("Commit failed:", error);
-        vscode.window.showErrorMessage(
-            `Failed to commit changes: ${error.message}`
-        );
-    }
-}
+//         // Push changes
+//         try {
+//             await git.push();
+//             // vscode.window.showInformationMessage("Changes pushed successfully");
+//         } catch (error: any) {
+//             console.error("Push failed:", error);
+//             vscode.window.showErrorMessage(
+//                 `Failed to push changes: ${error.message}`
+//             );
+//         }
+//     } catch (error: any) {
+//         if (error.message === "No changes to commit") {
+//             // vscode.window.showInformationMessage("No changes to commit");
+//             return;
+//         }
+//         console.error("Commit failed:", error);
+//         vscode.window.showErrorMessage(
+//             `Failed to commit changes: ${error.message}`
+//         );
+//     }
+// }
