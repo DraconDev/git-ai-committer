@@ -43,8 +43,18 @@ function getWebviewContent() {
     <body>
         <h1>Git AI Committer Settings</h1>
         <form id="settings-form">
-            <label for="interval">Auto Commit Interval (minutes):</label>
-            <input type="number" id="interval" name="interval" min="1" max="60" required>
+            <div>
+                <label for="interval">Auto Commit Interval (minutes):</label>
+                <input type="number" id="interval" name="interval" min="1" max="60" required>
+            </div>
+            <div>
+                <label for="inactivity">Inactivity Delay Before Commit (seconds):</label>
+                <input type="number" id="inactivity" name="inactivity" min="5" max="300" required>
+            </div>
+            <div>
+                <label for="minDelay">Minimum Time Between Commits (seconds):</label>
+                <input type="number" id="minDelay" name="minDelay" min="10" max="600" required>
+            </div>
             <button type="submit">Save</button>
         </form>
         <script>
