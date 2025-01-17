@@ -4,9 +4,22 @@ import { commitService } from "../commit/commitService";
 
 let autoCommitInterval: NodeJS.Timeout | null = null;
 let inactivityTimeout: NodeJS.Timeout | null = null;
-const DEFAULT_INTERVAL = 120 * 1000; // 2 minutes
-const INACTIVITY_DELAY = 10 * 1000; // 10 seconds
-const MIN_COMMIT_DELAY = 20 * 1000; // Minimum 20 seconds between commits
+
+function getConfig() {
+    return vscode.workspace.getConfiguration("gitAiCommitter");
+}
+
+function getAutoCommitInterval() {
+    return (getConfig().get<number>("autoCommitInterval") || 2) * 60 * 1000;
+}
+
+function getInactivityDelay() {
+    return (getConfig().get<number>("inactivityDelay") || 10) * 1000;
+}
+
+function getMinCommitDelay() {
+    return (getConfig().get<number>("minCommitDelay") || 20) * 1000;
+}
 let generatingMessage = false;
 let lastCommitTime = 0;
 let changeQueue: vscode.TextDocumentChangeEvent[] = [];
