@@ -22,27 +22,27 @@
         "commands": [
             {
                 "command": "git-ai-committer.enableAutoCommit",
-                "title": "Enable Auto Commit"
+                "title": "AI Auto Committer Enable Auto Commit"
             },
             {
                 "command": "git-ai-committer.disableAutoCommit",
-                "title": "Disable Auto Commit"
+                "title": "AI Auto Committer Disable Auto Commit"
             },
             {
                 "command": "git-ai-committer.commitNow",
-                "title": "Commit Now"
+                "title": "AI Auto Committer Commit Now"
             },
             {
                 "command": "git-ai-committer.setGeminiApiKey",
-                "title": "Set Gemini API Key"
+                "title": "AI Auto Committer Set Gemini API Key"
             },
             {
                 "command": "git-ai-committer.setCommitInterval",
-                "title": "Set Commit Interval"
+                "title": "AI Auto Committer Set Commit Interval"
             },
             {
                 "command": "git-ai-committer.setInactivityDelay",
-                "title": "Set Inactivity Delay"
+                "title": "AI Auto Committer Set Inactivity Delay"
             }
         ],
         "configuration": {
