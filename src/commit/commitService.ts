@@ -8,6 +8,7 @@ import {
     commitChanges,
     getGitDiff,
     git,
+    pushChanges,
     stageAllChanges,
 } from "../git/gitOperations";
 
@@ -59,15 +60,7 @@ export async function performCommit() {
         // );
 
         // Push changes
-        try {
-            await git.push();
-            // vscode.window.showInformationMessage("Changes pushed successfully");
-        } catch (error: any) {
-            console.error("Push failed:", error);
-            vscode.window.showErrorMessage(
-                `Failed to push changes: ${error.message}`
-            );
-        }
+        await pushChanges();
     } catch (error: any) {
         if (error.message === "No changes to commit") {
             // vscode.window.showInformationMessage("No changes to commit");
