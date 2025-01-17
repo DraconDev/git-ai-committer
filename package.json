@@ -15,7 +15,13 @@
         "AI"
     ],
     "activationEvents": [
-        "*"
+        "onCommand:git-ai-committer.enableAutoCommit",
+        "onCommand:git-ai-committer.disableAutoCommit",
+        "onCommand:git-ai-committer.commitNow",
+        "onCommand:git-ai-committer.setGeminiApiKey",
+        "onCommand:git-ai-committer.setCommitInterval",
+        "onCommand:git-ai-committer.setInactivityDelay",
+        "workspaceContains:.git"
     ],
     "main": "./dist/extension.js",
     "contributes": {
