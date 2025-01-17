@@ -26,11 +26,15 @@ export class CommitService {
     }
 
     checkIfDiffChanged(diff: string) {
-        if (diff === this.lastProcessedDiff) {
+        // Only compare the first 100 chars to avoid being too sensitive
+        const currentDiff = diff.slice(0, 100);
+        const lastDiff = this.lastProcessedDiff.slice(0, 100);
+
+        if (currentDiff === lastDiff) {
             vscode.window.showInformationMessage(
                 "No changes since last commit"
             );
-            return null;
+            return false;
         }
         return true;
     }
@@ -76,22 +80,22 @@ export class CommitService {
             //     return;
             // }
 
+            // Check for changes first
+            const diff = await getGitDiff();
+            if (!diff || !(await this.checkIfDiffChanged(diff))) {
+                return;
+            }
+
             // Initialize model with API key
             const apiKey = getApiKey();
             if (apiKey) {
                 initializeModel(apiKey);
             }
 
-            // Stage all changes
+            // Stage changes only after confirming we have a valid diff
             await stageAllChanges();
 
             // Generate commit message
-            const diff = await getGitDiff();
-
-            if (await !this.checkIfDiffChanged(diff)) {
-                return;
-            }
-
             const commitMessage = await this.handleCommitMessageGeneration(
                 diff
             );
@@ -99,9 +103,8 @@ export class CommitService {
                 return;
             }
 
-            vscode.window.showErrorMessage(commitMessage);
             if (!commitMessage) {
-                console.log("No commit message generated");
+                vscode.window.showErrorMessage("No commit message generated");
                 return;
             }
 
