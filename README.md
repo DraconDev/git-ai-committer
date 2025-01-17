@@ -73,3 +73,5 @@ Initial release of Git AI Committer:
 -   Gemini AI integration
 -   Configurable commit intervals
 -   Manual commit option
+
+!!!
