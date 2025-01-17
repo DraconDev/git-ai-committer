@@ -4,7 +4,12 @@ import {
     initializeModel,
     generateCommitMessage,
 } from "../ai/geminiService";
-import { getGitDiff, git, stageAllChanges } from "../git/gitOperations";
+import {
+    commitChanges,
+    getGitDiff,
+    git,
+    stageAllChanges,
+} from "../git/gitOperations";
 
 export async function performCommit() {
     const status = await git.status();
@@ -40,14 +45,16 @@ export async function performCommit() {
 
         const commitMessage = await generateCommitMessage(diff);
 
+        vscode.window.showErrorMessage(commitMessage);
         if (!commitMessage) {
             console.log("No commit message generated");
             return;
         }
-        vscode.window.showErrorMessage(commitMessage);
 
         // Commit changes
-        await git.commit(commitMessage);
+        if (!(await commitChanges(commitMessage))) {
+            return;
+        }
         // vscode.window.showInformationMessage(
         //     `Changes committed: ${commitMessage}`
         // );
