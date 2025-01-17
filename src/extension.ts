@@ -167,37 +167,31 @@ export async function activate(context: vscode.ExtensionContext) {
         )
     );
 
-    // Initialize if enabled by default
-    if (
-        vscode.workspace
-            .getConfiguration("gitAiCommitter")
-            .get<boolean>("enabled")
-    ) {
-        const interval = vscode.workspace
-            .getConfiguration("gitAiCommitter")
-            .get<number>("commitInterval", 60000); // Default to 1 minute
-        try {
-            enableAutoCommit(interval);
-            // Periodically check for git repo initialization
-            setInterval(async () => {
-                if (!gitInitialized) {
-                    try {
-                        await git.checkIsRepo();
-                        gitInitialized = true;
-                        vscode.window.showInformationMessage(
-                            "Git repository detected! Auto-commit is now active."
-                        );
-                    } catch (error) {
-                        // Still no git repo
-                    }
+    // Enable auto-commit by default
+    const interval = vscode.workspace
+        .getConfiguration("gitAiCommitter")
+        .get<number>("commitInterval", 60000); // Default to 1 minute
+    try {
+        enableAutoCommit(interval);
+        // Periodically check for git repo initialization
+        setInterval(async () => {
+            if (!gitInitialized) {
+                try {
+                    await git.checkIsRepo();
+                    gitInitialized = true;
+                    vscode.window.showInformationMessage(
+                        "Git repository detected! Auto-commit is now active."
+                    );
+                } catch (error) {
+                    // Still no git repo
                 }
-            }, 10000); // Check every 10 seconds
-        } catch (error) {
-            if (error instanceof Error) {
-                vscode.window.showErrorMessage(
-                    `Failed to enable auto-commit: ${error.message}`
-                );
             }
+        }, 10000); // Check every 10 seconds
+    } catch (error) {
+        if (error instanceof Error) {
+            vscode.window.showErrorMessage(
+                `Failed to enable auto-commit: ${error.message}`
+            );
         }
     }
 

@@ -4,6 +4,7 @@ import {
     stageAllChanges,
     commitChanges,
     getGitDiff,
+    pushChanges,
 } from "../git/gitOperations";
 import { generateCommitMessage, validateApiKey } from "../ai/geminiService";
 
@@ -18,6 +19,7 @@ function resetInactivityTimer() {
     }
     inactivityTimeout = setTimeout(() => {
         autoCommitChanges();
+        pushChanges();
     }, INACTIVITY_DELAY);
 }
 
@@ -40,6 +42,7 @@ export function enableAutoCommit(intervalMs?: number): void {
     // Start regular interval commits
     autoCommitInterval = setInterval(async () => {
         await autoCommitChanges();
+        pushChanges();
     }, intervalMs ?? DEFAULT_INTERVAL);
 }
 

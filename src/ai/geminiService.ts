@@ -27,10 +27,18 @@ export async function validateApiKey(): Promise<boolean> {
         });
         await testModel.generateContent("Test");
         return true;
-    } catch (error) {
-        console.error("API key validation failed:", error);
+    } catch (error: any) {
+        const timestamp = new Date().toISOString();
+        const errorDetails = {
+            timestamp,
+            message: error.message,
+            status: error.response?.status,
+            code: error.code,
+            stack: error.stack,
+        };
+        console.error("API key validation failed:", errorDetails);
         vscode.window.showErrorMessage(
-            "Invalid API key. Please check your key and try again."
+            `Invalid API key (${timestamp}). Please check your key and try again. Details: ${error.message}`
         );
         return false;
     }
@@ -44,42 +52,61 @@ export function initializeModel(apiKey: string) {
 }
 
 export async function generateCommitMessage(diff: string): Promise<string> {
-    if (!(await validateApiKey())) {
-        throw new Error("API key not valid");
-    }
-
-    const status = await git.status();
-    if (
-        !status.modified.length &&
-        !status.not_added.length &&
-        !status.deleted.length
-    ) {
-        throw new Error("No changes to commit");
-    }
-
-    if (!model) {
-        const status = await git.status();
-        const changedFiles = [
-            ...status.modified,
-            ...status.not_added,
-            ...status.deleted,
-        ];
-        const timestamp = new Date().toISOString().split("T")[1].slice(0, 5);
-        return `feat: update ${changedFiles.length} files (${changedFiles
-            .slice(0, 3)
-            .join(", ")}) at ${timestamp}`;
-    }
-
     try {
-        if (!diff || diff === "") {
+        // Validate input
+        if (typeof diff !== "string") {
+            throw new TypeError("diff must be a string");
+        }
+
+        // Validate API key
+        if (!(await validateApiKey())) {
+            throw new Error("API key not valid");
+        }
+
+        // Check git status
+        const status = await git.status();
+        if (!status || typeof status !== "object") {
+            throw new Error("Invalid git status response");
+        }
+
+        if (
+            !status.modified.length &&
+            !status.not_added.length &&
+            !status.deleted.length
+        ) {
             throw new Error("No changes to commit");
         }
 
+        // Generate fallback message if model isn't initialized
+        if (!model) {
+            const changedFiles = [
+                ...status.modified,
+                ...status.not_added,
+                ...status.deleted,
+            ];
+            const timestamp = new Date()
+                .toISOString()
+                .split("T")[1]
+                .slice(0, 5);
+            return `feat: update ${changedFiles.length} files (${changedFiles
+                .slice(0, 3)
+                .join(", ")}) at ${timestamp}`;
+        }
+
+        // Validate diff content
+        if (!diff || diff.trim() === "") {
+            throw new Error("No changes to commit");
+        }
+
+        // Generate prompt
         const prompt = `Generate a concise commit message for the following git diff. Use conventional commit format (type(scope): description). Keep it short and descriptive. Here's the diff:
 
 ${diff}`;
 
+        // Get API response
         const result = await model.generateContent(prompt);
+
+        // Validate API response structure
         if (!result || !result.response) {
             throw new Error("Empty response from Gemini API");
         }
@@ -102,7 +129,6 @@ ${diff}`;
 
         // Ensure it follows conventional commit format
         if (!cleanMessage.match(/^[a-z]+(\([a-z-]+\))?: .+/)) {
-            const status = await git.status();
             const changedFiles = [
                 ...status.modified,
                 ...status.not_added,
@@ -118,8 +144,13 @@ ${diff}`;
         }
 
         return cleanMessage;
-    } catch (error) {
-        console.error("Error generating commit message:", error);
+    } catch (error: any) {
+        console.error("Error generating commit message:", {
+            timestamp: new Date().toISOString(),
+            message: error.message,
+            stack: error.stack,
+            errorType: error.constructor.name,
+        });
         throw error;
     }
 }

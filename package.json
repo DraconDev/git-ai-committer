@@ -2,7 +2,7 @@
     "name": "git-ai-commiter",
     "displayName": "Git AI Committer",
     "description": "Automatically generates commit messages and commits changes using AI",
-    "version": "0.1.4",
+    "version": "0.1.6",
     "engines": {
         "vscode": "^1.96.0"
     },
