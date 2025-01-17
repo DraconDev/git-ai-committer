@@ -79,9 +79,13 @@ function getWebviewContent() {
             document.getElementById('settings-form').addEventListener('submit', (event) => {
                 event.preventDefault();
                 const interval = document.getElementById('interval').value;
+                const inactivity = document.getElementById('inactivity').value;
+                const minDelay = document.getElementById('minDelay').value;
                 vscode.postMessage({ 
                     command: 'saveSettings',
-                    interval: parseInt(interval)
+                    interval: parseInt(interval),
+                    inactivity: parseInt(inactivity),
+                    minDelay: parseInt(minDelay)
                 });
             });
             
