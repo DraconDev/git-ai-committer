@@ -169,7 +169,7 @@ export async function performCommit() {
             !status.not_added.length &&
             !status.deleted.length
         ) {
-            console.log("No changes to commit");
+            // console.log("No changes to commit");
             return;
         }
 
@@ -186,14 +186,14 @@ export async function performCommit() {
 
         // Commit changes
         await git.commit(commitMessage);
-        vscode.window.showInformationMessage(
-            `Changes committed: ${commitMessage}`
-        );
+        // vscode.window.showInformationMessage(
+        //     `Changes committed: ${commitMessage}`
+        // );
 
         // Push changes
         try {
             await git.push();
-            vscode.window.showInformationMessage("Changes pushed successfully");
+            // vscode.window.showInformationMessage("Changes pushed successfully");
         } catch (error: any) {
             console.error("Push failed:", error);
             vscode.window.showErrorMessage(
@@ -202,7 +202,7 @@ export async function performCommit() {
         }
     } catch (error: any) {
         if (error.message === "No changes to commit") {
-            vscode.window.showInformationMessage("No changes to commit");
+            // vscode.window.showInformationMessage("No changes to commit");
             return;
         }
         console.error("Commit failed:", error);
