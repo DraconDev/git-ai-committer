@@ -95,7 +95,107 @@
         "viewsWelcome": [
             {
                 "view": "gitAiCommitter.settings",
-                "contents": "Configure your Git AI Committer settings here.\n\n[Set API Key](command:git-ai-commiter.setGeminiApiKey)\n[Enable Auto Commit](command:git-ai-commiter.enableAutoCommit)\n[Disable Auto Commit](command:git-ai-commiter.disableAutoCommit)"
+                "contents": "Configure your Git AI Committer settings here.\n\n**Settings**\n- [Set API Key](command:git-ai-commiter.setGeminiApiKey)\n- [Enable Auto Commit](command:git-ai-commiter.enableAutoCommit)\n- [Disable Auto Commit](command:git-ai-commiter.disableAutoCommit)\n\n**Auto Commit Interval**\n- [1 minute](command:git-ai-commiter.setCommitInterval?60)\n- [5 minutes](command:git-ai-commiter.setCommitInterval?300)\n- [10 minutes](command:git-ai-commiter.setCommitInterval?600)\n\n**Inactivity Delay**\n- [10 seconds](command:git-ai-commiter.setInactivityDelay?10)\n- [30 seconds](command:git-ai-commiter.setInactivityDelay?30)\n- [5 minutes](command:git-ai-commiter.setInactivityDelay?300)\n\n**Minimum Commit Delay**\n- [10 seconds](command:git-ai-commiter.setMinCommitDelay?10)\n- [30 seconds](command:git-ai-commiter.setMinCommitDelay?30)\n- [1 minute](command:git-ai-commiter.setMinCommitDelay?60)"
+            }
+        ]
+{
+    "name": "git-ai-commiter",
+    "displayName": "Git AI Committer",
+    "description": "Automatically generates commit messages and commits changes using AI",
+    "version": "0.1.6",
+    "engines": {
+        "vscode": "^1.96.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DraconDev/git-ai-commiter"
+    },
+    "categories": [
+        "Other",
+        "AI"
+    ],
+    "activationEvents": [
+        "*"
+    ],
+    "main": "./dist/extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "git-ai-commiter.enableAutoCommit",
+                "title": "Enable Auto Commit"
+            },
+            {
+                "command": "git-ai-commiter.disableAutoCommit",
+                "title": "Disable Auto Commit"
+            },
+            {
+                "command": "git-ai-commiter.commitNow",
+                "title": "Commit Now"
+            },
+            {
+                "command": "git-ai-commiter.setGeminiApiKey",
+                "title": "Set Gemini API Key"
+            }
+        ],
+        "configuration": {
+            "title": "Git AI Committer",
+            "properties": {
+                "gitAiCommitter.enabled": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enable/disable automatic commits",
+                    "scope": "application",
+                    "order": 1
+                },
+                "gitAiCommitter.geminiApiKey": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Google Gemini API Key for generating commit messages. Get your API key from https://aistudio.google.com/apikey",
+                    "scope": "application",
+                    "order": 2
+                },
+                "gitAiCommitter.commitInterval": {
+                    "type": "integer",
+                    "default": 60,
+                    "minimum": 0,
+                    "maximum": 3600,
+                    "description": "Interval in seconds between automatic commits (0 to disable)",
+                    "scope": "application",
+                    "order": 3
+                },
+                "gitAiCommitter.inactivityTimeout": {
+                    "type": "integer",
+                    "default": 10,
+                    "minimum": 0,
+                    "maximum": 3600,
+                    "description": "Trigger commit after this many seconds of inactivity (0 to disable)",
+                    "scope": "application",
+                    "order": 4
+                }
+            }
+        },
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "gitAiCommitter",
+                    "title": "Git AI Committer",
+                    "icon": "media/icon.svg"
+                }
+            ]
+        },
+        "views": {
+            "gitAiCommitter": [
+                {
+                    "id": "gitAiCommitter.settings",
+                    "name": "Settings",
+                    "contextualTitle": "Git AI Committer Settings"
+                }
+            ]
+        },
+        "viewsWelcome": [
+            {
+                "view": "gitAiCommitter.settings",
+                "contents": "Configure your Git AI Committer settings here.\n\n**Settings**\n- [Set API Key](command:git-ai-commiter.setGeminiApiKey)\n- [Enable Auto Commit](command:git-ai-commiter.enableAutoCommit)\n- [Disable Auto Commit](command:git-ai-commiter.disableAutoCommit)\n\n**Timing Configuration**\n- Auto Commit Interval (minutes)\n- Inactivity Delay (seconds)\n- Minimum Commit Delay (seconds)\n\n*Adjust these values in Settings > Extensions > Git AI Committer*"
             }
         ]
     },
