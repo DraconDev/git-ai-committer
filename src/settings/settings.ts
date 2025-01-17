@@ -95,6 +95,8 @@ function getWebviewContent() {
                 switch (message.command) {
                     case 'updateSettings':
                         document.getElementById('interval').value = message.interval;
+                        document.getElementById('inactivity').value = message.inactivity;
+                        document.getElementById('minDelay').value = message.minDelay;
                         break;
                 }
             });
