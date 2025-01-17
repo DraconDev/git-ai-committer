@@ -190,8 +190,9 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     }
 
-    // Register commands
+    // Register commands and settings view
     registerCommands(context);
+    registerSettingsView(context);
 }
 
 export function deactivate() {
