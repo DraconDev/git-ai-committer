@@ -73,13 +73,6 @@ export class CommitService {
             return;
         }
         try {
-            // if (!(await validateApiKey())) {
-            //     vscode.window.showErrorMessage(
-            //         "Invalid API key. Please check your settings."
-            //     );
-            //     return;
-            // }
-
             // Check for changes first
             const diff = await getGitDiff();
             if (!diff || !(await this.checkIfDiffChanged(diff))) {
@@ -110,10 +103,6 @@ export class CommitService {
 
             // Commit changes
             await commitChanges(commitMessage);
-
-            // vscode.window.showInformationMessage(
-            //     `Changes committed: ${commitMessage}`
-            // );
 
             // Push changes
             await pushChanges();
