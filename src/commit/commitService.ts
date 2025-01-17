@@ -43,8 +43,12 @@ export async function performCommit() {
 
         // Generate commit message
         const diff = await getGitDiff();
-
-        const commitMessage = await generateCommitMessage(diff);
+        const commitMessage = await commitService.handleCommitMessageGeneration(
+            diff
+        );
+        if (!commitMessage) {
+            return;
+        }
 
         vscode.window.showErrorMessage(commitMessage);
         if (!commitMessage) {
