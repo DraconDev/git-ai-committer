@@ -8,6 +8,17 @@ import {
 import { git } from "../git/gitOperations";
 
 export async function performCommit() {
+    const status = await git.status();
+
+    // Check if there are any changes to commit
+    if (
+        !status.modified.length &&
+        !status.not_added.length &&
+        !status.deleted.length
+    ) {
+        // console.log("No changes to commit");
+        return;
+    }
     try {
         if (!(await validateApiKey())) {
             throw new Error("API key not valid");
@@ -17,18 +28,6 @@ export async function performCommit() {
         const apiKey = getApiKey();
         if (apiKey) {
             initializeModel(apiKey);
-        }
-
-        const status = await git.status();
-
-        // Check if there are any changes to commit
-        if (
-            !status.modified.length &&
-            !status.not_added.length &&
-            !status.deleted.length
-        ) {
-            // console.log("No changes to commit");
-            return;
         }
 
         // Stage all changes
