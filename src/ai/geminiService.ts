@@ -11,12 +11,14 @@ export function getApiKey(): string | undefined {
         .get<string>("geminiApiKey");
 }
 
-export async function validateApiKey(): Promise<boolean> {
+export async function validateApiKey(silent: boolean = true): Promise<boolean> {
     const currentKey = getApiKey();
     if (!currentKey) {
-        vscode.window.showErrorMessage(
-            "Please set your Gemini API key in the extension settings."
-        );
+        if (!silent) {
+            vscode.window.showErrorMessage(
+                "Please set your Gemini API key in the extension settings."
+            );
+        }
         return false;
     }
 
@@ -36,10 +38,12 @@ export async function validateApiKey(): Promise<boolean> {
             code: error.code,
             stack: error.stack,
         };
-        console.error("API key validation failed:", errorDetails);
-        vscode.window.showErrorMessage(
-            `Invalid API key (${timestamp}). Please check your key and try again. Details: ${error.message}`
-        );
+        console.debug("API key validation failed:", errorDetails);
+        if (!silent) {
+            vscode.window.showErrorMessage(
+                `Invalid API key (${timestamp}). Please check your key and try again. Details: ${error.message}`
+            );
+        }
         return false;
     }
 }
