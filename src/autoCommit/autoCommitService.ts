@@ -6,6 +6,7 @@ let autoCommitInterval: NodeJS.Timeout | null = null;
 let inactivityTimeout: NodeJS.Timeout | null = null;
 const DEFAULT_INTERVAL = 60 * 1000; // 1 minute
 const INACTIVITY_DELAY = 10 * 1000; // 10 seconds
+let generatingMessage = false;
 
 function resetInactivityTimer() {
     if (inactivityTimeout) {
@@ -35,8 +36,12 @@ export function enableAutoCommit(intervalMs?: number): void {
 
     // Start regular interval commits
     autoCommitInterval = setInterval(async () => {
+        if (generatingMessage) {
+            return;
+        }
         await autoCommitChanges();
         pushChanges();
+        generatingMessage = false;
     }, intervalMs ?? DEFAULT_INTERVAL);
 }
 

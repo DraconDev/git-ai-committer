@@ -4,6 +4,45 @@ import {
     initializeModel,
     generateCommitMessage,
 } from "../ai/geminiService";
+
+export class CommitService {
+    private lastProcessedDiff = "";
+    private isGeneratingMessage = false;
+
+    async handleCommitMessageGeneration(diff: string): Promise<string | null> {
+        if (this.isGeneratingMessage) {
+            vscode.window.showInformationMessage(
+                "Commit message generation already in progress"
+            );
+            return null;
+        }
+
+        if (diff === this.lastProcessedDiff) {
+            vscode.window.showInformationMessage(
+                "No changes since last commit"
+            );
+            return null;
+        }
+
+        this.isGeneratingMessage = true;
+        try {
+            const commitMessage = await generateCommitMessage(diff);
+            this.lastProcessedDiff = diff;
+            return commitMessage;
+        } catch (error) {
+            vscode.window.showErrorMessage(
+                `Failed to generate commit message: ${
+                    error instanceof Error ? error.message : "Unknown error"
+                }`
+            );
+            return null;
+        } finally {
+            this.isGeneratingMessage = false;
+        }
+    }
+}
+
+export const commitService = new CommitService();
 import {
     commitChanges,
     getGitDiff,
@@ -43,6 +82,7 @@ export async function performCommit() {
 
         // Generate commit message
         const diff = await getGitDiff();
+
         const commitMessage = await commitService.handleCommitMessageGeneration(
             diff
         );
