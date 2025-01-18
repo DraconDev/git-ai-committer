@@ -1,6 +1,10 @@
 import { versionService } from "./versionCoreService";
 
-export async function updateVersion(): Promise<string | null> {
+export type VersionIncrementType = "patch" | "minor";
+
+export async function updateVersion(
+    incrementType: VersionIncrementType = "patch"
+): Promise<string | null> {
     try {
         // Detect version file
         const versionFile = await versionService.detectVersionFile();
@@ -16,8 +20,8 @@ export async function updateVersion(): Promise<string | null> {
             throw new Error("Could not determine current version");
         }
 
-        // Increment version
-        const newVersion = incrementVersion(currentVersion);
+        // Increment version based on type
+        const newVersion = incrementVersion(currentVersion, incrementType);
         if (!newVersion) {
             throw new Error("Could not increment version");
         }
@@ -38,13 +42,24 @@ export async function updateVersion(): Promise<string | null> {
     }
 }
 
-function incrementVersion(version: string): string | null {
+function incrementVersion(
+    version: string,
+    incrementType: VersionIncrementType
+): string | null {
     if (!versionService.validateSemver(version)) {
         return null;
     }
 
     const versionParts = version.split(".");
-    const patch = parseInt(versionParts[2]);
-    versionParts[2] = (patch + 1).toString();
+
+    if (incrementType === "patch") {
+        const patch = parseInt(versionParts[2]);
+        versionParts[2] = (patch + 1).toString();
+    } else if (incrementType === "minor") {
+        const minor = parseInt(versionParts[1]);
+        versionParts[1] = (minor + 1).toString();
+        versionParts[2] = "0"; // Reset patch version
+    }
+
     return versionParts.join(".");
 }
