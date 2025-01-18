@@ -1,4 +1,4 @@
-import { versionService } from "./versionAIService";
+import { versionService } from "./versionCoreService";
 
 export async function updateVersion(): Promise<string | null> {
     try {
