@@ -1,6 +1,6 @@
 import { versionService } from "./versionCoreService";
 
-let versionBumpingEnabled = true;
+let versionBumpingEnabled = false;
 
 export type VersionIncrementType = "patch" | "minor";
 
