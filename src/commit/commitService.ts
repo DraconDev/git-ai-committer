@@ -4,7 +4,7 @@ import {
     initializeModel,
     generateCommitMessage,
 } from "../ai/geminiService";
-import { versionService } from "../version/versionService";
+
 import { git } from "../extension";
 import {
     stageAllChanges,

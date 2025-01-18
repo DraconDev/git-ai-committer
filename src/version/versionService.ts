@@ -1,4 +1,4 @@
-import { versionService } from "./versionAIService";
+import { VersionService, versionService } from "./versionAIService";
 
 export async function updateVersion(): Promise<string | null> {
     try {
@@ -48,6 +48,8 @@ function incrementVersion(version: string): string | null {
     versionParts[2] = (patch + 1).toString();
     return versionParts.join(".");
 }
+
+export const versionService = VersionService.getInstance();
 
 export async function updateAllVersionFiles(
     newVersion: string
