@@ -19,6 +19,8 @@ Git AI Committer is a VS Code extension that automatically generates meaningful 
 -   Configurable auto-commit intervals
 -   Manual commit generation option
 -   Inactivity-based commit triggers
+-   Version bumping with patch/minor increments
+-   Enable/disable version bumping functionality
 
 ## Requirements
 
@@ -59,3 +61,5 @@ Available commands can be accessed through the Command Palette (Ctrl+Shift+P):
 -   `AI Auto Committer Set Gemini API Key`: Set your Gemini API key
 -   `AI Auto Committer Set Commit Interval`: Configure automatic commit interval
 -   `AI Auto Committer Set Inactivity Delay`: Configure inactivity delay before commit
+-   `AI Auto Committer Enable Version Bumping`: Enables automatic version bumping on commits
+-   `AI Auto Committer Disable Version Bumping`: Disables automatic version bumping on commits
