@@ -1,80 +1,124 @@
-import { AIBaseService } from "../ai/aiBaseService";
 import * as vscode from "vscode";
+import * as fs from "fs";
+import * as path from "path";
 
-export class VersionAIService extends AIBaseService {
-    private static instance: VersionAIService;
+export class VersionService {
+    private static instance: VersionService;
 
-    private constructor() {
-        super();
-    }
+    private constructor() {}
 
-    public static getInstance(): VersionAIService {
-        if (!VersionAIService.instance) {
-            VersionAIService.instance = new VersionAIService();
+    public static getInstance(): VersionService {
+        if (!VersionService.instance) {
+            VersionService.instance = new VersionService();
         }
-        return VersionAIService.instance;
+        return VersionService.instance;
     }
 
     async detectVersionFile(): Promise<string | null> {
-        const prompt = `Analyze this project structure and determine the appropriate version file.
-        Consider these common patterns:
-        - package.json for Node.js
-        - pyproject.toml for Python
-        - build.gradle for Gradle
-        - pom.xml for Maven
-        - Cargo.toml for Rust
-        - composer.json for PHP
-        - project.clj for Clojure
-        - *.csproj for .NET
-        - setup.py for Python
-        - version.txt or VERSION for generic projects
-        
-        Return just the filename.`;
+        const workspaceFolders = vscode.workspace.workspaceFolders;
+        if (!workspaceFolders) return null;
 
-        try {
-            const response = await this.generateResponse(prompt);
-            return response?.trim() || null;
-        } catch (error) {
-            console.error("AI error detecting version file:", error);
-            return null;
+        // Common version files across different ecosystems
+        const versionFiles = [
+            "package.json", // Node.js
+            "pyproject.toml", // Python
+            "build.gradle", // Gradle
+            "pom.xml", // Maven
+            "Cargo.toml", // Rust
+            "composer.json", // PHP
+            "project.clj", // Clojure
+            "*.csproj", // .NET
+            "setup.py", // Python
+            "version.txt", // Generic
+            "VERSION", // Generic
+        ];
+
+        // Check for each version file in the workspace
+        for (const filePattern of versionFiles) {
+            try {
+                const files = await vscode.workspace.findFiles(filePattern);
+                if (files.length > 0) {
+                    return path.basename(files[0].fsPath);
+                }
+            } catch (error) {
+                console.error(`Error searching for ${filePattern}:`, error);
+            }
         }
+        return null;
     }
 
     async getCurrentVersion(versionFile: string): Promise<string | null> {
-        const prompt = `Read the current version from ${versionFile}.
-        Return just the version number in semver format (e.g., 1.2.3).
-        If no version is found, return null.`;
+        const workspaceFolders = vscode.workspace.workspaceFolders;
+        if (!workspaceFolders) return null;
 
         try {
-            const response = await this.generateResponse(prompt);
-            const version = response?.trim();
-            return version && this.validateSemver(version) ? version : null;
+            const filePath = path.join(
+                workspaceFolders[0].uri.fsPath,
+                versionFile
+            );
+            const fileContent = fs.readFileSync(filePath, "utf8");
+
+            // Handle different file types
+            switch (path.extname(versionFile)) {
+                case ".json":
+                    return this.getJsonVersion(fileContent);
+                case ".toml":
+                    return this.getTomlVersion(fileContent);
+                case ".xml":
+                    return this.getXmlVersion(fileContent);
+                case ".gradle":
+                    return this.getGradleVersion(fileContent);
+                case ".py":
+                    return this.getPythonVersion(fileContent);
+                case ".txt":
+                case "":
+                    return this.getPlainTextVersion(fileContent);
+                default:
+                    return null;
+            }
         } catch (error) {
-            console.error("AI error getting current version:", error);
+            console.error("Error getting current version:", error);
             return null;
         }
     }
 
-    async updateVersionFileContent(
-        versionFile: string,
-        newVersion: string
-    ): Promise<string | null> {
-        const prompt = `Update ${versionFile} to use version ${newVersion}.
-        Return the complete updated file content.
-        Maintain the original file format and structure.`;
-
+    private getJsonVersion(content: string): string | null {
         try {
-            const response = await this.generateResponse(prompt);
-            return response || null;
+            const json = JSON.parse(content);
+            return json.version || null;
         } catch (error) {
-            console.error("AI error updating version file:", error);
+            console.error("Error parsing JSON version:", error);
             return null;
         }
     }
 
-    private validateSemver(version: string): boolean {
+    private getTomlVersion(content: string): string | null {
+        const match = content.match(/version\s*=\s*["']([^"']+)["']/);
+        return match?.[1] || null;
+    }
+
+    private getXmlVersion(content: string): string | null {
+        const match = content.match(/<version>([^<]+)<\/version>/);
+        return match?.[1] || null;
+    }
+
+    private getGradleVersion(content: string): string | null {
+        const match = content.match(/version\s*=\s*['"]([^'"]+)['"]/);
+        return match?.[1] || null;
+    }
+
+    private getPythonVersion(content: string): string | null {
+        const match = content.match(/version\s*=\s*['"]([^'"]+)['"]/);
+        return match?.[1] || null;
+    }
+
+    private getPlainTextVersion(content: string): string | null {
+        return content.trim();
+    }
+
+    validateSemver(version: string): boolean {
         return /^\d+\.\d+\.\d+$/.test(version);
     }
 }
 
-export const versionAIService = VersionAIService.getInstance();
+export const versionService = VersionService.getInstance();
