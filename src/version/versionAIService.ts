@@ -119,6 +119,112 @@ export class VersionService {
     validateSemver(version: string): boolean {
         return /^\d+\.\d+\.\d+$/.test(version);
     }
+
+    async updateVersionFile(
+        versionFile: string,
+        newVersion: string
+    ): Promise<boolean> {
+        const workspaceFolders = vscode.workspace.workspaceFolders;
+        if (!workspaceFolders) return false;
+
+        try {
+            const filePath = path.join(
+                workspaceFolders[0].uri.fsPath,
+                versionFile
+            );
+            let fileContent = fs.readFileSync(filePath, "utf8");
+
+            // Handle different file types
+            switch (path.extname(versionFile)) {
+                case ".json":
+                    fileContent = this.updateJsonVersion(
+                        fileContent,
+                        newVersion
+                    );
+                    break;
+                case ".toml":
+                    fileContent = this.updateTomlVersion(
+                        fileContent,
+                        newVersion
+                    );
+                    break;
+                case ".xml":
+                    fileContent = this.updateXmlVersion(
+                        fileContent,
+                        newVersion
+                    );
+                    break;
+                case ".gradle":
+                    fileContent = this.updateGradleVersion(
+                        fileContent,
+                        newVersion
+                    );
+                    break;
+                case ".py":
+                    fileContent = this.updatePythonVersion(
+                        fileContent,
+                        newVersion
+                    );
+                    break;
+                case ".txt":
+                case "":
+                    fileContent = this.updatePlainTextVersion(
+                        fileContent,
+                        newVersion
+                    );
+                    break;
+                default:
+                    return false;
+            }
+
+            fs.writeFileSync(filePath, fileContent);
+            return true;
+        } catch (error) {
+            console.error("Error updating version file:", error);
+            return false;
+        }
+    }
+
+    private updateJsonVersion(content: string, newVersion: string): string {
+        const json = JSON.parse(content);
+        json.version = newVersion;
+        return JSON.stringify(json, null, 2);
+    }
+
+    private updateTomlVersion(content: string, newVersion: string): string {
+        return content.replace(
+            /(version\s*=\s*["'])[^"']+(["'])/,
+            `$1${newVersion}$2`
+        );
+    }
+
+    private updateXmlVersion(content: string, newVersion: string): string {
+        return content.replace(
+            /(<version>)[^<]+(<\/version>)/,
+            `$1${newVersion}$2`
+        );
+    }
+
+    private updateGradleVersion(content: string, newVersion: string): string {
+        return content.replace(
+            /(version\s*=\s*['"])[^'"]+(['"])/,
+            `$1${newVersion}$2`
+        );
+    }
+
+    private updatePythonVersion(content: string, newVersion: string): string {
+        return content.replace(
+            /(version\s*=\s*['"])[^'"]+(['"])/,
+            `$1${newVersion}$2`
+        );
+    }
+
+    private updatePlainTextVersion(
+        content: string,
+        newVersion: string
+    ): string {
+        return newVersion;
+    }
 }
 
 export const versionService = VersionService.getInstance();
