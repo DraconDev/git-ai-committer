@@ -112,36 +112,6 @@ export class VersionService {
         if (!workspaceFolders) return false;
 
         try {
-            const filePath = path.join(
-                workspaceFolders[0].uri.fsPath,
-                versionFile
-            );
-
-            if (
-                versionFile === "package.json" ||
-                versionFile === "package-lock.json"
-            ) {
-                const fileContent = fs.readFileSync(filePath, "utf8");
-                const packageData = JSON.parse(fileContent);
-
-                // Update version in package.json
-                packageData.version = newVersion;
-
-                // For package-lock.json, also update the lockfileVersion if needed
-                if (
-                    versionFile === "package-lock.json" &&
-                    packageData.lockfileVersion
-                ) {
-                    packageData.lockfileVersion = 3;
-                }
-
-                fs.writeFileSync(
-                    filePath,
-                    JSON.stringify(packageData, null, 2)
-                );
-                return true;
-            }
-
             // Fallback to AI-based update for other file types
             const prompt = `Update ${versionFile} to use version ${newVersion}.
             Return the complete updated file content.`;
