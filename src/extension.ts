@@ -93,72 +93,7 @@ export async function activate(context: vscode.ExtensionContext) {
                     disableAutoCommit();
                 }
             }
-        }),
-        vscode.commands.registerCommand(
-            "git-ai-committer.enableAutoCommit",
-            async () => {
-                console.log("enableAutoCommit command triggered");
-                try {
-                    await enableAutoCommit();
-                } catch (error: any) {
-                    console.error("Error enabling auto-commit:", error);
-                    vscode.window.showErrorMessage(
-                        "Failed to enable auto-commit: " + error.message
-                    );
-                }
-            }
-        ),
-        vscode.commands.registerCommand(
-            "git-ai-committer.disableAutoCommit",
-            async () => {
-                console.log("disableAutoCommit command triggered");
-                try {
-                    await disableAutoCommit();
-                } catch (error: any) {
-                    console.error("Error disabling auto-commit:", error);
-                    vscode.window.showErrorMessage(
-                        "Failed to disable auto-commit: " + error.message
-                    );
-                }
-            }
-        ),
-        vscode.commands.registerCommand(
-            "git-ai-committer.commitNow",
-            async () => {
-                console.log("commitNow command triggered");
-                try {
-                    await commitService.performCommit();
-                } catch (error: any) {
-                    console.error("Error performing commit:", error);
-                    vscode.window.showErrorMessage(
-                        "Failed to commit: " + error.message
-                    );
-                }
-            }
-        ),
-        vscode.commands.registerCommand(
-            "git-ai-committer.setGeminiApiKey",
-            async () => {
-                const apiKey = await vscode.window.showInputBox({
-                    prompt: "Enter your Gemini API Key",
-                    placeHolder: "Paste your API key here",
-                    password: true,
-                });
-
-                if (apiKey) {
-                    await vscode.workspace
-                        .getConfiguration("gitAiCommitter")
-                        .update(
-                            "geminiApiKey",
-                            apiKey,
-                            vscode.ConfigurationTarget.Global
-                        );
-                    vscode.window.showInformationMessage(
-                        "API Key saved successfully!"
-                    );
-                }
-            }
-        )
+        })
     );
 
     // Enable auto-commit by default
