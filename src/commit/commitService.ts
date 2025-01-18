@@ -91,7 +91,8 @@ export class CommitService {
                 initializeModel(apiKey);
             }
 
-            updateVersion();
+            // Update version
+            await updateVersion();
 
             // Stage changes only after confirming we have a valid diff
             await stageAllChanges();
