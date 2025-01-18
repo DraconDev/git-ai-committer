@@ -112,6 +112,11 @@ export class VersionService {
         if (!workspaceFolders) return false;
 
         try {
+            const filePath = path.join(
+                workspaceFolders[0].uri.fsPath,
+                versionFile
+            );
+
             // Fallback to AI-based update for other file types
             const prompt = `Update ${versionFile} to use version ${newVersion}.
             Return the complete updated file content.`;
