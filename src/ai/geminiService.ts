@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as vscode from "vscode";
 import { git } from "../extension";
+import { updateVersion } from "../version/versionService";
 
 export let genAI: GoogleGenerativeAI;
 export let model: any;
@@ -96,6 +97,8 @@ export async function generateCommitMessage(diff: string): Promise<string> {
                 .slice(0, 3)
                 .join(", ")}) at ${timestamp}`;
         }
+
+        updateVersion();
 
         // Validate diff content
         if (!diff || diff.trim() === "") {
