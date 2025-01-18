@@ -1,166 +1,73 @@
-import * as vscode from "vscode";
-import { generateCommitMessage } from "../ai/geminiService";
-import * as fs from "fs";
-import * as path from "path";
+import { versionService } from "./versionAIService";
 
-export class VersionService {
-    private static instance: VersionService;
-
-    private constructor() {}
-
-    public static getInstance(): VersionService {
-        if (!VersionService.instance) {
-            VersionService.instance = new VersionService();
-        }
-        return VersionService.instance;
-    }
-
-    async detectVersionFile(): Promise<string | null> {
-        const workspaceFolders = vscode.workspace.workspaceFolders;
-        if (!workspaceFolders) return null;
-
-        // Common version files across different ecosystems
-        const versionFiles = [
-            "package.json", // Node.js
-            "pyproject.toml", // Python
-            "build.gradle", // Gradle
-            "pom.xml", // Maven
-            "Cargo.toml", // Rust
-            "composer.json", // PHP
-            "project.clj", // Clojure
-            "*.csproj", // .NET
-            "*.fsproj", // F#
-            "*.vbproj", // VB.NET
-            "*.sln", // .NET Solution
-            "setup.py", // Python
-            "version.txt", // Generic
-            "VERSION", // Generic
-        ];
-
-        // Check for each version file in the workspace
-        for (const filePattern of versionFiles) {
-            try {
-                const files = await vscode.workspace.findFiles(filePattern);
-                if (files.length > 0) {
-                    return path.basename(files[0].fsPath);
-                }
-            } catch (error) {
-                console.error(`Error searching for ${filePattern}:`, error);
-            }
+export async function updateVersion(): Promise<string | null> {
+    try {
+        // Detect version file
+        const versionFile = await versionService.detectVersionFile();
+        if (!versionFile) {
+            throw new Error("No version file found");
         }
 
-        // Fallback to AI detection if no standard file found
-        const prompt = `Analyze this project structure and determine the appropriate version file.
-        Return just the filename.`;
-
-        try {
-            const response = await generateCommitMessage(prompt);
-            if (response) {
-                const versionFile = response.trim();
-                const filePath = path.join(
-                    workspaceFolders[0].uri.fsPath,
-                    versionFile
-                );
-                if (fs.existsSync(filePath)) {
-                    return versionFile;
-                }
-            }
-        } catch (error) {
-            console.error("Error detecting version file:", error);
+        // Get current version
+        const currentVersion = await versionService.getCurrentVersion(
+            versionFile
+        );
+        if (!currentVersion) {
+            throw new Error("Could not determine current version");
         }
+
+        // Increment version
+        const newVersion = incrementVersion(currentVersion);
+        if (!newVersion) {
+            throw new Error("Could not increment version");
+        }
+
+        // Update version file
+        const success = await versionService.updateVersionFile(
+            versionFile,
+            newVersion
+        );
+        if (!success) {
+            throw new Error("Could not update version file");
+        }
+
+        return newVersion;
+    } catch (error) {
+        console.error("Error updating version:", error);
         return null;
-    }
-
-    async getCurrentVersion(versionFile: string): Promise<string | null> {
-        const workspaceFolders = vscode.workspace.workspaceFolders;
-        if (!workspaceFolders) return null;
-
-        const prompt = `Read the current version from ${versionFile}.
-        Return just the version number in semver format (e.g., 1.2.3).`;
-
-        try {
-            const response = await generateCommitMessage(prompt);
-            if (response) {
-                return response.trim();
-            }
-        } catch (error) {
-            console.error("Error getting current version:", error);
-        }
-        return null;
-    }
-
-    bumpPatchVersion(currentVersion: string): string {
-        const [major, minor, patch] = currentVersion.split(".").map(Number);
-        return `${major}.${minor}.${patch + 1}`;
-    }
-
-    bumpMinorVersion(currentVersion: string): string {
-        const [major, minor] = currentVersion.split(".").map(Number);
-        return `${major}.${minor + 1}.0`;
-    }
-
-    bumpMajorVersion(currentVersion: string): string {
-        const [major] = currentVersion.split(".").map(Number);
-        return `${major + 1}.0.0`;
-    }
-
-    async updateVersionFile(
-        versionFile: string,
-        newVersion: string
-    ): Promise<boolean> {
-        const workspaceFolders = vscode.workspace.workspaceFolders;
-        if (!workspaceFolders) return false;
-
-        try {
-            const filePath = path.join(
-                workspaceFolders[0].uri.fsPath,
-                versionFile
-            );
-
-            // Fallback to AI-based update for other file types
-            const prompt = `Update ${versionFile} to use version ${newVersion}.
-            Return the complete updated file content.`;
-
-            const response = await generateCommitMessage(prompt);
-            if (response) {
-                fs.writeFileSync(filePath, response);
-                return true;
-            }
-        } catch (error) {
-            console.error("Error updating version file:", error);
-        }
-        return false;
-    }
-
-    async updateAllVersionFiles(newVersion: string): Promise<boolean> {
-        const workspaceFolders = vscode.workspace.workspaceFolders;
-        if (!workspaceFolders) return false;
-
-        try {
-            // Update package.json
-            const packageJsonPath = path.join(
-                workspaceFolders[0].uri.fsPath,
-                "package.json"
-            );
-            if (fs.existsSync(packageJsonPath)) {
-                await this.updateVersionFile("package.json", newVersion);
-            }
-
-            // Update package-lock.json
-            const packageLockPath = path.join(
-                workspaceFolders[0].uri.fsPath,
-                "package-lock.json"
-            );
-            if (fs.existsSync(packageLockPath)) {
-                await this.updateVersionFile("package-lock.json", newVersion);
-            }
-
-            return true;
-        } catch (error) {
-            console.error("Error updating version files:", error);
-            return false;
-        }
     }
 }
 
-export const versionService = VersionService.getInstance();
+function incrementVersion(version: string): string | null {
+    if (!versionService.validateSemver(version)) {
+        return null;
+    }
+
+    const versionParts = version.split(".");
+    const patch = parseInt(versionParts[2]);
+    versionParts[2] = (patch + 1).toString();
+    return versionParts.join(".");
+}
+
+export async function updateAllVersionFiles(
+    newVersion: string
+): Promise<boolean> {
+    try {
+        // Update package.json
+        const packageJsonUpdated = await versionService.updateVersionFile(
+            "package.json",
+            newVersion
+        );
+
+        // Update package-lock.json
+        const packageLockUpdated = await versionService.updateVersionFile(
+            "package-lock.json",
+            newVersion
+        );
+
+        return packageJsonUpdated && packageLockUpdated;
+    } catch (error) {
+        console.error("Error updating version files:", error);
+        return false;
+    }
+}
