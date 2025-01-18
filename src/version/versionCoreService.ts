@@ -16,7 +16,9 @@ export class VersionService {
 
     async detectVersionFile(): Promise<string | null> {
         const workspaceFolders = vscode.workspace.workspaceFolders;
-        if (!workspaceFolders) return null;
+        if (!workspaceFolders) {
+            return null;
+        }
 
         // Common version files across different ecosystems
         const versionFiles = [
@@ -49,7 +51,9 @@ export class VersionService {
 
     async getCurrentVersion(versionFile: string): Promise<string | null> {
         const workspaceFolders = vscode.workspace.workspaceFolders;
-        if (!workspaceFolders) return null;
+        if (!workspaceFolders) {
+            return null;
+        }
 
         try {
             const filePath = path.join(
