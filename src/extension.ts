@@ -2,6 +2,10 @@ import * as vscode from "vscode";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getApiKey } from "./ai/geminiService";
 import {
+    initializeVersionBumping,
+    disposeVersionBumping,
+} from "./version/versionService";
+import {
     enableAutoCommit,
     disableAutoCommit,
 } from "./autoCommit/autoCommitService";
@@ -124,10 +128,14 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     }
 
+    // Initialize version bumping
+    initializeVersionBumping();
+
     // Register commands and settings view
     registerCommands(context);
 }
 
 export function deactivate() {
     disableAutoCommit();
+    disposeVersionBumping();
 }
