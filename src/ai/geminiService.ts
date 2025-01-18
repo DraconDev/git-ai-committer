@@ -2,8 +2,8 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as vscode from "vscode";
 import { git } from "../extension";
 
-let genAI: GoogleGenerativeAI;
-let model: any;
+export let genAI: GoogleGenerativeAI;
+export let model: any;
 
 export function getApiKey(): string | undefined {
     return vscode.workspace
