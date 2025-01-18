@@ -48,7 +48,6 @@ export function registerCommands(context: vscode.ExtensionContext) {
                 try {
                     const message = await vscode.window.showInputBox({
                         prompt: "Enter commit message",
-                        placeHolder: "Enter commit message here",
                     });
 
                     if (message) {
