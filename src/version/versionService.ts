@@ -47,7 +47,7 @@ export function isVersionBumpingEnabled(): boolean {
 export async function updateVersion(
     incrementType: VersionIncrementType = "patch"
 ): Promise<string | null> {
-    if (!versionBumpingEnabled) {
+    if (!isVersionBumpingEnabled()) {
         // Return null to explicitly indicate version bumping is disabled
         return null;
     }
