@@ -14,11 +14,11 @@ function getAutoCommitInterval() {
 }
 
 function getInactivityDelay() {
-    return (getConfig().get<number>("inactivityDelay") || 10) * 1000;
+    return (getConfig().get<number>("inactivityDelay") || 5) * 1000;
 }
 
 function getMinCommitDelay() {
-    return (getConfig().get<number>("minCommitDelay") || 20) * 1000;
+    return (getConfig().get<number>("minCommitDelay") || 10) * 1000;
 }
 let generatingMessage = false;
 let lastCommitTime = 0;
