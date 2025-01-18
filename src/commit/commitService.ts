@@ -43,6 +43,10 @@ export class CommitService {
     async handleCommitMessageGeneration(diff: string): Promise<string | null> {
         try {
             const commitMessage = await generateCommitMessage(diff);
+            if (!commitMessage) {
+                vscode.window.showErrorMessage("No commit message generated");
+                return null;
+            }
             this.lastProcessedDiff = diff;
             return commitMessage;
         } catch (error) {
