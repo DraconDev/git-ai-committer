@@ -56,7 +56,9 @@ export function initializeModel(apiKey: string) {
     });
 }
 
-export async function generateCommitMessage(diff: string): Promise<string> {
+export async function generateCommitMessage(
+    diff: string
+): Promise<string | null> {
     try {
         // Validate input
         if (typeof diff !== "string") {
