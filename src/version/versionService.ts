@@ -59,32 +59,19 @@ export class VersionService {
         return null;
     }
 
-    async bumpVersion(
-        versionFile: string,
-        currentVersion: string,
-        isAutoCommit: boolean
-    ): Promise<string | null> {
+    bumpPatchVersion(currentVersion: string): string {
         const [major, minor, patch] = currentVersion.split(".").map(Number);
+        return `${major}.${minor}.${patch + 1}`;
+    }
 
-        if (isAutoCommit) {
-            // AI-generated commits always bump patch version
-            return `${major}.${minor}.${patch + 1}`;
-        }
+    bumpMinorVersion(currentVersion: string): string {
+        const [major, minor] = currentVersion.split(".").map(Number);
+        return `${major}.${minor + 1}.0`;
+    }
 
-        // Manual commits can bump minor or major versions
-        const prompt = `Given current version ${currentVersion}, suggest the next version number.
-        This is a manual commit - consider if this should be a minor or major bump.
-        Return just the new version number in semver format.`;
-
-        try {
-            const response = await generateCommitMessage(prompt);
-            if (response) {
-                return response.trim();
-            }
-        } catch (error) {
-            console.error("Error bumping version:", error);
-        }
-        return null;
+    bumpMajorVersion(currentVersion: string): string {
+        const [major] = currentVersion.split(".").map(Number);
+        return `${major + 1}.0.0`;
     }
 
     async updateVersionFile(
