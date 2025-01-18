@@ -27,6 +27,8 @@
         "onCommand:git-ai-committer.setGeminiApiKey",
         "onCommand:git-ai-committer.setCommitInterval",
         "onCommand:git-ai-committer.setInactivityDelay",
+        "onCommand:git-ai-committer.enableVersionBumping",
+        "onCommand:git-ai-committer.disableVersionBumping",
         "workspaceContains:.git"
     ],
     "main": "./dist/extension.js",
@@ -55,6 +57,14 @@
             {
                 "command": "git-ai-committer.setInactivityDelay",
                 "title": "AI Auto Committer Set Inactivity Delay"
+            },
+            {
+                "command": "git-ai-committer.enableVersionBumping",
+                "title": "AI Auto Committer Enable Version Bumping"
+            },
+            {
+                "command": "git-ai-committer.disableVersionBumping",
+                "title": "AI Auto Committer Disable Version Bumping"
             }
         ],
         "configuration": {
