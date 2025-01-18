@@ -55,7 +55,7 @@ Available commands can be accessed through the Command Palette (Ctrl+Shift+P):
 
 -   `AI Auto Committer Enable Auto Commit`: Enables automatic commit generation
 -   `AI Auto Committer Disable Auto Commit`: Disables automatic commit generation
--   `AI Auto Committer Commit Now`: Manually triggers commit message generation and commits changes
+-   `AI Auto Committer Commit Now`: Manually triggers commit message generation and commits changes (uses --allow-empty flag to ensure commit even with no changes)
 -   `AI Auto Committer Set Gemini API Key`: Set your Gemini API key
 -   `AI Auto Committer Set Commit Interval`: Configure automatic commit interval
 -   `AI Auto Committer Set Inactivity Delay`: Configure inactivity delay before commit
