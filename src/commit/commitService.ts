@@ -43,7 +43,6 @@ export class CommitService {
 
     async handleCommitMessageGeneration(diff: string): Promise<string | null> {
         try {
-            updateVersion();
             const commitMessage = await generateCommitMessage(diff);
             if (!commitMessage) {
                 // vscode.window.showErrorMessage("No commit message generated");
@@ -91,6 +90,8 @@ export class CommitService {
             if (apiKey) {
                 initializeModel(apiKey);
             }
+
+            updateVersion();
 
             // Stage changes only after confirming we have a valid diff
             await stageAllChanges();
