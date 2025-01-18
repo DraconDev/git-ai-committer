@@ -6,8 +6,6 @@
 
 </div>
 
-[![Version](https://img.shields.io/badge/version-0.1.6-blue.svg)](https://github.com/DraconDev/git-ai-committer)
-
 Git AI Committer is a VS Code extension that automatically generates meaningful commit messages using Google's Gemini AI. It helps developers maintain a clean and descriptive git history without the hassle of writing commit messages manually.
 
 > Developed by [DraconDev](https://github.com/DraconDev)
