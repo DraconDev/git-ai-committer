@@ -30,7 +30,7 @@ export async function activate(context: vscode.ExtensionContext) {
     console.log(
         "Git AI Committer is now active! Starting to register commands..."
     );
-    vscode.window.showInformationMessage("Git AI Committer activated!");
+    // vscode.window.showInformationMessage("Git AI Committer activated!");
 
     // Initialize Git
     const workspaceFolders = vscode.workspace.workspaceFolders;
