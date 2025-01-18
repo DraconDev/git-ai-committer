@@ -101,6 +101,13 @@
                     "description": "Trigger commit after this many seconds of inactivity (0 to disable)",
                     "scope": "application",
                     "order": 4
+                },
+                "gitAiCommitter.versionBumpingEnabled": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Enable/disable automatic version bumping on commits",
+                    "scope": "application",
+                    "order": 5
                 }
             }
         }
