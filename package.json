@@ -1,141 +1,141 @@
 {
-    "name": "git-ai-committer",
-    "displayName": "Git AI Committer",
-    "description": "Automatically generates commit messages and commits changes using AI",
-    "version": "1.4.1",
-    "publisher": "devdrac",
-    "icon": "media/logo.png",
-    "galleryBanner": {
-        "color": "#1E1E1E",
-        "theme": "dark"
-    },
-    "engines": {
-        "vscode": "^1.96.0"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/DraconDev/git-ai-committer"
-    },
-    "categories": [
-        "Other",
-        "AI"
+  "name": "git-ai-committer",
+  "displayName": "Git AI Committer",
+  "description": "Automatically generates commit messages and commits changes using AI",
+  "version": "1.4.2",
+  "publisher": "devdrac",
+  "icon": "media/logo.png",
+  "galleryBanner": {
+    "color": "#1E1E1E",
+    "theme": "dark"
+  },
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DraconDev/git-ai-committer"
+  },
+  "categories": [
+    "Other",
+    "AI"
+  ],
+  "activationEvents": [
+    "workspaceContains:.git"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "git-ai-committer.enableAutoCommit",
+        "title": "AI Auto Committer Enable Auto Commit"
+      },
+      {
+        "command": "git-ai-committer.disableAutoCommit",
+        "title": "AI Auto Committer Disable Auto Commit"
+      },
+      {
+        "command": "git-ai-committer.commitNow",
+        "title": "AI Auto Committer Commit Now"
+      },
+      {
+        "command": "git-ai-committer.setGeminiApiKey",
+        "title": "AI Auto Committer Set Gemini API Key"
+      },
+      {
+        "command": "git-ai-committer.setCommitInterval",
+        "title": "AI Auto Committer Set Commit Interval"
+      },
+      {
+        "command": "git-ai-committer.setInactivityDelay",
+        "title": "AI Auto Committer Set Inactivity Delay"
+      },
+      {
+        "command": "git-ai-committer.enableVersionBumping",
+        "title": "AI Auto Committer Enable Version Bumping"
+      },
+      {
+        "command": "git-ai-committer.disableVersionBumping",
+        "title": "AI Auto Committer Disable Version Bumping"
+      }
     ],
-    "activationEvents": [
-        "workspaceContains:.git"
-    ],
-    "main": "./dist/extension.js",
-    "contributes": {
-        "commands": [
-            {
-                "command": "git-ai-committer.enableAutoCommit",
-                "title": "AI Auto Committer Enable Auto Commit"
-            },
-            {
-                "command": "git-ai-committer.disableAutoCommit",
-                "title": "AI Auto Committer Disable Auto Commit"
-            },
-            {
-                "command": "git-ai-committer.commitNow",
-                "title": "AI Auto Committer Commit Now"
-            },
-            {
-                "command": "git-ai-committer.setGeminiApiKey",
-                "title": "AI Auto Committer Set Gemini API Key"
-            },
-            {
-                "command": "git-ai-committer.setCommitInterval",
-                "title": "AI Auto Committer Set Commit Interval"
-            },
-            {
-                "command": "git-ai-committer.setInactivityDelay",
-                "title": "AI Auto Committer Set Inactivity Delay"
-            },
-            {
-                "command": "git-ai-committer.enableVersionBumping",
-                "title": "AI Auto Committer Enable Version Bumping"
-            },
-            {
-                "command": "git-ai-committer.disableVersionBumping",
-                "title": "AI Auto Committer Disable Version Bumping"
-            }
-        ],
-        "configuration": {
-            "title": "Git AI Committer",
-            "properties": {
-                "gitAiCommitter.enabled": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Enable/disable automatic commits",
-                    "scope": "application",
-                    "order": 1
-                },
-                "gitAiCommitter.geminiApiKey": {
-                    "type": "string",
-                    "default": "",
-                    "description": "Google Gemini API Key for generating commit messages. Get your API key from https://aistudio.google.com/apikey",
-                    "scope": "application",
-                    "order": 2
-                },
-                "gitAiCommitter.commitInterval": {
-                    "type": "integer",
-                    "default": 60,
-                    "minimum": 0,
-                    "maximum": 3600,
-                    "description": "Interval in seconds between automatic commits (0 to disable)",
-                    "scope": "application",
-                    "order": 3
-                },
-                "gitAiCommitter.inactivityTimeout": {
-                    "type": "integer",
-                    "default": 10,
-                    "minimum": 0,
-                    "maximum": 3600,
-                    "description": "Trigger commit after this many seconds of inactivity (0 to disable)",
-                    "scope": "application",
-                    "order": 4
-                },
-                "gitAiCommitter.versionBumpingEnabled": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Enable/disable automatic version bumping on commits",
-                    "scope": "application",
-                    "order": 5
-                }
-            }
+    "configuration": {
+      "title": "Git AI Committer",
+      "properties": {
+        "gitAiCommitter.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable automatic commits",
+          "scope": "application",
+          "order": 1
+        },
+        "gitAiCommitter.geminiApiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Google Gemini API Key for generating commit messages. Get your API key from https://aistudio.google.com/apikey",
+          "scope": "application",
+          "order": 2
+        },
+        "gitAiCommitter.commitInterval": {
+          "type": "integer",
+          "default": 60,
+          "minimum": 0,
+          "maximum": 3600,
+          "description": "Interval in seconds between automatic commits (0 to disable)",
+          "scope": "application",
+          "order": 3
+        },
+        "gitAiCommitter.inactivityTimeout": {
+          "type": "integer",
+          "default": 10,
+          "minimum": 0,
+          "maximum": 3600,
+          "description": "Trigger commit after this many seconds of inactivity (0 to disable)",
+          "scope": "application",
+          "order": 4
+        },
+        "gitAiCommitter.versionBumpingEnabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable/disable automatic version bumping on commits",
+          "scope": "application",
+          "order": 5
         }
-    },
-    "scripts": {
-        "vscode:prepublish": "npm run package",
-        "compile": "npm run check-types && npm run lint && node esbuild.js",
-        "watch": "npm-run-all -p watch:*",
-        "watch:esbuild": "node esbuild.js --watch",
-        "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
-        "package": "npm run check-types && npm run lint && node esbuild.js --production",
-        "compile-tests": "tsc -p . --outDir out",
-        "watch-tests": "tsc -p . -w --outDir out",
-        "pretest": "npm run compile-tests && npm run compile && npm run lint",
-        "check-types": "tsc --noEmit",
-        "lint": "eslint src",
-        "test": "vscode-test"
-    },
-    "dependencies": {
-        "@google/generative-ai": "^0.21.0",
-        "simple-git": "^3.22.0"
-    },
-    "devDependencies": {
-        "@types/mocha": "^10.0.10",
-        "@types/node": "20.x",
-        "@types/vscode": "^1.96.0",
-        "@typescript-eslint/eslint-plugin": "^8.17.0",
-        "@typescript-eslint/parser": "^8.17.0",
-        "@vscode/test-cli": "^0.0.10",
-        "@vscode/test-electron": "^2.4.1",
-        "esbuild": "^0.24.0",
-        "eslint": "^9.16.0",
-        "npm-run-all": "^4.1.5",
-        "typescript": "^5.7.2"
-    },
-    "author": {
-        "name": "DraconDev"
+      }
     }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "npm run check-types && npm run lint && node esbuild.js",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "node esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "package": "npm run check-types && npm run lint && node esbuild.js --production",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "simple-git": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.96.0",
+    "@typescript-eslint/eslint-plugin": "^8.17.0",
+    "@typescript-eslint/parser": "^8.17.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
+    "esbuild": "^0.24.0",
+    "eslint": "^9.16.0",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^5.7.2"
+  },
+  "author": {
+    "name": "DraconDev"
+  }
 }
