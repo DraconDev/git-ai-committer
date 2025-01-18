@@ -99,18 +99,7 @@ export async function generateCommitMessage(diff: string): Promise<string> {
         // }
 
         if (!model) {
-            const changedFiles = [
-                ...status.modified,
-                ...status.not_added,
-                ...status.deleted,
-            ];
-            const timestamp = new Date()
-                .toISOString()
-                .split("T")[1]
-                .slice(0, 5);
-            return `feat: update ${changedFiles.length} files (${changedFiles
-                .slice(0, 3)
-                .join(", ")}) at ${timestamp}`;
+            return null;
         }
 
         updateVersion();
