@@ -1,10 +1,28 @@
 import { versionService } from "./versionCoreService";
 
+let versionBumpingEnabled = true;
+
 export type VersionIncrementType = "patch" | "minor";
+
+export function enableVersionBumping(): void {
+    versionBumpingEnabled = true;
+}
+
+export function disableVersionBumping(): void {
+    versionBumpingEnabled = false;
+}
+
+export function isVersionBumpingEnabled(): boolean {
+    return versionBumpingEnabled;
+}
 
 export async function updateVersion(
     incrementType: VersionIncrementType = "patch"
 ): Promise<string | null> {
+    if (!versionBumpingEnabled) {
+        return;
+    }
+
     try {
         // Detect version file
         const versionFile = await versionService.detectVersionFile();
