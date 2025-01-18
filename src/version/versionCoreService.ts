@@ -23,6 +23,7 @@ export class VersionService {
         // Common version files across different ecosystems
         const versionFiles = [
             "package.json", // Node.js
+            "package-lock.json", // Node.js lock file
             "pyproject.toml", // Python
             "build.gradle", // Gradle
             "pom.xml", // Maven
@@ -143,10 +144,21 @@ export class VersionService {
             // Handle different file types
             switch (path.extname(versionFile)) {
                 case ".json":
-                    fileContent = this.updateJsonVersion(
-                        fileContent,
-                        newVersion
-                    );
+                    if (versionFile === "package-lock.json") {
+                        const json = JSON.parse(fileContent);
+                        if (json.packages && json.packages[""]) {
+                            json.packages[""].version = newVersion;
+                        }
+                        if (json.version) {
+                            json.version = newVersion;
+                        }
+                        fileContent = JSON.stringify(json, null, 2);
+                    } else {
+                        fileContent = this.updateJsonVersion(
+                            fileContent,
+                            newVersion
+                        );
+                    }
                     break;
                 case ".toml":
                     fileContent = this.updateTomlVersion(
