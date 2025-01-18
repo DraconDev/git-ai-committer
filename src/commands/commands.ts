@@ -7,7 +7,11 @@ import {
 import { getApiKey } from "../ai/geminiService";
 import { commitService } from "../commit/commitService";
 import { git } from "../extension";
-import { updateVersion } from "../version/versionService";
+import {
+    updateVersion,
+    enableVersionBumping,
+    disableVersionBumping,
+} from "../version/versionService";
 
 export function registerCommands(context: vscode.ExtensionContext) {
     context.subscriptions.push(
@@ -143,6 +147,40 @@ export function registerCommands(context: vscode.ExtensionContext) {
                         );
                     vscode.window.showInformationMessage(
                         `Inactivity delay set to ${delay} seconds`
+                    );
+                }
+            }
+        ),
+        vscode.commands.registerCommand(
+            "git-ai-committer.enableVersionBumping",
+            async () => {
+                console.log("enableVersionBumping command triggered");
+                try {
+                    enableVersionBumping();
+                    vscode.window.showInformationMessage(
+                        "Version bumping enabled"
+                    );
+                } catch (error: any) {
+                    console.error("Error enabling version bumping:", error);
+                    vscode.window.showErrorMessage(
+                        "Failed to enable version bumping: " + error.message
+                    );
+                }
+            }
+        ),
+        vscode.commands.registerCommand(
+            "git-ai-committer.disableVersionBumping",
+            async () => {
+                console.log("disableVersionBumping command triggered");
+                try {
+                    disableVersionBumping();
+                    vscode.window.showInformationMessage(
+                        "Version bumping disabled"
+                    );
+                } catch (error: any) {
+                    console.error("Error disabling version bumping:", error);
+                    vscode.window.showErrorMessage(
+                        "Failed to disable version bumping: " + error.message
                     );
                 }
             }
