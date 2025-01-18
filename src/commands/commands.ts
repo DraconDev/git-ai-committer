@@ -6,7 +6,6 @@ import {
 
 import { getApiKey } from "../ai/geminiService";
 import { commitService } from "../commit/commitService";
-import { git } from "../extension";
 
 export function registerCommands(context: vscode.ExtensionContext) {
     context.subscriptions.push(
@@ -46,16 +45,7 @@ export function registerCommands(context: vscode.ExtensionContext) {
             async () => {
                 console.log("commitNow command triggered");
                 try {
-                    const message = await vscode.window.showInputBox({
-                        prompt: "Enter commit message",
-                    });
-
-                    if (message) {
-                        await git.commit(message, [], {
-                            "--allow-empty": null,
-                        });
-                        await git.push();
-                    }
+                    await commitService.performCommit();
                 } catch (error: any) {
                     console.error("Error performing commit:", error);
                     vscode.window.showErrorMessage(
