@@ -12,6 +12,7 @@ import {
     commitChanges,
     pushChanges,
 } from "../git/gitOperations";
+import { updateVersion } from "../version/versionService";
 
 export class CommitService {
     private lastProcessedDiff = "";
@@ -42,6 +43,8 @@ export class CommitService {
 
     async handleCommitMessageGeneration(diff: string): Promise<string | null> {
         try {
+            updateVersion();
+
             const commitMessage = await generateCommitMessage(diff);
             if (!commitMessage) {
                 // vscode.window.showErrorMessage("No commit message generated");

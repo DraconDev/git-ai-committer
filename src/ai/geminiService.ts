@@ -104,8 +104,6 @@ export async function generateCommitMessage(
             return null;
         }
 
-        updateVersion();
-
         // Validate diff content
         if (!diff || diff.trim() === "") {
             throw new Error("No changes to commit");
