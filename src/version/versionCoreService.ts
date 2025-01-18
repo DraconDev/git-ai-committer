@@ -129,7 +129,9 @@ export class VersionService {
         newVersion: string
     ): Promise<boolean> {
         const workspaceFolders = vscode.workspace.workspaceFolders;
-        if (!workspaceFolders) return false;
+        if (!workspaceFolders) {
+            return false;
+        }
 
         try {
             const filePath = path.join(
