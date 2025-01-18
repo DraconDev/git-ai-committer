@@ -33,8 +33,9 @@ This extension contributes the following settings:
 
 -   `gitAiCommitter.enabled`: Enable/disable automatic commits (default: true)
 -   `gitAiCommitter.geminiApiKey`: Your Google Gemini API key for generating commit messages
--   `gitAiCommitter.commitInterval`: Interval in seconds between automatic commits (0 to disable, default: 60)
--   `gitAiCommitter.inactivityTimeout`: Trigger commit after this many seconds of inactivity (0 to disable, default: 10)
+-   `gitAiCommitter.commitInterval`: Interval in minutes between automatic commits (0 to disable, default: 2)
+-   `gitAiCommitter.inactivityTimeout`: Trigger commit after this many seconds of inactivity (0 to disable, default: 5)
+-   `gitAiCommitter.minCommitDelay`: Minimum delay in seconds between commits (default: 10)
 
 ## How to Use
 
@@ -42,7 +43,11 @@ This extension contributes the following settings:
 2. Get your Gemini API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
 3. Set your API key in VS Code settings
 4. Enable auto-commit using the command palette or settings
-5. Start coding! The extension will automatically generate commit messages and commit your changes
+5. Start coding! The extension will:
+    - Commit changes after 5 seconds of inactivity
+    - Ensure at least 10 seconds between commits
+    - Commit every 2 minutes during active work
+    - Automatically generate meaningful commit messages
 
 ## Commands
 
@@ -54,24 +59,3 @@ Available commands can be accessed through the Command Palette (Ctrl+Shift+P):
 -   `AI Auto Committer Set Gemini API Key`: Set your Gemini API key
 -   `AI Auto Committer Set Commit Interval`: Configure automatic commit interval
 -   `AI Auto Committer Set Inactivity Delay`: Configure inactivity delay before commit
-
-## Release Notes
-
-### 0.1.6
-
--   Added command to set Gemini API key directly
--   Added command to configure commit interval
--   Added command to configure inactivity delay
--   Improved error handling for API requests
--   Added default values for settings
-
-### 0.0.1
-
-Initial release of Git AI Committer:
-
--   Basic auto-commit functionality
--   Gemini AI integration
--   Configurable commit intervals
--   Manual commit option
-
-!!!
