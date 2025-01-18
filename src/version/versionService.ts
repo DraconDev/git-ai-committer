@@ -1,4 +1,4 @@
-import { VersionService } from "./versionAIService";
+import { versionService } from "./versionAIService";
 
 export async function updateVersion(): Promise<string | null> {
     try {
@@ -49,4 +49,25 @@ function incrementVersion(version: string): string | null {
     return versionParts.join(".");
 }
 
-export const versionService = VersionService.getInstance();
+export async function updateAllVersionFiles(
+    newVersion: string
+): Promise<boolean> {
+    try {
+        // Update package.json
+        const packageJsonUpdated = await versionService.updateVersionFile(
+            "package.json",
+            newVersion
+        );
+
+        // Update package-lock.json
+        const packageLockUpdated = await versionService.updateVersionFile(
+            "package-lock.json",
+            newVersion
+        );
+
+        return packageJsonUpdated && packageLockUpdated;
+    } catch (error) {
+        console.error("Error updating version files:", error);
+        return false;
+    }
+}
