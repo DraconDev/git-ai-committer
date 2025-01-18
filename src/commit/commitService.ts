@@ -44,7 +44,7 @@ export class CommitService {
         try {
             const commitMessage = await generateCommitMessage(diff);
             if (!commitMessage) {
-                vscode.window.showErrorMessage("No commit message generated");
+                // vscode.window.showErrorMessage("No commit message generated");
                 return null;
             }
             this.lastProcessedDiff = diff;
