@@ -1,21 +1,13 @@
 import * as vscode from "vscode";
 import { versionService } from "./versionCoreService";
 
-let versionBumpingEnabled = false;
 let configListener: vscode.Disposable;
 
 export function initializeVersionBumping(): void {
-    // Initialize from config
-    versionBumpingEnabled = vscode.workspace
-        .getConfiguration("gitAiCommitter")
-        .get("versionBumpingEnabled", false);
-
     // Listen for config changes
     configListener = vscode.workspace.onDidChangeConfiguration((e) => {
         if (e.affectsConfiguration("gitAiCommitter.versionBumpingEnabled")) {
-            versionBumpingEnabled = vscode.workspace
-                .getConfiguration("gitAiCommitter")
-                .get("versionBumpingEnabled", false);
+            // Configuration change handler
         }
     });
 }
@@ -27,7 +19,6 @@ export function disposeVersionBumping(): void {
 export type VersionIncrementType = "patch" | "minor";
 
 export function enableVersionBumping(): void {
-    versionBumpingEnabled = true;
     vscode.workspace
         .getConfiguration("gitAiCommitter")
         .update(
@@ -38,7 +29,6 @@ export function enableVersionBumping(): void {
 }
 
 export function disableVersionBumping(): void {
-    versionBumpingEnabled = false;
     vscode.workspace
         .getConfiguration("gitAiCommitter")
         .update(
@@ -49,12 +39,9 @@ export function disableVersionBumping(): void {
 }
 
 export function isVersionBumpingEnabled(): boolean {
-    return (
-        versionBumpingEnabled &&
-        vscode.workspace
-            .getConfiguration("gitAiCommitter")
-            .get("versionBumpingEnabled", false)
-    );
+    return vscode.workspace
+        .getConfiguration("gitAiCommitter")
+        .get("versionBumpingEnabled", false);
 }
 
 export async function updateVersion(
