@@ -48,26 +48,3 @@ function incrementVersion(version: string): string | null {
     versionParts[2] = (patch + 1).toString();
     return versionParts.join(".");
 }
-
-export async function updateAllVersionFiles(
-    newVersion: string
-): Promise<boolean> {
-    try {
-        // Update package.json
-        const packageJsonUpdated = await versionService.updateVersionFile(
-            "package.json",
-            newVersion
-        );
-
-        // Update package-lock.json
-        const packageLockUpdated = await versionService.updateVersionFile(
-            "package-lock.json",
-            newVersion
-        );
-
-        return packageJsonUpdated && packageLockUpdated;
-    } catch (error) {
-        console.error("Error updating version files:", error);
-        return false;
-    }
-}
