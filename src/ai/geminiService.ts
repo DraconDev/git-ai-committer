@@ -110,7 +110,7 @@ export async function generateCommitMessage(
         }
 
         // Generate prompt
-        const prompt = `Generate a concise commit message for the following git diff. Use conventional commit format (type(scope): description). Keep it short and descriptive. Here's the diff:
+        const prompt = `Generate a concise commit message for the following git diff. Use conventional commit format (type(scope): description). Keep it short and descriptive. Don't mention version changes unless they are major. Here's the diff:
 
 ${diff}`;
 
