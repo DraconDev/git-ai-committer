@@ -81,16 +81,43 @@ export class VersionService {
         const workspaceFolders = vscode.workspace.workspaceFolders;
         if (!workspaceFolders) return false;
 
-        const prompt = `Update ${versionFile} to use version ${newVersion}.
-        Return the complete updated file content.`;
-
         try {
+            const filePath = path.join(
+                workspaceFolders[0].uri.fsPath,
+                versionFile
+            );
+
+            if (
+                versionFile === "package.json" ||
+                versionFile === "package-lock.json"
+            ) {
+                const fileContent = fs.readFileSync(filePath, "utf8");
+                const packageData = JSON.parse(fileContent);
+
+                // Update version in package.json
+                packageData.version = newVersion;
+
+                // For package-lock.json, also update the lockfileVersion if needed
+                if (
+                    versionFile === "package-lock.json" &&
+                    packageData.lockfileVersion
+                ) {
+                    packageData.lockfileVersion = 3;
+                }
+
+                fs.writeFileSync(
+                    filePath,
+                    JSON.stringify(packageData, null, 2)
+                );
+                return true;
+            }
+
+            // Fallback to AI-based update for other file types
+            const prompt = `Update ${versionFile} to use version ${newVersion}.
+            Return the complete updated file content.`;
+
             const response = await generateCommitMessage(prompt);
             if (response) {
-                const filePath = path.join(
-                    workspaceFolders[0].uri.fsPath,
-                    versionFile
-                );
                 fs.writeFileSync(filePath, response);
                 return true;
             }
@@ -98,6 +125,36 @@ export class VersionService {
             console.error("Error updating version file:", error);
         }
         return false;
+    }
+
+    async updateAllVersionFiles(newVersion: string): Promise<boolean> {
+        const workspaceFolders = vscode.workspace.workspaceFolders;
+        if (!workspaceFolders) return false;
+
+        try {
+            // Update package.json
+            const packageJsonPath = path.join(
+                workspaceFolders[0].uri.fsPath,
+                "package.json"
+            );
+            if (fs.existsSync(packageJsonPath)) {
+                await this.updateVersionFile("package.json", newVersion);
+            }
+
+            // Update package-lock.json
+            const packageLockPath = path.join(
+                workspaceFolders[0].uri.fsPath,
+                "package-lock.json"
+            );
+            if (fs.existsSync(packageLockPath)) {
+                await this.updateVersionFile("package-lock.json", newVersion);
+            }
+
+            return true;
+        } catch (error) {
+            console.error("Error updating version files:", error);
+            return false;
+        }
     }
 }
 
