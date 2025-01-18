@@ -19,8 +19,38 @@ export class VersionService {
         const workspaceFolders = vscode.workspace.workspaceFolders;
         if (!workspaceFolders) return null;
 
+        // Common version files across different ecosystems
+        const versionFiles = [
+            "package.json", // Node.js
+            "pyproject.toml", // Python
+            "build.gradle", // Gradle
+            "pom.xml", // Maven
+            "Cargo.toml", // Rust
+            "composer.json", // PHP
+            "project.clj", // Clojure
+            "*.csproj", // .NET
+            "*.fsproj", // F#
+            "*.vbproj", // VB.NET
+            "*.sln", // .NET Solution
+            "setup.py", // Python
+            "version.txt", // Generic
+            "VERSION", // Generic
+        ];
+
+        // Check for each version file in the workspace
+        for (const filePattern of versionFiles) {
+            try {
+                const files = await vscode.workspace.findFiles(filePattern);
+                if (files.length > 0) {
+                    return path.basename(files[0].fsPath);
+                }
+            } catch (error) {
+                console.error(`Error searching for ${filePattern}:`, error);
+            }
+        }
+
+        // Fallback to AI detection if no standard file found
         const prompt = `Analyze this project structure and determine the appropriate version file.
-        Common version files include: package.json, pom.xml, build.gradle, pyproject.toml, Cargo.toml.
         Return just the filename.`;
 
         try {
