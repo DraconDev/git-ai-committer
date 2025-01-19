@@ -24,6 +24,9 @@ export class VersionService {
         const versionFiles = [
             "package.json", // Node.js
             "package-lock.json", // Node.js lock file
+            "pnpm-lock.yaml", // PNPM lock file
+            "wxt.config.ts", // WXT config
+            "wxt.config.js", // WXT config
             "pyproject.toml", // Python
             "build.gradle", // Gradle
             "pom.xml", // Maven
