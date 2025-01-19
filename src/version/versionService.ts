@@ -53,15 +53,15 @@ export async function updateVersion(
     }
 
     try {
-        // Detect version file
-        const versionFile = await versionService.detectVersionFiles();
-        if (!versionFile) {
-            throw new Error("No version file found");
+        // Detect version files
+        const versionFiles = await versionService.detectVersionFiles();
+        if (versionFiles.length === 0) {
+            throw new Error("No version files found");
         }
 
-        // Get current version
+        // Get current version from first detected file
         const currentVersion = await versionService.getCurrentVersion(
-            versionFile
+            versionFiles[0]
         );
         if (!currentVersion) {
             throw new Error("Could not determine current version");
@@ -73,11 +73,8 @@ export async function updateVersion(
             throw new Error("Could not increment version");
         }
 
-        // Update version file
-        const success = await versionService.updateVersionFiles(
-            versionFile,
-            newVersion
-        );
+        // Update all version files
+        const success = await versionService.updateVersionFiles(newVersion);
         if (!success) {
             throw new Error("Could not update version file");
         }
