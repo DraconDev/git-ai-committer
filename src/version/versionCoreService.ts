@@ -24,9 +24,6 @@ export class VersionService {
         const versionFiles = [
             "package.json", // Node.js
             "package-lock.json", // Node.js lock file
-            "pnpm-lock.yaml", // PNPM lock file
-            "wxt.config.ts", // WXT config
-            "wxt.config.js", // WXT config
             "pyproject.toml", // Python
             "build.gradle", // Gradle
             "pom.xml", // Maven
@@ -110,11 +107,6 @@ export class VersionService {
         return match?.[1] || null;
     }
 
-    private getWxtVersion(content: string): string | null {
-        const match = content.match(/version:\s*['"]([^'"]+)['"]/);
-        return match?.[1] || null;
-    }
-
     private getGradleVersion(content: string): string | null {
         const match = content.match(/version\s*=\s*['"]([^'"]+)['"]/);
         return match?.[1] || null;
@@ -174,7 +166,6 @@ export class VersionService {
                         newVersion
                     );
                     break;
-
                 case ".xml":
                     fileContent = this.updateXmlVersion(
                         fileContent,
@@ -193,19 +184,7 @@ export class VersionService {
                         newVersion
                     );
                     break;
-                case "wxt.config.ts":
-                    fileContent = this.updateWxtVersion(
-                        fileContent,
-                        newVersion
-                    );
-                    break;
-
                 case ".txt":
-                    fileContent = this.updatePlainTextVersion(
-                        fileContent,
-                        newVersion
-                    );
-                    break;
                 case "":
                     fileContent = this.updatePlainTextVersion(
                         fileContent,
