@@ -110,6 +110,11 @@ export class VersionService {
         return match?.[1] || null;
     }
 
+    private getWxtVersion(content: string): string | null {
+        const match = content.match(/version:\s*['"]([^'"]+)['"]/);
+        return match?.[1] || null;
+    }
+
     private getGradleVersion(content: string): string | null {
         const match = content.match(/version\s*=\s*['"]([^'"]+)['"]/);
         return match?.[1] || null;
@@ -169,6 +174,7 @@ export class VersionService {
                         newVersion
                     );
                     break;
+
                 case ".xml":
                     fileContent = this.updateXmlVersion(
                         fileContent,
@@ -188,6 +194,11 @@ export class VersionService {
                     );
                     break;
                 case ".txt":
+                    fileContent = this.updatePlainTextVersion(
+                        fileContent,
+                        newVersion
+                    );
+                    break;
                 case "":
                     fileContent = this.updatePlainTextVersion(
                         fileContent,
