@@ -2,7 +2,7 @@
   "name": "git-ai-committer",
   "displayName": "Git AI Auto Committer",
   "description": "Automatically generates commit messages and commits changes using AI",
-  "version": "1.5.11",
+  "version": "1.6.1",
   "publisher": "devdrac",
   "icon": "media/logo.png",
   "galleryBanner": {
