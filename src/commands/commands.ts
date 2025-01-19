@@ -12,6 +12,7 @@ import {
     enableVersionBumping,
     disableVersionBumping,
 } from "../version/versionService";
+import { stageAllChanges } from "../git/gitOperations";
 
 export function registerCommands(context: vscode.ExtensionContext) {
     context.subscriptions.push(
@@ -57,7 +58,7 @@ export function registerCommands(context: vscode.ExtensionContext) {
                     });
 
                     if (message) {
-                        await git.stageAllChanges();
+                        await stageAllChanges();
                         await git.commit(message, [], {
                             "--allow-empty": null,
                         });
