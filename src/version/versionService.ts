@@ -54,7 +54,7 @@ export async function updateVersion(
 
     try {
         // Detect version file
-        const versionFile = await versionService.detectVersionFile();
+        const versionFile = await versionService.detectVersionFiles();
         if (!versionFile) {
             throw new Error("No version file found");
         }
