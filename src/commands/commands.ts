@@ -57,6 +57,7 @@ export function registerCommands(context: vscode.ExtensionContext) {
                     });
 
                     if (message) {
+                        await git.stageAllChanges();
                         await git.commit(message, [], {
                             "--allow-empty": null,
                         });
