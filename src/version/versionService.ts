@@ -74,7 +74,7 @@ export async function updateVersion(
         }
 
         // Update version file
-        const success = await versionService.updateVersionFile(
+        const success = await versionService.updateVersionFiles(
             versionFile,
             newVersion
         );
