@@ -193,6 +193,13 @@ export class VersionService {
                         newVersion
                     );
                     break;
+                case "wxt.config.ts":
+                    fileContent = this.updateWxtVersion(
+                        fileContent,
+                        newVersion
+                    );
+                    break;
+
                 case ".txt":
                     fileContent = this.updatePlainTextVersion(
                         fileContent,
