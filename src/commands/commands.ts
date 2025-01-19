@@ -50,7 +50,6 @@ export function registerCommands(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand(
             "git-ai-committer.commitNow",
             async () => {
-                await updateVersion("minor");
                 console.log("commitNow command triggered");
                 try {
                     const message = await vscode.window.showInputBox({
@@ -58,6 +57,7 @@ export function registerCommands(context: vscode.ExtensionContext) {
                     });
 
                     if (message) {
+                        await updateVersion("minor");
                         await stageAllChanges();
                         await git.commit(message, [], {
                             "--allow-empty": null,
