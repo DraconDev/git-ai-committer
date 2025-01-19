@@ -14,16 +14,18 @@ export class VersionService {
         return VersionService.instance;
     }
 
-    async detectVersionFile(): Promise<string | null> {
+    async detectVersionFiles(): Promise<string[]> {
         const workspaceFolders = vscode.workspace.workspaceFolders;
         if (!workspaceFolders) {
-            return null;
+            return [];
         }
 
         // Common version files across different ecosystems
         const versionFiles = [
             "package.json", // Node.js
-            "package-lock.json", // Node.js lock file
+            "package-lock.json", // npm lock file
+            "pnpm-lock.yaml", // pnpm lock file
+            "yarn.lock", // Yarn lock file
             "pyproject.toml", // Python
             "build.gradle", // Gradle
             "pom.xml", // Maven
@@ -34,20 +36,24 @@ export class VersionService {
             "setup.py", // Python
             "version.txt", // Generic
             "VERSION", // Generic
+            "wxt.config.ts", // WXT TypeScript configuration
+            "wxt.config.js", // WXT JavaScript configuration
         ];
+
+        const detectedFiles: string[] = [];
 
         // Check for each version file in the workspace
         for (const filePattern of versionFiles) {
             try {
                 const files = await vscode.workspace.findFiles(filePattern);
                 if (files.length > 0) {
-                    return path.basename(files[0].fsPath);
+                    detectedFiles.push(path.basename(files[0].fsPath));
                 }
             } catch (error) {
                 console.error(`Error searching for ${filePattern}:`, error);
             }
         }
-        return null;
+        return detectedFiles;
     }
 
     async getCurrentVersion(versionFile: string): Promise<string | null> {
@@ -67,6 +73,9 @@ export class VersionService {
             switch (path.extname(versionFile)) {
                 case ".json":
                     return this.getJsonVersion(fileContent);
+                case ".yaml":
+                case ".yml":
+                    return this.getYamlVersion(fileContent);
                 case ".toml":
                     return this.getTomlVersion(fileContent);
                 case ".xml":
@@ -78,6 +87,9 @@ export class VersionService {
                 case ".txt":
                 case "":
                     return this.getPlainTextVersion(fileContent);
+                case ".ts":
+                case ".js":
+                    return this.getTsOrJsVersion(fileContent);
                 default:
                     return null;
             }
@@ -95,6 +107,12 @@ export class VersionService {
             console.error("Error parsing JSON version:", error);
             return null;
         }
+    }
+
+    private getYamlVersion(content: string): string | null {
+        // Extract version from pnpm-lock.yaml or similar YAML files
+        const match = content.match(/version:\s*["']?([^"'\s]+)["']?/);
+        return match?.[1] || null;
     }
 
     private getTomlVersion(content: string): string | null {
@@ -121,84 +139,108 @@ export class VersionService {
         return content.trim();
     }
 
+    private getTsOrJsVersion(content: string): string | null {
+        // Extract the version from the manifest object in the TS/JS file
+        const match = content.match(/version:\s*["']([^"']+)["']/);
+        return match?.[1] || null;
+    }
+
     validateSemver(version: string): boolean {
         return /^\d+\.\d+\.\d+$/.test(version);
     }
 
-    async updateVersionFile(
-        versionFile: string,
-        newVersion: string
-    ): Promise<boolean> {
+    async updateVersionFiles(newVersion: string): Promise<boolean> {
         const workspaceFolders = vscode.workspace.workspaceFolders;
         if (!workspaceFolders) {
             return false;
         }
 
         try {
-            const filePath = path.join(
-                workspaceFolders[0].uri.fsPath,
-                versionFile
-            );
-            let fileContent = fs.readFileSync(filePath, "utf8");
+            const versionFiles = await this.detectVersionFiles();
+            let success = true;
 
-            // Handle different file types
-            switch (path.extname(versionFile)) {
-                case ".json":
-                    if (versionFile === "package-lock.json") {
-                        const json = JSON.parse(fileContent);
-                        if (json.packages && json.packages[""]) {
-                            json.packages[""].version = newVersion;
+            for (const versionFile of versionFiles) {
+                const filePath = path.join(
+                    workspaceFolders[0].uri.fsPath,
+                    versionFile
+                );
+                let fileContent = fs.readFileSync(filePath, "utf8");
+
+                // Handle different file types
+                switch (path.extname(versionFile)) {
+                    case ".json":
+                        if (versionFile === "package-lock.json") {
+                            const json = JSON.parse(fileContent);
+                            if (json.packages && json.packages[""]) {
+                                json.packages[""].version = newVersion;
+                            }
+                            if (json.version) {
+                                json.version = newVersion;
+                            }
+                            fileContent = JSON.stringify(json, null, 2);
+                        } else {
+                            fileContent = this.updateJsonVersion(
+                                fileContent,
+                                newVersion
+                            );
                         }
-                        if (json.version) {
-                            json.version = newVersion;
-                        }
-                        fileContent = JSON.stringify(json, null, 2);
-                    } else {
-                        fileContent = this.updateJsonVersion(
+                        break;
+                    case ".yaml":
+                    case ".yml":
+                        fileContent = this.updateYamlVersion(
                             fileContent,
                             newVersion
                         );
-                    }
-                    break;
-                case ".toml":
-                    fileContent = this.updateTomlVersion(
-                        fileContent,
-                        newVersion
-                    );
-                    break;
-                case ".xml":
-                    fileContent = this.updateXmlVersion(
-                        fileContent,
-                        newVersion
-                    );
-                    break;
-                case ".gradle":
-                    fileContent = this.updateGradleVersion(
-                        fileContent,
-                        newVersion
-                    );
-                    break;
-                case ".py":
-                    fileContent = this.updatePythonVersion(
-                        fileContent,
-                        newVersion
-                    );
-                    break;
-                case ".txt":
-                case "":
-                    fileContent = this.updatePlainTextVersion(
-                        fileContent,
-                        newVersion
-                    );
-                    break;
-                default:
-                    return false;
+                        break;
+                    case ".toml":
+                        fileContent = this.updateTomlVersion(
+                            fileContent,
+                            newVersion
+                        );
+                        break;
+                    case ".xml":
+                        fileContent = this.updateXmlVersion(
+                            fileContent,
+                            newVersion
+                        );
+                        break;
+                    case ".gradle":
+                        fileContent = this.updateGradleVersion(
+                            fileContent,
+                            newVersion
+                        );
+                        break;
+                    case ".py":
+                        fileContent = this.updatePythonVersion(
+                            fileContent,
+                            newVersion
+                        );
+                        break;
+                    case ".txt":
+                    case "":
+                        fileContent = this.updatePlainTextVersion(
+                            fileContent,
+                            newVersion
+                        );
+                        break;
+                    case ".ts":
+                    case ".js":
+                        fileContent = this.updateTsOrJsVersion(
+                            fileContent,
+                            newVersion
+                        );
+                        break;
+                    default:
+                        success = false;
+                        continue;
+                }
+
+                fs.writeFileSync(filePath, fileContent);
             }
 
-            fs.writeFileSync(filePath, fileContent);
-            return true;
+            return success;
         } catch (error) {
-            console.error("Error updating version file:", error);
+            console.error("Error updating version files:", error);
             return false;
         }
     }
@@ -207,6 +249,14 @@ export class VersionService {
         const json = JSON.parse(content);
         json.version = newVersion;
         return JSON.stringify(json, null, 2);
+    }
+
+    private updateYamlVersion(content: string, newVersion: string): string {
+        // Update version in YAML files like pnpm-lock.yaml
+        return content.replace(
+            /(version:\s*["']?)[^"'\s]+(["']?)/,
+            `$1${newVersion}$2`
+        );
     }
 
     private updateTomlVersion(content: string, newVersion: string): string {
@@ -242,6 +292,14 @@ export class VersionService {
         newVersion: string
     ): string {
         return newVersion;
+    }
+
+    private updateTsOrJsVersion(content: string, newVersion: string): string {
+        // Update the version in the manifest object
+        return content.replace(
+            /(version:\s*["'])[^"']+(["'])/,
+            `$1${newVersion}$2`
+        );
     }
 }
 
