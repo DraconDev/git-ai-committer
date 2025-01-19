@@ -28,9 +28,9 @@ export let git: ReturnType<typeof simpleGit>;
 
 export async function activate(context: vscode.ExtensionContext) {
     console.log(
-        "Git AI Committer is now active! Starting to register commands..."
+        "Git AI Auto Committer is now active! Starting to register commands..."
     );
-    // vscode.window.showInformationMessage("Git AI Committer activated!");
+    // vscode.window.showInformationMessage("Git AI Auto Committer activated!");
 
     // Initialize Git
     const workspaceFolders = vscode.workspace.workspaceFolders;
@@ -56,7 +56,7 @@ export async function activate(context: vscode.ExtensionContext) {
     const apiKey = getApiKey();
     if (!apiKey) {
         vscode.window.showWarningMessage(
-            "Gemini API key is not set. Please set it in the extension settings to use Git AI Committer."
+            "Gemini API key is not set. Please set it in the extension settings to use Git AI Auto Committer."
         );
         vscode.env.openExternal(
             vscode.Uri.parse("https://aistudio.google.com/apikey")
