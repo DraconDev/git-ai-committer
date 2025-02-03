@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { versionService } from "./versionCoreService";
+import simpleGit from "simple-git";
 
 let configListener: vscode.Disposable;
 
@@ -69,6 +70,7 @@ export async function updateVersion(
     const files = await versionService.updateVersionFiles(newVersion);
     if (files.length === 0) {
       throw new Error("Could not update version file");
+    } else {
     }
 
     return newVersion;
@@ -98,4 +100,18 @@ function incrementVersion(
   }
 
   return versionParts.join(".");
+}
+
+async function stageUpdatedFiles(updatedFiles: string[]) {
+  if (!updatedFiles.length) {
+    return;
+  }
+  const workspacePath = vscode.workspace.workspaceFolders![0].uri.fsPath;
+  const git = simpleGit(workspacePath);
+  try {
+    await git.add(updatedFiles);
+    console.log("Staged updated version files:", updatedFiles);
+  } catch (err) {
+    console.error("Error staging files with simple-git:", err);
+  }
 }
