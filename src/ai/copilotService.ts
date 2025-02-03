@@ -30,15 +30,19 @@ export async function generateCommitMessage(
     }
 
     // Use the Copilot API to generate commit message
-    const prompt = `Generate a concise commit message for the following git diff. Use conventional commit format (type(scope): description). Keep it short and descriptive. Don't mention version changes unless they are major. Here's the diff:\n\n${diff}`;
+    // const prompt = `Generate a concise commit message for the following git diff. Use conventional commit format (type(scope): description). Keep it short and descriptive. Don't mention version changes unless they are major. Here's the diff:\n\n${diff}`;
+
+    // const response = await vscode.commands.executeCommand(
+    //   "github.copilot.generate",
+    //   {
+    //     prompt,
+    //     temperature: 0.3, // Lower temperature for more focused responses
+    //     maxTokens: 50, // Limit response length for concise commit messages
+    //   }
+    // );
 
     const response = await vscode.commands.executeCommand(
-      "github.copilot.generate",
-      {
-        prompt,
-        temperature: 0.3, // Lower temperature for more focused responses
-        maxTokens: 50, // Limit response length for concise commit messages
-      }
+      "github.copilot.git.generateCommitMessage"
     );
 
     if (!response || typeof response !== "string") {
