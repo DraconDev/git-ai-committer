@@ -33,8 +33,17 @@ async function generateWithCopilot(diff: string): Promise<string | null> {
   try {
     const prompt = `Generate a concise commit message for the following git diff. Use conventional commit format (type(scope): description). Keep it short and descriptive. Don't mention version changes unless they are major. Here's the diff:\n\n${diff}`;
 
+    // const response = await vscode.commands.executeCommand(
+    //   "github.copilot.generate",
+    //   {
+    //     prompt,
+    //     temperature: 0.3,
+    //     maxTokens: 50,
+    //   }
+    // );
+
     const response = await vscode.commands.executeCommand(
-      "github.copilot.generate",
+      "github.copilot.git.generateCommitMessage",
       {
         prompt,
         temperature: 0.3,
