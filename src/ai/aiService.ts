@@ -47,7 +47,12 @@ async function generateWithCopilot(diff: string): Promise<string | null> {
     // );
 
     const response = await vscode.commands.executeCommand(
-      "github.copilot.git.generateCommitMessage"
+      "github.copilot.git.generateCommitMessage",
+      {
+        prompt,
+        temperature: 0.3,
+        maxTokens: 50,
+      }
     );
 
     if (!response || typeof response !== "string") {
