@@ -2,7 +2,7 @@
   "name": "git-ai-committer",
   "displayName": "Git AI Auto Committer",
   "description": "Automatically generates commit messages and commits changes using AI",
-  "version": "1.8.2",
+  "version": "1.8.3",
   "publisher": "devdrac",
   "icon": "media/logo.png",
   "galleryBanner": {
@@ -57,6 +57,10 @@
       {
         "command": "git-ai-committer.disableVersionBumping",
         "title": "AI Auto Committer Disable Version Bumping"
+      },
+      {
+        "command": "git-ai-committer.setPreferredAIProvider",
+        "title": "AI Auto Committer Set Preferred AI Provider"
       }
     ],
     "configuration": {
@@ -69,12 +73,23 @@
           "scope": "application",
           "order": 1
         },
+        "gitAiCommitter.preferredAIProvider": {
+          "type": "string",
+          "enum": [
+            "copilot",
+            "gemini"
+          ],
+          "default": "copilot",
+          "description": "Preferred AI provider for generating commit messages (will fallback to the other if preferred is not available)",
+          "scope": "application",
+          "order": 2
+        },
         "gitAiCommitter.geminiApiKey": {
           "type": "string",
           "default": "",
           "description": "Google Gemini API Key for generating commit messages. Get your API key from https://aistudio.google.com/apikey",
           "scope": "application",
-          "order": 2
+          "order": 3
         },
         "gitAiCommitter.commitInterval": {
           "type": "integer",
@@ -83,7 +98,7 @@
           "maximum": 3600,
           "description": "Interval in seconds between automatic commits (0 to disable)",
           "scope": "application",
-          "order": 3
+          "order": 4
         },
         "gitAiCommitter.inactivityTimeout": {
           "type": "integer",
@@ -92,14 +107,14 @@
           "maximum": 3600,
           "description": "Trigger commit after this many seconds of inactivity (0 to disable)",
           "scope": "application",
-          "order": 4
+          "order": 5
         },
         "gitAiCommitter.versionBumpingEnabled": {
           "type": "boolean",
           "default": false,
           "description": "Enable/disable automatic version bumping on commits",
           "scope": "application",
-          "order": 5
+          "order": 6
         }
       }
     }
