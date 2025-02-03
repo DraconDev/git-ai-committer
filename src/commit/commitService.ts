@@ -94,11 +94,6 @@ export class CommitService {
       // Update version
       await updateVersion();
 
-      // Stage changes only after confirming we have a valid diff
-      //
-      //   await stageAllChanges();
-
-      // Generate commit message
       const commitMessage = await this.handleCommitMessageGeneration(diff);
       if (!commitMessage) {
         return;

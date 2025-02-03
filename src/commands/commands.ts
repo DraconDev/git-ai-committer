@@ -56,7 +56,6 @@ export function registerCommands(context: vscode.ExtensionContext) {
 
         if (message) {
           await updateVersion("minor");
-          // await stageAllChanges();
           await git.commit(message, [], {
             "--allow-empty": null,
           });
