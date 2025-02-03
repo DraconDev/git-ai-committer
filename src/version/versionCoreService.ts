@@ -147,21 +147,21 @@ export class VersionService {
     return /^\d+\.\d+\.\d+$/.test(version);
   }
 
-  async updateVersionFiles(newVersion: string): Promise<boolean> {
+  async updateVersionFiles(newVersion: string): Promise<string[]> {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (!workspaceFolders) {
-      return false;
+      return [];
     }
 
     try {
       const versionFiles = await this.detectVersionFiles();
-      let success = true;
-
+      const updatedFiles: string[] = [];
       for (const versionFile of versionFiles) {
         const filePath = path.join(workspaceFolders[0].uri.fsPath, versionFile);
-        let fileContent = fs.readFileSync(filePath, "utf8");
+        const oldContent = fs.readFileSync(filePath, "utf8");
+        let fileContent = oldContent;
 
-        // Handle different file types
+        // Handle different file types for updating
         switch (path.extname(versionFile)) {
           case ".json":
             if (versionFile === "package-lock.json") {
@@ -202,17 +202,19 @@ export class VersionService {
             fileContent = this.updateTsOrJsVersion(fileContent, newVersion);
             break;
           default:
-            success = false;
             continue;
         }
 
-        fs.writeFileSync(filePath, fileContent);
+        // Write new content only if it has changed
+        if (fileContent !== oldContent) {
+          fs.writeFileSync(filePath, fileContent);
+          updatedFiles.push(filePath);
+        }
       }
-
-      return success;
+      return updatedFiles;
     } catch (error) {
       console.error("Error updating version files:", error);
-      return false;
+      return [];
     }
   }
 
