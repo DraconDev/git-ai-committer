@@ -71,6 +71,7 @@ export async function updateVersion(
     if (files.length === 0) {
       throw new Error("Could not update version file");
     } else {
+      stageUpdatedFiles(files);
     }
 
     return newVersion;
