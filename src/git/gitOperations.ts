@@ -4,77 +4,77 @@ import * as vscode from "vscode";
 export const git = simpleGit(vscode.workspace.workspaceFolders?.[0].uri.fsPath);
 
 export async function initializeGit(): Promise<void> {
-    try {
-        await git.checkIsRepo();
-    } catch (error) {
-        throw new Error("No Git repository found");
-    }
+  try {
+    await git.checkIsRepo();
+  } catch (error) {
+    throw new Error("No Git repository found");
+  }
 }
 
 export async function getGitStatus(): Promise<{
-    modified: string[];
-    not_added: string[];
-    deleted: string[];
+  modified: string[];
+  not_added: string[];
+  deleted: string[];
 }> {
-    const status = await git.status();
-    return {
-        modified: status.modified,
-        not_added: status.not_added,
-        deleted: status.deleted,
-    };
+  const status = await git.status();
+  return {
+    modified: status.modified,
+    not_added: status.not_added,
+    deleted: status.deleted,
+  };
 }
 
 export async function stageAllChanges(): Promise<boolean> {
-    try {
-        await git.add(".");
-        return true;
-    } catch (error) {
-        vscode.window.showErrorMessage(
-            `Failed to stage changes: ${
-                error instanceof Error ? error.message : "Unknown error"
-            }`
-        );
-        return false;
-    }
+  try {
+    await git.add(".");
+    return true;
+  } catch (error) {
+    vscode.window.showErrorMessage(
+      `Failed to stage changes: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`
+    );
+    return false;
+  }
 }
 
 export async function commitChanges(message: string): Promise<boolean> {
-    try {
-        await git.commit(message);
-        return true;
-    } catch (error) {
-        vscode.window.showErrorMessage(
-            `Failed to commit changes: ${
-                error instanceof Error ? error.message : "Unknown error"
-            }`
-        );
-        return false;
-    }
+  try {
+    await git.commit(message);
+    return true;
+  } catch (error) {
+    vscode.window.showErrorMessage(
+      `Failed to commit changes: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`
+    );
+    return false;
+  }
 }
 
 export async function pushChanges(): Promise<boolean> {
-    try {
-        await git.push();
-        return true;
-    } catch (error) {
-        vscode.window.showErrorMessage(
-            `Failed to push changes: ${
-                error instanceof Error ? error.message : "Unknown error"
-            }`
-        );
-        return false;
-    }
+  try {
+    await git.push();
+    return true;
+  } catch (error) {
+    vscode.window.showErrorMessage(
+      `Failed to push changes: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`
+    );
+    return false;
+  }
 }
 
 export async function getGitDiff(): Promise<string> {
-    try {
-        return await git.diff();
-    } catch (error) {
-        vscode.window.showErrorMessage(
-            `Failed to get diff: ${
-                error instanceof Error ? error.message : "Unknown error"
-            }`
-        );
-        return "";
-    }
+  try {
+    return await git.diff();
+  } catch (error) {
+    vscode.window.showErrorMessage(
+      `Failed to get diff: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`
+    );
+    return "";
+  }
 }
