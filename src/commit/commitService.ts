@@ -1,15 +1,12 @@
 import * as vscode from "vscode";
-import {
-  getApiKey,
-  initializeModel,
-  generateCommitMessage,
-} from "../ai/geminiService";
-
+import { generateCommitMessage } from "../ai/aiService";
 import { git } from "../extension";
 import {
-  stageAllChanges,
-  getGitDiff,
-  commitChanges,
+    stageAllChanges,
+    getGitDiff,
+    commitChanges,
+    pushChanges,
+} from "../git/gitOperations";
   pushChanges,
 } from "../git/gitOperations";
 import { updateVersion } from "../version/versionService";
