@@ -2,11 +2,9 @@ import * as vscode from "vscode";
 import { generateCommitMessage } from "../ai/aiService";
 import { git } from "../extension";
 import {
-    stageAllChanges,
-    getGitDiff,
-    commitChanges,
-    pushChanges,
-} from "../git/gitOperations";
+  stageAllChanges,
+  getGitDiff,
+  commitChanges,
   pushChanges,
 } from "../git/gitOperations";
 import { updateVersion } from "../version/versionService";
@@ -30,9 +28,6 @@ export class CommitService {
     const lastDiff = this.lastProcessedDiff.slice(0, 100);
 
     if (currentDiff === lastDiff) {
-      // vscode.window.showInformationMessage(
-      //     "No changes since last commit"
-      // );
       return false;
     }
     return true;
@@ -40,9 +35,9 @@ export class CommitService {
 
   async handleCommitMessageGeneration(diff: string): Promise<string | null> {
     try {
+      this.isGeneratingMessage = true;
       const commitMessage = await generateCommitMessage(diff);
       if (!commitMessage) {
-        // vscode.window.showErrorMessage("No commit message generated");
         return null;
       }
       this.lastProcessedDiff = diff;
@@ -64,6 +59,7 @@ export class CommitService {
     if (await this.checkIfGenerating()) {
       return;
     }
+
     const status = await git.status();
 
     // Check if there are any changes to commit
@@ -72,9 +68,9 @@ export class CommitService {
       !status.not_added.length &&
       !status.deleted.length
     ) {
-      // console.log("No changes to commit");
       return;
     }
+
     try {
       // Check for changes first
       const diff = await getGitDiff();
@@ -82,22 +78,12 @@ export class CommitService {
         return;
       }
 
-      // Initialize model with API key
-      const apiKey = getApiKey();
-      if (apiKey) {
-        initializeModel(apiKey);
-      }
-
-      // Update version
+      // Update version before generating commit message
       await updateVersion();
 
       const commitMessage = await this.handleCommitMessageGeneration(diff);
       if (!commitMessage) {
-        return;
-      }
-
-      if (!commitMessage) {
-        vscode.window.showErrorMessage("No commit message generated");
+        vscode.window.showErrorMessage("Failed to generate commit message");
         return;
       }
 
@@ -106,11 +92,8 @@ export class CommitService {
 
       // Push changes
       await pushChanges();
-
-      this.isGeneratingMessage = false;
     } catch (error: any) {
       if (error.message === "No changes to commit") {
-        // vscode.window.showInformationMessage("No changes to commit");
         return;
       }
       console.error("Commit failed:", error);
