@@ -4,7 +4,6 @@ import {
   disableAutoCommit,
 } from "../autoCommit/autoCommitService";
 
-import { getApiKey } from "../ai/geminiService";
 import { commitService } from "../commit/commitService";
 import { git } from "../extension";
 import {
@@ -80,6 +79,59 @@ export function registerCommands(context: vscode.ExtensionContext) {
             .getConfiguration("gitAiCommitter")
             .update("geminiApiKey", apiKey, vscode.ConfigurationTarget.Global);
           vscode.window.showInformationMessage("API Key saved successfully!");
+        }
+      }
+    ),
+    vscode.commands.registerCommand(
+      "git-ai-committer.setPreferredAIProvider",
+      async () => {
+        const provider = await vscode.window.showQuickPick(
+          [
+            {
+              label: "GitHub Copilot",
+              description: "Use Copilot for commit messages",
+              value: "copilot",
+            },
+            {
+              label: "Google Gemini",
+              description: "Use Gemini for commit messages (requires API key)",
+              value: "gemini",
+            },
+          ],
+          {
+            placeHolder: "Select preferred AI provider",
+          }
+        );
+
+        if (provider) {
+          await vscode.workspace
+            .getConfiguration("gitAiCommitter")
+            .update(
+              "preferredAIProvider",
+              provider.value,
+              vscode.ConfigurationTarget.Global
+            );
+          vscode.window.showInformationMessage(
+            `AI provider set to ${provider.label}`
+          );
+
+          if (
+            provider.value === "gemini" &&
+            !vscode.workspace
+              .getConfiguration("gitAiCommitter")
+              .get("geminiApiKey")
+          ) {
+            const setKey = await vscode.window.showInformationMessage(
+              "Gemini requires an API key. Would you like to set it now?",
+              "Yes",
+              "No"
+            );
+            if (setKey === "Yes") {
+              await vscode.commands.executeCommand(
+                "git-ai-committer.setGeminiApiKey"
+              );
+            }
+          }
         }
       }
     ),
