@@ -9,13 +9,11 @@ enum AIProvider {
 
 export async function checkCopilotAvailability(): Promise<boolean> {
   try {
-    // Check if Copilot extension is installed and authenticated
     const extension = vscode.extensions.getExtension("GitHub.copilot");
     if (!extension) {
       return false;
     }
 
-    // Try to execute a simple Copilot command to verify API access
     const result = await vscode.commands.executeCommand(
       "github.copilot.generate",
       {
@@ -49,7 +47,14 @@ async function generateWithCopilot(diff: string): Promise<string | null> {
     }
 
     // Clean up the message - remove quotes and newlines
-    return response.replace(/["'\n\r]+/g, " ").trim();
+    const cleanMessage = response.replace(/["'\n\r]+/g, " ").trim();
+
+    // Ensure conventional commit format
+    if (!cleanMessage.match(/^[a-z]+(\([a-z-]+\))?: .+/)) {
+      return null;
+    }
+
+    return cleanMessage;
   } catch {
     return null;
   }
@@ -91,54 +96,120 @@ export async function generateCommitMessage(
     const preferredProvider = await getPreferredAIProvider();
     let message: string | null = null;
 
+    // Try preferred provider first
     if (preferredProvider === AIProvider.Copilot) {
-      // Try Copilot first if it's preferred
       const copilotAvailable = await checkCopilotAvailability();
-      if (copilotAvailable) {
+      if (!copilotAvailable) {
+        const choice = await vscode.window.showWarningMessage(
+          "Copilot is not available. Would you like to try using Gemini instead?",
+          "Try Gemini",
+          "Cancel"
+        );
+
+        if (choice === "Try Gemini") {
+          const geminiApiKey = vscode.workspace
+            .getConfiguration("gitAiCommitter")
+            .get<string>("geminiApiKey");
+
+          if (!geminiApiKey) {
+            const setKey = await vscode.window.showWarningMessage(
+              "Gemini requires an API key. Would you like to set it now?",
+              "Set API Key",
+              "Cancel"
+            );
+
+            if (setKey === "Set API Key") {
+              await vscode.commands.executeCommand(
+                "git-ai-committer.setGeminiApiKey"
+              );
+              // Try again after setting the key
+              message = await generateWithGemini(diff);
+            }
+          } else {
+            message = await generateWithGemini(diff);
+          }
+        }
+      } else {
         message = await generateWithCopilot(diff);
-      }
+        if (!message) {
+          const choice = await vscode.window.showWarningMessage(
+            "Failed to generate commit message with Copilot. Would you like to try using Gemini instead?",
+            "Try Gemini",
+            "Cancel"
+          );
 
-      // Fallback to Gemini if Copilot fails or isn't available
-      if (!message) {
-        message = await generateWithGemini(diff);
-      }
-    } else {
-      // Try Gemini first
-      message = await generateWithGemini(diff);
+          if (choice === "Try Gemini") {
+            const geminiApiKey = vscode.workspace
+              .getConfiguration("gitAiCommitter")
+              .get<string>("geminiApiKey");
 
-      // Fallback to Copilot if Gemini fails
-      if (!message) {
-        const copilotAvailable = await checkCopilotAvailability();
-        if (copilotAvailable) {
-          message = await generateWithCopilot(diff);
+            if (!geminiApiKey) {
+              const setKey = await vscode.window.showWarningMessage(
+                "Gemini requires an API key. Would you like to set it now?",
+                "Set API Key",
+                "Cancel"
+              );
+
+              if (setKey === "Set API Key") {
+                await vscode.commands.executeCommand(
+                  "git-ai-committer.setGeminiApiKey"
+                );
+                // Try again after setting the key
+                message = await generateWithGemini(diff);
+              }
+            } else {
+              message = await generateWithGemini(diff);
+            }
+          }
         }
       }
-    }
+    } else {
+      // Gemini is preferred
+      const geminiApiKey = vscode.workspace
+        .getConfiguration("gitAiCommitter")
+        .get<string>("geminiApiKey");
 
-    if (!message) {
-      // If both services fail, generate a basic commit message
-      const changedFiles = [
-        ...status.modified,
-        ...status.not_added,
-        ...status.deleted,
-      ];
-      const timestamp = new Date().toISOString().split("T")[1].slice(0, 5);
-      return `feat: update ${changedFiles.length} files (${changedFiles
-        .slice(0, 3)
-        .join(", ")}) at ${timestamp}`;
-    }
+      if (!geminiApiKey) {
+        const setKey = await vscode.window.showWarningMessage(
+          "Gemini requires an API key. Would you like to set it now?",
+          "Set API Key",
+          "Try Copilot",
+          "Cancel"
+        );
 
-    // Ensure it follows conventional commit format
-    if (!message.match(/^[a-z]+(\([a-z-]+\))?: .+/)) {
-      const changedFiles = [
-        ...status.modified,
-        ...status.not_added,
-        ...status.deleted,
-      ];
-      const timestamp = new Date().toISOString().split("T")[1].slice(0, 5);
-      return `feat: update ${changedFiles.length} files (${changedFiles
-        .slice(0, 3)
-        .join(", ")}) at ${timestamp}`;
+        if (setKey === "Set API Key") {
+          await vscode.commands.executeCommand(
+            "git-ai-committer.setGeminiApiKey"
+          );
+          // Try again after setting the key
+          message = await generateWithGemini(diff);
+        } else if (setKey === "Try Copilot") {
+          const copilotAvailable = await checkCopilotAvailability();
+          if (copilotAvailable) {
+            message = await generateWithCopilot(diff);
+          } else {
+            vscode.window.showErrorMessage("Copilot is not available");
+          }
+        }
+      } else {
+        message = await generateWithGemini(diff);
+        if (!message) {
+          const choice = await vscode.window.showWarningMessage(
+            "Failed to generate commit message with Gemini. Would you like to try using Copilot instead?",
+            "Try Copilot",
+            "Cancel"
+          );
+
+          if (choice === "Try Copilot") {
+            const copilotAvailable = await checkCopilotAvailability();
+            if (copilotAvailable) {
+              message = await generateWithCopilot(diff);
+            } else {
+              vscode.window.showErrorMessage("Copilot is not available");
+            }
+          }
+        }
+      }
     }
 
     return message;
