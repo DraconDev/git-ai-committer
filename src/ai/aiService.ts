@@ -14,16 +14,11 @@ export async function checkCopilotAvailability(): Promise<boolean> {
       return false;
     }
 
-    const result = await vscode.commands.executeCommand(
-      "github.copilot.generate",
-      {
-        prompt: "test",
-        temperature: 0.3,
-        maxTokens: 5,
-      }
+    const response = await vscode.commands.executeCommand(
+      "github.copilot.git.generateCommitMessage"
     );
 
-    return result !== undefined;
+    return response !== undefined;
   } catch {
     return false;
   }
