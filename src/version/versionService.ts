@@ -4,106 +4,98 @@ import { versionService } from "./versionCoreService";
 let configListener: vscode.Disposable;
 
 export function initializeVersionBumping(): void {
-    // Listen for config changes
-    configListener = vscode.workspace.onDidChangeConfiguration((e) => {
-        if (e.affectsConfiguration("gitAiCommitter.versionBumpingEnabled")) {
-            // Configuration change handler
-        }
-    });
+  // Listen for config changes
+  configListener = vscode.workspace.onDidChangeConfiguration((e) => {
+    if (e.affectsConfiguration("gitAiCommitter.versionBumpingEnabled")) {
+      // Configuration change handler
+    }
+  });
 }
 
 export function disposeVersionBumping(): void {
-    configListener?.dispose();
+  configListener?.dispose();
 }
 
 export type VersionIncrementType = "patch" | "minor";
 
 export function enableVersionBumping(): void {
-    vscode.workspace
-        .getConfiguration("gitAiCommitter")
-        .update(
-            "versionBumpingEnabled",
-            true,
-            vscode.ConfigurationTarget.Global
-        );
+  vscode.workspace
+    .getConfiguration("gitAiCommitter")
+    .update("versionBumpingEnabled", true, vscode.ConfigurationTarget.Global);
 }
 
 export function disableVersionBumping(): void {
-    vscode.workspace
-        .getConfiguration("gitAiCommitter")
-        .update(
-            "versionBumpingEnabled",
-            false,
-            vscode.ConfigurationTarget.Global
-        );
+  vscode.workspace
+    .getConfiguration("gitAiCommitter")
+    .update("versionBumpingEnabled", false, vscode.ConfigurationTarget.Global);
 }
 
 export function isVersionBumpingEnabled(): boolean {
-    return vscode.workspace
-        .getConfiguration("gitAiCommitter")
-        .get("versionBumpingEnabled", false);
+  return vscode.workspace
+    .getConfiguration("gitAiCommitter")
+    .get("versionBumpingEnabled", false);
 }
 
 export async function updateVersion(
-    incrementType: VersionIncrementType = "patch"
+  incrementType: VersionIncrementType = "patch"
 ): Promise<string | null> {
-    if (!isVersionBumpingEnabled()) {
-        // Return null to explicitly indicate version bumping is disabled
-        return null;
+  if (!isVersionBumpingEnabled()) {
+    // Return null to explicitly indicate version bumping is disabled
+    return null;
+  }
+
+  try {
+    // Detect version files
+    const versionFiles = await versionService.detectVersionFiles();
+    if (versionFiles.length === 0) {
+      throw new Error("No version files found");
     }
 
-    try {
-        // Detect version files
-        const versionFiles = await versionService.detectVersionFiles();
-        if (versionFiles.length === 0) {
-            throw new Error("No version files found");
-        }
-
-        // Get current version from first detected file
-        const currentVersion = await versionService.getCurrentVersion(
-            versionFiles[0]
-        );
-        if (!currentVersion) {
-            throw new Error("Could not determine current version");
-        }
-
-        // Increment version based on type
-        const newVersion = incrementVersion(currentVersion, incrementType);
-        if (!newVersion) {
-            throw new Error("Could not increment version");
-        }
-
-        // Update all version files
-        const success = await versionService.updateVersionFiles(newVersion);
-        if (!success) {
-            throw new Error("Could not update version file");
-        }
-
-        return newVersion;
-    } catch (error) {
-        console.error("Error updating version:", error);
-        return null;
+    // Get current version from first detected file
+    const currentVersion = await versionService.getCurrentVersion(
+      versionFiles[0]
+    );
+    if (!currentVersion) {
+      throw new Error("Could not determine current version");
     }
+
+    // Increment version based on type
+    const newVersion = incrementVersion(currentVersion, incrementType);
+    if (!newVersion) {
+      throw new Error("Could not increment version");
+    }
+
+    // Update all version files
+    const files = await versionService.updateVersionFiles(newVersion);
+    if (files.length === 0) {
+      throw new Error("Could not update version file");
+    }
+
+    return newVersion;
+  } catch (error) {
+    console.error("Error updating version:", error);
+    return null;
+  }
 }
 
 function incrementVersion(
-    version: string,
-    incrementType: VersionIncrementType
+  version: string,
+  incrementType: VersionIncrementType
 ): string | null {
-    if (!versionService.validateSemver(version)) {
-        return null;
-    }
+  if (!versionService.validateSemver(version)) {
+    return null;
+  }
 
-    const versionParts = version.split(".");
+  const versionParts = version.split(".");
 
-    if (incrementType === "patch") {
-        const patch = parseInt(versionParts[2]);
-        versionParts[2] = (patch + 1).toString();
-    } else if (incrementType === "minor") {
-        const minor = parseInt(versionParts[1]);
-        versionParts[1] = (minor + 1).toString();
-        versionParts[2] = "0"; // Reset patch version
-    }
+  if (incrementType === "patch") {
+    const patch = parseInt(versionParts[2]);
+    versionParts[2] = (patch + 1).toString();
+  } else if (incrementType === "minor") {
+    const minor = parseInt(versionParts[1]);
+    versionParts[1] = (minor + 1).toString();
+    versionParts[2] = "0"; // Reset patch version
+  }
 
-    return versionParts.join(".");
+  return versionParts.join(".");
 }
