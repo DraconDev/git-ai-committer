@@ -1,5 +1,8 @@
 import * as vscode from "vscode";
-import { generateCommitMessage } from "../ai/aiService";
+import {
+  generateWithCopilot,
+  getPreferredAIProvider,
+} from "../ai/copilotService";
 import { git } from "../extension";
 import {
   stageAllChanges,
@@ -8,6 +11,7 @@ import {
   pushChanges,
 } from "../git/gitOperations";
 import { updateVersion } from "../version/versionService";
+import { generateCommitMessage } from "../ai/geminiService";
 
 export class CommitService {
   private lastProcessedDiff = "";
@@ -36,7 +40,16 @@ export class CommitService {
   async handleCommitMessageGeneration(diff: string): Promise<string | null> {
     try {
       this.isGeneratingMessage = true;
-      const commitMessage = await generateCommitMessage(diff);
+      let commitMessage: string | null = null;
+      const provider = await getPreferredAIProvider();
+      if (!provider) {
+        vscode.window.showErrorMessage("No AI provider selected");
+        return null;
+      } else if (provider === "gemini") {
+        commitMessage = await generateCommitMessage(diff);
+      } else if (provider === "copilot") {
+        commitMessage = await generateWithCopilot(diff);
+      }
       if (!commitMessage) {
         return null;
       }
