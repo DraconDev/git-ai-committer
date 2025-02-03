@@ -42,13 +42,17 @@ async function generateWithCopilot(diff: string): Promise<string | null> {
     //   }
     // );
 
+    // const response = await vscode.commands.executeCommand(
+    //   "github.copilot.git.generateCommitMessage",
+    //   {
+    //     prompt,
+    //     temperature: 0.3,
+    //     maxTokens: 50,
+    //   }
+    // );
+
     const response = await vscode.commands.executeCommand(
-      "github.copilot.git.generateCommitMessage",
-      {
-        prompt,
-        temperature: 0.3,
-        maxTokens: 50,
-      }
+      "github.copilot.git.generateCommitMessage"
     );
 
     if (!response || typeof response !== "string") {
