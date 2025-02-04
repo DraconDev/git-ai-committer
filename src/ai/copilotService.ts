@@ -3,7 +3,7 @@ import { generateCommitMessage as generateWithGemini } from "./geminiService";
 import { git } from "../extension";
 
 export enum AIProvider {
-  Copilot = "copilot",
+  // Copilot = "copilot",
   Gemini = "gemini",
 }
 
@@ -68,5 +68,5 @@ export async function generateWithCopilot(diff: string): Promise<boolean> {
 
 export async function getPreferredAIProvider(): Promise<AIProvider> {
   const config = vscode.workspace.getConfiguration("gitAiCommitter");
-  return config.get<AIProvider>("preferredAIProvider", AIProvider.Copilot);
+  return config.get<AIProvider>("preferredAIProvider", AIProvider.Gemini);
 }

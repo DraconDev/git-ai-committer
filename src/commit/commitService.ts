@@ -121,14 +121,21 @@ export class CommitService {
         console.debug("No diff found");
         return;
       }
+      await stageAllChanges();
+      await updateVersion();
 
-      if (!(await this.checkIfDiffChanged(diff))) {
-        console.debug("Diff hasn't changed");
-        return;
-      }
+      // if (!(await this.checkIfDiffChanged(diff))) {
+      //   console.debug("Diff hasn't changed");
+      //   return;
+      // }
+      // // Stage all changes
+      // const staged = await stageAllChanges();
+      // if (!staged) {
+      //   vscode.window.showErrorMessage("Failed to stage changes");
+      //   return;
+      // }
 
       // Update version before generating commit message
-      await updateVersion();
 
       const provider = await getPreferredAIProvider();
       if (!provider) {
