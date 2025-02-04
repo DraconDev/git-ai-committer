@@ -24,7 +24,6 @@ export async function generateWithCopilot(diff: string): Promise<boolean> {
       return false;
     }
 
-    // Create the commit message prompt
     const prompt = `Generate a concise commit message for the following git diff. Use conventional commit format (type(scope): description). Keep it short and descriptive. Here's the diff:\n\n${diff}`;
 
     // Try to generate commit message with Copilot
