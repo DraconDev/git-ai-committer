@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+
 import {
   generateWithCopilot,
   getPreferredAIProvider,
@@ -16,6 +17,7 @@ import { generateCommitMessage } from "../ai/geminiService";
 export class CommitService {
   private lastProcessedDiff = "";
   private isGeneratingMessage = false;
+  private maxRetries = 2;
 
   async checkIfGenerating() {
     if (this.isGeneratingMessage) {
@@ -27,37 +29,65 @@ export class CommitService {
   }
 
   checkIfDiffChanged(diff: string) {
-    // Only compare the first 100 chars to avoid being too sensitive
-    const currentDiff = diff.slice(0, 100);
-    const lastDiff = this.lastProcessedDiff.slice(0, 100);
+    // Compare full diff content but normalize whitespace
+    const normalizedCurrent = diff.replace(/\s+/g, " ").trim();
+    const normalizedLast = this.lastProcessedDiff.replace(/\s+/g, " ").trim();
 
-    if (currentDiff === lastDiff) {
-      return false;
+    return normalizedCurrent !== normalizedLast;
+  }
+
+  private getSourceControlMessage(): string | undefined {
+    // Get Git extension
+    const gitExtension = vscode.extensions.getExtension("vscode.git");
+    if (!gitExtension) {
+      console.debug("Git extension not found");
+      return undefined;
     }
-    return true;
+
+    // Get first repository's source control
+    const gitApi = gitExtension.exports.getAPI(1);
+    const repo = gitApi.repositories[0];
+    if (!repo) {
+      console.debug("No Git repository found");
+      return undefined;
+    }
+
+    // Get the message from the source control input box
+    return repo.inputBox.value;
   }
 
   async handleCommitMessageGeneration(diff: string): Promise<string | null> {
     try {
       this.isGeneratingMessage = true;
-      let commitMessage: string | null = null;
-      const provider = await getPreferredAIProvider();
-      if (!provider) {
-        vscode.window.showErrorMessage("No AI provider selected");
-        return null;
-      } else if (provider === "gemini") {
-        commitMessage = await generateCommitMessage(diff);
-      } else if (provider === "copilot") {
-        commitMessage = await generateWithCopilot(diff);
+      let attempt = 0;
+      let error: any;
+
+      // Try multiple times if generation fails
+      while (attempt < this.maxRetries) {
+        try {
+          const commitMessage = await generateCommitMessage(diff);
+          if (commitMessage) {
+            this.lastProcessedDiff = diff;
+            return commitMessage;
+          }
+        } catch (e) {
+          error = e;
+          attempt++;
+          if (attempt < this.maxRetries) {
+            await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1s between retries
+          }
+        }
       }
-      if (!commitMessage) {
-        return null;
+
+      // If all retries failed, throw the last error
+      if (error) {
+        throw error;
       }
-      this.lastProcessedDiff = diff;
-      return commitMessage;
+
+      return null;
     } catch (error) {
       vscode.window.showErrorMessage(
-        `Failed to generate commit message: ${
+        `Failed to generate commit message with Gemini: ${
           error instanceof Error ? error.message : "Unknown error"
         }`
       );
@@ -87,20 +117,54 @@ export class CommitService {
     try {
       // Check for changes first
       const diff = await getGitDiff();
-      if (!diff || !(await this.checkIfDiffChanged(diff))) {
+      if (!diff) {
+        console.debug("No diff found");
+        return;
+      }
+
+      if (!(await this.checkIfDiffChanged(diff))) {
+        console.debug("Diff hasn't changed");
         return;
       }
 
       // Update version before generating commit message
       await updateVersion();
 
-      const commitMessage = await this.handleCommitMessageGeneration(diff);
+      const provider = await getPreferredAIProvider();
+      if (!provider) {
+        vscode.window.showErrorMessage("No AI provider selected");
+        return null;
+      }
+
+      let commitMessage: string | null = null;
+
+      if (provider === "gemini") {
+        commitMessage = await this.handleCommitMessageGeneration(diff);
+      } else if (provider === "copilot") {
+        // Generate Copilot suggestion
+        const success = await generateWithCopilot(diff);
+        if (!success) {
+          vscode.window.showErrorMessage(
+            "Failed to generate message with Copilot"
+          );
+          return;
+        }
+
+        // Get message from source control box
+        const scmMessage = this.getSourceControlMessage();
+        if (scmMessage) {
+          commitMessage = scmMessage;
+        }
+      }
+
       if (!commitMessage) {
-        vscode.window.showErrorMessage("Failed to generate commit message");
+        vscode.window.showErrorMessage(
+          `Failed to get commit message from ${provider}`
+        );
         return;
       }
 
-      // Commit changes
+      // Commit the changes
       await commitChanges(commitMessage);
 
       // Push changes
