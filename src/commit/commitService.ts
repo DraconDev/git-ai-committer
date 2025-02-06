@@ -10,7 +10,6 @@ import {
   pushChanges,
 } from "../git/gitOperations";
 import { updateVersion } from "../version/versionService";
-import { generateCommitMessage } from "../ai/geminiService";
 
 export class CommitService {
   private lastProcessedDiff = "";
@@ -103,7 +102,7 @@ export class CommitService {
 
       let commitMessage = "";
       const provider = await getPreferredAIProvider();
-      
+
       if (!provider) {
         vscode.window.showErrorMessage("No AI provider selected");
         return;
@@ -112,14 +111,18 @@ export class CommitService {
       if (provider === AIProvider.Gemini) {
         const geminiMessage = await this.handleCommitMessageGeneration(diff);
         if (!geminiMessage) {
-          vscode.window.showErrorMessage("Failed to generate message with Gemini");
+          vscode.window.showErrorMessage(
+            "Failed to generate message with Gemini"
+          );
           return;
         }
         commitMessage = geminiMessage;
       } else if (provider === AIProvider.Copilot) {
         commitMessage = await generateWithCopilot(diff);
         if (!commitMessage) {
-          vscode.window.showErrorMessage("Failed to generate message with Copilot");
+          vscode.window.showErrorMessage(
+            "Failed to generate message with Copilot"
+          );
           return;
         }
       }
