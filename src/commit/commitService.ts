@@ -60,6 +60,12 @@ export class CommitService {
     if (repo && repo.inputBox) {
       repo.inputBox.value = "";
     }
+  }
+
+  async handleCommitMessageGeneration(diff: string): Promise<string | null> {
+    try {
+      this.isGeneratingMessage = true;
+      let attempt = 0;
       let error: any;
 
       // Try multiple times if generation fails
@@ -136,21 +142,27 @@ export class CommitService {
 
       // Update version before generating commit message
 
-      const provider = await getPreferredAIProvider();
-      if (!provider) {
-        vscode.window.showErrorMessage("No AI provider selected");
-        return null;
-      }
-
+      // Check source control message first
+      const { message: sourceControlMessage, repo } = this.getSourceControlMessage();
       let commitMessage: string | null = null;
 
-      if (provider === "gemini") {
-        commitMessage = await this.handleCommitMessageGeneration(diff);
-      } else if (provider === "copilot") {
-        commitMessage = await generateWithCopilot(diff);
-        if (!commitMessage) {
-          // vscode.window.showErrorMessage("Failed to generate message with Copilot");
-          return;
+      if (sourceControlMessage) {
+        commitMessage = sourceControlMessage;
+        this.clearSourceControlMessage(repo);
+      } else {
+        const provider = await getPreferredAIProvider();
+        if (!provider) {
+          vscode.window.showErrorMessage("No AI provider selected");
+          return null;
+        }
+
+        if (provider === "gemini") {
+          commitMessage = await this.handleCommitMessageGeneration(diff);
+        } else if (provider === "copilot") {
+          commitMessage = await generateWithCopilot(diff);
+          if (!commitMessage) {
+            return;
+          }
         }
       }
 
