@@ -28,6 +28,7 @@ export class CommitService {
 
   checkIfDiffChanged(diff: string) {
     // Compare full diff content but normalize whitespace
+    const normalizedCurrent = diff.replace(/\s+/g, " ").trim();
     const normalizedLast = this.lastProcessedDiff.replace(/\s+/g, " ").trim();
 
     return normalizedCurrent !== normalizedLast;
@@ -42,7 +43,7 @@ export class CommitService {
       // Try multiple times if generation fails
       while (attempt < this.maxRetries) {
         try {
-          const commitMessage = await generateCommitMessage(diff);
+          const commitMessage = await generateGeminiMessage(diff);
           if (commitMessage) {
             this.lastProcessedDiff = diff;
             return commitMessage;
@@ -102,7 +103,7 @@ export class CommitService {
 
       let commitMessage = "";
       const provider = await getPreferredAIProvider();
-
+      
       if (!provider) {
         vscode.window.showErrorMessage("No AI provider selected");
         return;
@@ -111,18 +112,14 @@ export class CommitService {
       if (provider === AIProvider.Gemini) {
         const geminiMessage = await this.handleCommitMessageGeneration(diff);
         if (!geminiMessage) {
-          vscode.window.showErrorMessage(
-            "Failed to generate message with Gemini"
-          );
+          vscode.window.showErrorMessage("Failed to generate message with Gemini");
           return;
         }
         commitMessage = geminiMessage;
       } else if (provider === AIProvider.Copilot) {
         commitMessage = await generateWithCopilot(diff);
         if (!commitMessage) {
-          vscode.window.showErrorMessage(
-            "Failed to generate message with Copilot"
-          );
+          vscode.window.showErrorMessage("Failed to generate message with Copilot");
           return;
         }
       }
