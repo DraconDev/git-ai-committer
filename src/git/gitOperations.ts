@@ -56,10 +56,27 @@ export async function pushChanges(): Promise<boolean> {
   try {
     // First try to pull any remote changes
     try {
-      await git.pull();
+      const pullResult = await git.pull();
+      
+      // Check if there are merge conflicts
+      const status = await git.status();
+      if (status.conflicted.length > 0) {
+        vscode.window.showErrorMessage(
+          `Merge conflicts detected in: ${status.conflicted.join(", ")}. Please resolve conflicts before pushing.`
+        );
+        return false;
+      }
+      
     } catch (pullError) {
+      // Check if error is due to local changes that would be overwritten
+      if (pullError instanceof Error && pullError.message.includes("local changes")) {
+        vscode.window.showErrorMessage(
+          "Cannot pull updates: You have local changes that would be overwritten. Please commit or stash your changes first."
+        );
+        return false;
+      }
+
       console.error("Pull failed:", pullError);
-      // If pull fails, show error but continue with push attempt
       vscode.window.showErrorMessage(
         `Failed to pull latest changes: ${
           pullError instanceof Error ? pullError.message : "Unknown error"
@@ -71,11 +88,18 @@ export async function pushChanges(): Promise<boolean> {
     await git.push();
     return true;
   } catch (error) {
-    vscode.window.showErrorMessage(
-      `Failed to push changes: ${
-        error instanceof Error ? error.message : "Unknown error"
-      }`
-    );
+    // Handle specific push errors
+    if (error instanceof Error) {
+      if (error.message.includes("ref")) {
+        vscode.window.showErrorMessage(
+          "Failed to push: Remote has changes that need to be pulled first. Please try committing again."
+        );
+      } else {
+        vscode.window.showErrorMessage(`Failed to push changes: ${error.message}`);
+      }
+    } else {
+      vscode.window.showErrorMessage("Failed to push changes: Unknown error");
+    }
     return false;
   }
 }
