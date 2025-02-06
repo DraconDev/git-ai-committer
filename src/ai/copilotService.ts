@@ -26,12 +26,8 @@ export async function generateWithCopilot(diff: string): Promise<string> {
 
     const prompt = `Generate a concise commit message for the following git diff. Use conventional commit format (type(scope): description). Keep it short and descriptive. Here's the diff:\n\n${diff}`;
 
-    // Use Copilot to generate commit message
-    await vscode.commands.executeCommand("github.copilot.git.generateCommitMessage", prompt);
-    // Allow time for the input box to update
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    // Retrieve and return the generated commit message
-    const message = repo.inputBox.value;
+    // Use Copilot to generate commit message and return it directly
+    const message = await vscode.commands.executeCommand<string>("github.copilot.git.generateCommitMessage", prompt);
     return message || "";
   } catch (error) {
     console.error("Error generating commit message with Copilot:", error);
