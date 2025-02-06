@@ -53,7 +53,7 @@ export async function commitChanges(message: string): Promise<boolean> {
 }
 
 export async function pushChanges(): Promise<boolean> {
-  try {
+  
     // First try to pull any remote changes
     try {
       await git.pull();
@@ -69,15 +69,7 @@ export async function pushChanges(): Promise<boolean> {
     await git.push();
 
     // Attempt to push
-    return true;
-  } catch (error) {
-    vscode.window.showErrorMessage(
-      `Failed to push changes: ${
-        error instanceof Error ? error.message : "Unknown error"
-      }`
-    );
-    return false;
-  }
+    
 }
 
 export async function getGitDiff(): Promise<string> {
