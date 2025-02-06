@@ -122,7 +122,6 @@ export class CommitService {
         return;
       }
       await stageAllChanges();
-      await updateVersion();
 
       // if (!(await this.checkIfDiffChanged(diff))) {
       //   console.debug("Diff hasn't changed");
@@ -150,7 +149,7 @@ export class CommitService {
       } else if (provider === "copilot") {
         commitMessage = await generateWithCopilot(diff);
         if (!commitMessage) {
-          vscode.window.showErrorMessage("Failed to generate message with Copilot");
+          // vscode.window.showErrorMessage("Failed to generate message with Copilot");
           return;
         }
       }
@@ -161,6 +160,8 @@ export class CommitService {
         );
         return;
       }
+
+      await updateVersion();
 
       // Commit the changes
       await commitChanges(commitMessage);
