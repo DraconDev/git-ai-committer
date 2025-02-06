@@ -52,24 +52,22 @@ export async function commitChanges(message: string): Promise<boolean> {
   }
 }
 
-export async function pushChanges(): Promise<boolean> {
-  
-    // First try to pull any remote changes
-    try {
-      await git.pull();
-    } catch (pullError) {
-      console.error("Pull failed:", pullError);
-      // If pull fails, show error but continue with push attempt
-      vscode.window.showErrorMessage(
-        `Failed to pull latest changes: ${
-          pullError instanceof Error ? pullError.message : "Unknown error"
-        }`
-      );
-    }
-    await git.push();
+export async function pushChanges() {
+  // First try to pull any remote changes
+  try {
+    await git.pull();
+  } catch (pullError) {
+    console.error("Pull failed:", pullError);
+    // If pull fails, show error but continue with push attempt
+    vscode.window.showErrorMessage(
+      `Failed to pull latest changes: ${
+        pullError instanceof Error ? pullError.message : "Unknown error"
+      }`
+    );
+  }
+  await git.push();
 
-    // Attempt to push
-    
+  // Attempt to push
 }
 
 export async function getGitDiff(): Promise<string> {
