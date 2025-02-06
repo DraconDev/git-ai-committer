@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { generateCommitMessage as generateWithGemini } from "./geminiService";
 import { git } from "../extension";
 
 export enum AIProvider {
@@ -8,22 +9,21 @@ export enum AIProvider {
 
 async function generateCopilotMessage(diff: string): Promise<string> {
   try {
-    const prompt = `Generate a concise commit message for the following git diff. Use conventional commit format (type(scope): description). Keep it short and descriptive. Here's the diff:\n\n${diff}`;
-
-    // Use Copilot to generate commit message and return it directly
-    const message = await vscode.commands.executeCommand<string>(
-      "github.copilot.git.generateCommitMessage",
-      prompt
+    // Trigger Copilot's commit message generation
+    await vscode.commands.executeCommand(
+      "github.copilot.git.generateCommitMessage"
     );
-    return message || "";
-  } catch (error) {
-    console.error("Error generating commit message with Copilot:", error);
-    vscode.window.showErrorMessage(
-      `Error generating commit message: ${
-        error instanceof Error ? error.message : "Unknown error"
-      }`
-    );
+    
+    // Since Copilot updates the source control box, get the message from there
+    const { message, repo } = getSourceControlMessage();
+    if (message) {
+      // Clear the source control box since we're getting the message
+      clearSourceControlMessage(repo);
+      return message;
+    }
+    
     return "";
+  } catch (error) {
   }
 }
 
