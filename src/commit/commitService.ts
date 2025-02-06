@@ -12,7 +12,10 @@ import {
   pushChanges,
 } from "../git/gitOperations";
 import { updateVersion } from "../version/versionService";
-import { generateGeminiMessage } from "../ai/geminiService";
+import {
+  generateGeminiMessage,
+  generateGeminiMessage,
+} from "../ai/geminiService";
 
 export class CommitService {
   private lastProcessedDiff = "";
@@ -45,7 +48,7 @@ export class CommitService {
       // Try multiple times if generation fails
       while (attempt < this.maxRetries) {
         try {
-          const commitMessage = await generateCommitMessage(diff);
+          const commitMessage = await generateGeminiMessage(diff);
           if (commitMessage) {
             this.lastProcessedDiff = diff;
             return commitMessage;
