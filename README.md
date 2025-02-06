@@ -6,14 +6,19 @@
 
 </div>
 
-Git AI Auto Committer is a VS Code extension that automatically generates meaningful commit messages using Google's Gemini AI. It helps developers maintain a clean and descriptive git history without the hassle of writing commit messages manually.
+Git AI Auto Committer is a VS Code extension that automatically generates meaningful commit messages using either Google's Gemini AI or GitHub Copilot. It helps developers maintain a clean and descriptive git history without the hassle of writing commit messages manually.
 
 > Developed by [DraconDev](https://github.com/DraconDev)
 
 ## Features
 
 - Automatically generates commit messages based on your code changes
-- Uses Google's Gemini AI for intelligent message generation
+- Multiple AI providers:
+  - Google's Gemini AI for intelligent message generation
+  - GitHub Copilot integration for commit messages
+- Smart source control integration:
+  - Uses existing message from the source control input box if available
+  - Falls back to AI generation if no message is provided
 - Configurable auto-commit intervals
 - Manual commit generation option
 - Inactivity-based commit triggers
@@ -24,7 +29,8 @@ Git AI Auto Committer is a VS Code extension that automatically generates meanin
 
 - VS Code 1.96.0 or higher
 - Node.js 20.x or higher
-- A Google Gemini API key (get it from [Google AI Studio](https://aistudio.google.com/apikey))
+- A Google Gemini API key (get it from [Google AI Studio](https://aistudio.google.com/apikey)) if using Gemini
+- GitHub Copilot extension installed and authenticated if using Copilot
 - Git repository with initialized git config
 
 ## Extension Settings
@@ -32,6 +38,7 @@ Git AI Auto Committer is a VS Code extension that automatically generates meanin
 This extension contributes the following settings:
 
 - `gitAiCommitter.enabled`: Enable/disable automatic commits (default: true)
+- `gitAiCommitter.preferredAIProvider`: Choose between "gemini" or "copilot" for commit message generation (default: "gemini")
 - `gitAiCommitter.geminiApiKey`: Your Google Gemini API key for generating commit messages
 - `gitAiCommitter.commitInterval`: Interval in minutes between automatic commits (0 to disable, default: 2)
 - `gitAiCommitter.inactivityTimeout`: Trigger commit after this many seconds of inactivity (0 to disable, default: 5)
@@ -40,14 +47,7 @@ This extension contributes the following settings:
 ## How to Use
 
 1. Install the extension
-2. Get your Gemini API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
-3. Set your API key in VS Code settings
-4. Enable auto-commit using the command palette or settings
-5. Start coding! The extension will:
-   - Commit changes after 5 seconds of inactivity
-   - Ensure at least 10 seconds between commits
-   - Commit every 2 minutes during active work
-   - Automatically generate meaningful commit messages
+2. Choose your preferred AI provider in settings:
 
 ## Commands
 
