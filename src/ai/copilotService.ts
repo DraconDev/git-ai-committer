@@ -2,17 +2,33 @@ import * as vscode from "vscode";
 import { generateCommitMessage as generateWithGemini } from "./geminiService";
 import { git } from "../extension";
 
-interface SourceControlMessage {
-  message: string | undefined;
-  repo: any;
-}
-
 export enum AIProvider {
   Copilot = "copilot",
   Gemini = "gemini",
 }
 
-export function getSourceControlMessage(): SourceControlMessage {
+async function generateCopilotMessage(diff: string): Promise<string> {
+  try {
+    const prompt = `Generate a concise commit message for the following git diff. Use conventional commit format (type(scope): description). Keep it short and descriptive. Here's the diff:\n\n${diff}`;
+
+    // Use Copilot to generate commit message and return it directly
+    const message = await vscode.commands.executeCommand<string>(
+      "github.copilot.git.generateCommitMessage",
+      prompt
+    );
+    return message || "";
+  } catch (error) {
+    console.error("Error generating commit message with Copilot:", error);
+    vscode.window.showErrorMessage(
+      `Error generating commit message: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`
+    );
+    return "";
+  }
+}
+
+function getSourceControlMessage(): { message: string | undefined; repo: any } {
   // Get Git extension
   const gitExtension = vscode.extensions.getExtension("vscode.git");
   if (!gitExtension) {
@@ -29,22 +45,6 @@ export function getSourceControlMessage(): SourceControlMessage {
   }
 
   // Get the message from the source control input box
-  return { message: repo.inputBox.value, repo };
-}
-
-export function clearSourceControlMessage(repo: any): void {
-  if (repo && repo.inputBox) {
-    repo.inputBox.value = "";
-  }
-}
-
-export async function generateWithCopilot(diff: string): Promise<string> {
-  try {
-    const prompt = `Generate a concise commit message for the following git diff. Use conventional commit format (type(scope): description). Keep it short and descriptive. Here's the diff:\n\n${diff}`;
-
-    // Use Copilot to generate commit message and return it directly
-    const message = await vscode.commands.executeCommand<string>(
-      "github.copilot.git.generateCommitMessage",
       prompt
     );
     return message || "";
