@@ -36,12 +36,12 @@ export class CommitService {
     return normalizedCurrent !== normalizedLast;
   }
 
-  private getSourceControlMessage(): string | undefined {
+  private getSourceControlMessage(): { message: string | undefined; repo: any } {
     // Get Git extension
     const gitExtension = vscode.extensions.getExtension("vscode.git");
     if (!gitExtension) {
       console.debug("Git extension not found");
-      return undefined;
+      return { message: undefined, repo: null };
     }
 
     // Get first repository's source control
@@ -49,17 +49,17 @@ export class CommitService {
     const repo = gitApi.repositories[0];
     if (!repo) {
       console.debug("No Git repository found");
-      return undefined;
+      return { message: undefined, repo: null };
     }
 
     // Get the message from the source control input box
-    return repo.inputBox.value;
+    return { message: repo.inputBox.value, repo };
   }
 
-  async handleCommitMessageGeneration(diff: string): Promise<string | null> {
-    try {
-      this.isGeneratingMessage = true;
-      let attempt = 0;
+  private clearSourceControlMessage(repo: any) {
+    if (repo && repo.inputBox) {
+      repo.inputBox.value = "";
+    }
       let error: any;
 
       // Try multiple times if generation fails
