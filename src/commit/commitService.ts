@@ -103,50 +103,28 @@ export class CommitService {
       }
       await stageAllChanges();
 
-      // if (!(await this.checkIfDiffChanged(diff))) {
-      //   console.debug("Diff hasn't changed");
-      //   return;
-      // }
-      // // Stage all changes
-      // const staged = await stageAllChanges();
-      // if (!staged) {
-      //   vscode.window.showErrorMessage("Failed to stage changes");
-      //   return;
-      // }
+      let commitMessage = "";
+      const provider = await getPreferredAIProvider();
+      
+      if (!provider) {
+        vscode.window.showErrorMessage("No AI provider selected");
+        return;
+      }
 
-      // Update version before generating commit message
-
-      // Check source control message first
-      const { message: sourceControlMessage, repo } = getSourceControlMessage();
-      let commitMessage: string | null = null;
-
-      if (sourceControlMessage) {
-        commitMessage = sourceControlMessage;
-        clearSourceControlMessage(repo);
-      } else {
-        const provider = await getPreferredAIProvider();
-        if (!provider) {
-          vscode.window.showErrorMessage("No AI provider selected");
-          return null;
+      if (provider === "gemini") {
+        const geminiMessage = await this.handleCommitMessageGeneration(diff);
+        if (!geminiMessage) {
+          vscode.window.showErrorMessage("Failed to generate message with Gemini");
+          return;
         }
-
-        if (provider === "gemini") {
-          commitMessage = await this.handleCommitMessageGeneration(diff);
-        } else if (provider === "copilot") {
-          commitMessage = await generateWithCopilot(diff);
-          if (!commitMessage) {
-            return;
-          }
-        }
-
+        commitMessage = geminiMessage;
+      } else if (provider === "copilot") {
+        commitMessage = await generateWithCopilot(diff);
         if (!commitMessage) {
-          vscode.window.showErrorMessage(
-            `Failed to get commit message from ${provider}`
-          );
+          vscode.window.showErrorMessage("Failed to generate message with Copilot");
           return;
         }
       }
-
 
       await updateVersion();
 
