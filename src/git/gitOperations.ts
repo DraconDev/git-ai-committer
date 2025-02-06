@@ -66,9 +66,9 @@ export async function pushChanges(): Promise<boolean> {
         }`
       );
     }
+    await git.push();
 
     // Attempt to push
-    await git.push();
     return true;
   } catch (error) {
     vscode.window.showErrorMessage(
