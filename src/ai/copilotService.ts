@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { generateCommitMessage as generateWithGemini } from "./geminiService";
+ from "./geminiService";
 import { git } from "../extension";
 
 export enum AIProvider {
