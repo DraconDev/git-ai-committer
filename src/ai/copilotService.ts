@@ -1,11 +1,6 @@
 import * as vscode from "vscode";
 import { git } from "../extension";
 
-export enum AIProvider {
-  Copilot = "copilot",
-  Gemini = "gemini",
-}
-
 async function generateCopilotMessage(diff: string): Promise<string> {
   try {
     // Trigger Copilot's commit message generation
@@ -30,6 +25,11 @@ async function generateCopilotMessage(diff: string): Promise<string> {
       }`
     );
     return "";
+  }
+}
+
+function getSourceControlMessage(): { message: string | undefined; repo: any } {
+  // Get Git extension
   }
 }
 
