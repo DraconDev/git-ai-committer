@@ -62,7 +62,7 @@ function clearSourceControlMessage(repo: any): void {
 export async function generateWithCopilot(diff: string): Promise<string> {
   // First check if there's already a message in source control
   const { message: sourceControlMessage, repo } = getSourceControlMessage();
-
+  
   if (sourceControlMessage) {
     // If there's a message in source control, use it and clear the box
     clearSourceControlMessage(repo);
@@ -76,9 +76,7 @@ export async function generateWithCopilot(diff: string): Promise<string> {
   }
 
   // If generation fails, show error
-  vscode.window.showErrorMessage(
-    "Failed to generate commit message with Copilot"
-  );
+  vscode.window.showErrorMessage("Failed to generate commit message with Copilot");
   return "";
 }
 
