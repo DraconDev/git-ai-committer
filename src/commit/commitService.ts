@@ -12,10 +12,7 @@ import {
   pushChanges,
 } from "../git/gitOperations";
 import { updateVersion } from "../version/versionService";
-import {
-  generateGeminiMessage,
-  generateGeminiMessage,
-} from "../ai/geminiService";
+import { generateGeminiMessage } from "../ai/geminiService";
 
 export class CommitService {
   private lastProcessedDiff = "";

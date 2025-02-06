@@ -1,5 +1,4 @@
 import * as vscode from "vscode";
- from "./geminiService";
 import { git } from "../extension";
 
 export enum AIProvider {
@@ -57,7 +56,7 @@ function clearSourceControlMessage(repo: any): void {
 export async function generateWithCopilot(diff: string): Promise<string> {
   // First check source control message
   const { message: sourceControlMessage, repo } = getSourceControlMessage();
-  
+
   if (sourceControlMessage) {
     // If there's a message in source control, use it and clear the box
     clearSourceControlMessage(repo);
