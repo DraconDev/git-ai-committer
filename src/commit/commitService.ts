@@ -148,19 +148,10 @@ export class CommitService {
       if (provider === "gemini") {
         commitMessage = await this.handleCommitMessageGeneration(diff);
       } else if (provider === "copilot") {
-        // Generate Copilot suggestion
-        const success = await generateWithCopilot(diff);
-        if (!success) {
-          vscode.window.showErrorMessage(
-            "Failed to generate message with Copilot"
-          );
+        commitMessage = await generateWithCopilot(diff);
+        if (!commitMessage) {
+          vscode.window.showErrorMessage("Failed to generate message with Copilot");
           return;
-        }
-
-        // Get message from source control box
-        const scmMessage = this.getSourceControlMessage();
-        if (scmMessage) {
-          commitMessage = scmMessage;
         }
       }
 
