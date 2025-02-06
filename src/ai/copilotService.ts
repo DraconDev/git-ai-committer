@@ -45,18 +45,27 @@ function getSourceControlMessage(): { message: string | undefined; repo: any } {
   }
 
   // Get the message from the source control input box
-      prompt
-    );
-    return message || "";
-  } catch (error) {
-    console.error("Error generating commit message with Copilot:", error);
-    vscode.window.showErrorMessage(
-      `Error generating commit message: ${
-        error instanceof Error ? error.message : "Unknown error"
-      }`
-    );
-    return "";
+  return { message: repo.inputBox.value, repo };
+}
+
+function clearSourceControlMessage(repo: any): void {
+  if (repo && repo.inputBox) {
+    repo.inputBox.value = "";
   }
+}
+
+export async function generateWithCopilot(diff: string): Promise<string> {
+  // First check source control message
+  const { message: sourceControlMessage, repo } = getSourceControlMessage();
+  
+  if (sourceControlMessage) {
+    // If there's a message in source control, use it and clear the box
+    clearSourceControlMessage(repo);
+    return sourceControlMessage;
+  }
+
+  // If no source control message, generate with Copilot
+  return await generateCopilotMessage(diff);
 }
 
 export async function getPreferredAIProvider(): Promise<AIProvider> {
