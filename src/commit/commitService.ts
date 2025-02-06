@@ -36,32 +36,6 @@ export class CommitService {
     return normalizedCurrent !== normalizedLast;
   }
 
-  private getSourceControlMessage(): { message: string | undefined; repo: any } {
-    // Get Git extension
-    const gitExtension = vscode.extensions.getExtension("vscode.git");
-    if (!gitExtension) {
-      console.debug("Git extension not found");
-      return { message: undefined, repo: null };
-    }
-
-    // Get first repository's source control
-    const gitApi = gitExtension.exports.getAPI(1);
-    const repo = gitApi.repositories[0];
-    if (!repo) {
-      console.debug("No Git repository found");
-      return { message: undefined, repo: null };
-    }
-
-    // Get the message from the source control input box
-    return { message: repo.inputBox.value, repo };
-  }
-
-  private clearSourceControlMessage(repo: any) {
-    if (repo && repo.inputBox) {
-      repo.inputBox.value = "";
-    }
-  }
-
   async handleCommitMessageGeneration(diff: string): Promise<string | null> {
     try {
       this.isGeneratingMessage = true;
@@ -143,12 +117,12 @@ export class CommitService {
       // Update version before generating commit message
 
       // Check source control message first
-      const { message: sourceControlMessage, repo } = this.getSourceControlMessage();
+      const { message: sourceControlMessage, repo } = getSourceControlMessage();
       let commitMessage: string | null = null;
 
       if (sourceControlMessage) {
         commitMessage = sourceControlMessage;
-        this.clearSourceControlMessage(repo);
+        clearSourceControlMessage(repo);
       } else {
         const provider = await getPreferredAIProvider();
         if (!provider) {
@@ -164,14 +138,15 @@ export class CommitService {
             return;
           }
         }
+
+        if (!commitMessage) {
+          vscode.window.showErrorMessage(
+            `Failed to get commit message from ${provider}`
+          );
+          return;
+        }
       }
 
-      if (!commitMessage) {
-        vscode.window.showErrorMessage(
-          `Failed to get commit message from ${provider}`
-        );
-        return;
-      }
 
       await updateVersion();
 
