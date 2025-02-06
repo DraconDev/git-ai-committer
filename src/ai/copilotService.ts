@@ -2,9 +2,40 @@ import * as vscode from "vscode";
 import { generateCommitMessage as generateWithGemini } from "./geminiService";
 import { git } from "../extension";
 
+interface SourceControlMessage {
+  message: string | undefined;
+  repo: any;
+}
+
 export enum AIProvider {
   Copilot = "copilot",
   Gemini = "gemini",
+}
+
+export function getSourceControlMessage(): SourceControlMessage {
+  // Get Git extension
+  const gitExtension = vscode.extensions.getExtension("vscode.git");
+  if (!gitExtension) {
+    console.debug("Git extension not found");
+    return { message: undefined, repo: null };
+  }
+
+  // Get first repository's source control
+  const gitApi = gitExtension.exports.getAPI(1);
+  const repo = gitApi.repositories[0];
+  if (!repo) {
+    console.debug("No Git repository found");
+    return { message: undefined, repo: null };
+  }
+
+  // Get the message from the source control input box
+  return { message: repo.inputBox.value, repo };
+}
+
+export function clearSourceControlMessage(repo: any): void {
+  if (repo && repo.inputBox) {
+    repo.inputBox.value = "";
+  }
 }
 
 export async function generateWithCopilot(diff: string): Promise<string> {
