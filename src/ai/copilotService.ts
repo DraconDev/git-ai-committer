@@ -30,11 +30,6 @@ async function generateCopilotMessage(diff: string): Promise<string> {
 
 function getSourceControlMessage(): { message: string | undefined; repo: any } {
   // Get Git extension
-  }
-}
-
-function getSourceControlMessage(): { message: string | undefined; repo: any } {
-  // Get Git extension
   const gitExtension = vscode.extensions.getExtension("vscode.git");
   if (!gitExtension) {
     console.debug("Git extension not found");
@@ -78,9 +73,4 @@ export async function generateWithCopilot(diff: string): Promise<string> {
   // If generation fails, show error
   vscode.window.showErrorMessage("Failed to generate commit message with Copilot");
   return "";
-}
-
-export async function getPreferredAIProvider(): Promise<AIProvider> {
-  const config = vscode.workspace.getConfiguration("gitAiCommitter");
-  return config.get<AIProvider>("preferredAIProvider", AIProvider.Gemini);
 }

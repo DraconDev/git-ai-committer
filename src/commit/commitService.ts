@@ -1,9 +1,6 @@
 import * as vscode from "vscode";
 
-import {
-  generateWithCopilot,
-  getPreferredAIProvider,
-} from "../ai/copilotService";
+import { generateWithCopilot } from "../ai/copilotService";
 import { git } from "../extension";
 import {
   stageAllChanges,
@@ -13,6 +10,7 @@ import {
 } from "../git/gitOperations";
 import { updateVersion } from "../version/versionService";
 import { generateGeminiMessage } from "../ai/geminiService";
+import { getPreferredAIProvider } from "../ai/aiService";
 
 export class CommitService {
   private lastProcessedDiff = "";
