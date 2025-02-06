@@ -43,7 +43,7 @@ export class CommitService {
       // Try multiple times if generation fails
       while (attempt < this.maxRetries) {
         try {
-          const commitMessage = await generateGeminiMessage(diff);
+          const commitMessage = await generateCommitMessage(diff);
           if (commitMessage) {
             this.lastProcessedDiff = diff;
             return commitMessage;
@@ -103,7 +103,7 @@ export class CommitService {
 
       let commitMessage = "";
       const provider = await getPreferredAIProvider();
-
+      
       if (!provider) {
         vscode.window.showErrorMessage("No AI provider selected");
         return;
