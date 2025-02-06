@@ -62,4 +62,4 @@ Available commands can be accessed through the Command Palette (Ctrl+Shift+P):
 - `AI Auto Committer Enable Version Bumping`: Enables automatic version bumping on commits
 - `AI Auto Committer Disable Version Bumping`: Disables automatic version bumping on commits
 
-!!!!!!
+!!!
