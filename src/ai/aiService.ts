@@ -7,5 +7,5 @@ export enum AIProvider {
 
 export async function getPreferredAIProvider(): Promise<AIProvider> {
   const config = vscode.workspace.getConfiguration("gitAiCommitter");
-  return config.get<AIProvider>("preferredAIProvider", AIProvider.Gemini);
+  return config.get<AIProvider>("preferredAIProvider", AIProvider.Copilot);
 }
