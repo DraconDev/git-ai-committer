@@ -20,7 +20,7 @@ export function initializeModel(apiKey: string) {
   });
 }
 
-export async function generateCommitMessage(
+export async function generateGeminiMessage(
   diff: string
 ): Promise<string | null> {
   try {
