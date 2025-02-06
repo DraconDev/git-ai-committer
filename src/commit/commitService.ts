@@ -109,21 +109,17 @@ export class CommitService {
         return;
       }
 
-      if (provider === "gemini") {
+      if (provider === AIProvider.Gemini) {
         const geminiMessage = await this.handleCommitMessageGeneration(diff);
         if (!geminiMessage) {
-          vscode.window.showErrorMessage(
-            "Failed to generate message with Gemini"
-          );
+          vscode.window.showErrorMessage("Failed to generate message with Gemini");
           return;
         }
         commitMessage = geminiMessage;
-      } else if (provider === "copilot") {
+      } else if (provider === AIProvider.Copilot) {
         commitMessage = await generateWithCopilot(diff);
         if (!commitMessage) {
-          vscode.window.showErrorMessage(
-            "Failed to generate message with Copilot"
-          );
+          vscode.window.showErrorMessage("Failed to generate message with Copilot");
           return;
         }
       }
