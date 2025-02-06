@@ -10,6 +10,7 @@ import {
   pushChanges,
 } from "../git/gitOperations";
 import { updateVersion } from "../version/versionService";
+import { generateGeminiMessage } from "../ai/geminiService";
 
 export class CommitService {
   private lastProcessedDiff = "";
@@ -27,7 +28,6 @@ export class CommitService {
 
   checkIfDiffChanged(diff: string) {
     // Compare full diff content but normalize whitespace
-    const normalizedCurrent = diff.replace(/\s+/g, " ").trim();
     const normalizedLast = this.lastProcessedDiff.replace(/\s+/g, " ").trim();
 
     return normalizedCurrent !== normalizedLast;
