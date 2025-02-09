@@ -21,7 +21,7 @@ function getMinCommitDelay() {
   return (getConfig().get<number>("minCommitDelay") || 10) * 1000;
 }
 let generatingMessage = false;
-let lastCommitTime = 0;
+let lastCommitAttemptTime = 0;
 let changeQueue: vscode.TextDocumentChangeEvent[] = [];
 let isProcessingQueue = false;
 
@@ -69,12 +69,12 @@ async function processChangeQueue(): Promise<void> {
   }
 
   const now = Date.now();
-  if (now - lastCommitTime < getMinCommitDelay()) {
+  if (now - lastCommitAttemptTime < getMinCommitDelay()) {
     return;
   }
 
   isProcessingQueue = true;
-  lastCommitTime = Date.now(); // Update time before attempting commit
+  lastCommitAttemptTime = Date.now(); // Update time before attempting commit
   try {
     await autoCommitChanges();
     await pushChanges();
