@@ -74,11 +74,11 @@ async function processChangeQueue(): Promise<void> {
   }
 
   isProcessingQueue = true;
+  lastCommitTime = Date.now(); // Update time before attempting commit
   try {
     await autoCommitChanges();
     await pushChanges();
     changeQueue = [];
-    lastCommitTime = Date.now();
   } catch (error) {
     console.error("Error processing changes:", error);
     // Retry after delay
