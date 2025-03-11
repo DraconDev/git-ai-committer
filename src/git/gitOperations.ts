@@ -59,11 +59,11 @@ export async function pushChanges() {
   } catch (pullError) {
     console.error("Pull failed:", pullError);
     // If pull fails, show error but continue with push attempt
-    vscode.window.showErrorMessage(
-      `Failed to pull latest changes: ${
-        pullError instanceof Error ? pullError.message : "Unknown error"
-      }`
-    );
+    // vscode.window.showErrorMessage(
+    //   `Failed to pull latest changes: ${
+    //     pullError instanceof Error ? pullError.message : "Unknown error"
+    //   }`
+    // );
   }
   await git.push();
 
