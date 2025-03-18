@@ -95,10 +95,10 @@ export class CommitService {
     try {
       // Check for changes first
       const diff = await getGitDiff();
-      // if (!diff) {
-      //   console.debug("No diff found");
-      //   return;
-      // }
+      if (!diff) {
+        console.debug("No diff found");
+        return;
+      }
 
       await stageAllChanges();
       await updateVersion();
