@@ -8,9 +8,8 @@ import {
   getGitDiff,
   commitChanges,
   pushChanges,
-  getGitStatus,
 } from "../git/gitOperations";
-import { updateVersion, isVersionBumpingEnabled } from "../version/versionService";
+import { updateVersion } from "../version/versionService";
 import { generateGeminiMessage } from "../ai/geminiService";
 
 export class CommitService {
@@ -82,36 +81,30 @@ export class CommitService {
       return;
     }
 
+    const status = await git.status();
+
+    // Check if there are any changes to commit
+    if (
+      !status.modified.length &&
+      !status.not_added.length &&
+      !status.deleted.length
+    ) {
+      return;
+    }
+
     try {
-      // First check if there are any changes to commit
-      const status = await git.status();
-      if (
-        !status.modified.length &&
-        !status.not_added.length &&
-        !status.deleted.length
-      ) {
-        return;
-      }
-      
-      // First update version if enabled, this creates new changes
-      if (isVersionBumpingEnabled()) {
-        await updateVersion();
-      }
-      
-      // Stage all changes including version updates
-      await stageAllChanges();
-      
-      // Get diff AFTER staging all changes to capture everything including version updates
+      // Check for changes first
       const diff = await getGitDiff();
       if (!diff) {
-        console.debug("No diff found after staging");
+        console.debug("No diff found");
         return;
       }
+      await updateVersion();
+      await stageAllChanges();
 
-      // Generate commit message
       let commitMessage = "";
       const provider = await getPreferredAIProvider();
-      
+
       if (!provider) {
         vscode.window.showErrorMessage("No AI provider selected");
         return;
@@ -120,36 +113,27 @@ export class CommitService {
       if (provider === AIProvider.Gemini) {
         const geminiMessage = await this.handleCommitMessageGeneration(diff);
         if (!geminiMessage) {
-          // Fall back to a simple commit message if generation fails
-          commitMessage = this.generateSimpleCommitMessage(status);
-        } else {
-          commitMessage = geminiMessage;
+          vscode.window.showErrorMessage(
+            "Failed to generate message with Gemini"
+          );
+          return;
         }
+        commitMessage = geminiMessage;
       } else if (provider === AIProvider.Copilot) {
         commitMessage = await generateWithCopilot(diff);
         if (!commitMessage) {
-          // Fall back to a simple commit message if generation fails
-          commitMessage = this.generateSimpleCommitMessage(status);
+          vscode.window.showErrorMessage(
+            "Failed to generate message with Copilot"
+          );
+          return;
         }
       }
 
-      // Commit the staged changes
+      // Commit the changes
       await commitChanges(commitMessage);
 
-      // Push changes immediately
+      // Push changes
       await pushChanges();
-      
-      // Check if there are still uncommitted changes after push (might happen with version bumping)
-      const afterStatus = await git.status();
-      if (
-        afterStatus.modified.length ||
-        afterStatus.not_added.length ||
-        afterStatus.deleted.length
-      ) {
-        await stageAllChanges();
-        await commitChanges("chore: commit remaining changes after push");
-        await pushChanges();
-      }
     } catch (error: any) {
       if (error.message === "No changes to commit") {
         return;
@@ -159,16 +143,6 @@ export class CommitService {
         `Failed to commit changes: ${error.message}`
       );
     }
-  }
-  
-  // Simple fallback commit message generator
-  private generateSimpleCommitMessage(status: any): string {
-    const changedFiles = [...status.modified, ...status.not_added, ...status.deleted];
-    const fileCount = changedFiles.length;
-    const sampleFiles = changedFiles.slice(0, 3).join(", ");
-    const timestamp = new Date().toISOString().split("T")[1].slice(0, 5);
-    
-    return `chore: update ${fileCount} files (${sampleFiles}${fileCount > 3 ? '...' : ''}) at ${timestamp}`;
   }
 }
 
