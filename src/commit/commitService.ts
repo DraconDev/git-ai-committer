@@ -101,7 +101,7 @@ export class CommitService {
       }
 
       await updateVersion();
-      await stageAllChanges();
+      stageAllChanges();
 
       let commitMessage = "";
       const provider = await getPreferredAIProvider();
