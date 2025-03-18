@@ -49,7 +49,8 @@ export async function updateVersion(
     // Detect version files
     const versionFiles = await versionService.detectVersionFiles();
     if (versionFiles.length === 0) {
-      throw new Error("No version files found");
+      console.log("No version files found");
+      return null;
     }
 
     // Get current version from first detected file
@@ -57,21 +58,26 @@ export async function updateVersion(
       versionFiles[0]
     );
     if (!currentVersion) {
-      throw new Error("Could not determine current version");
+      console.log("Could not determine current version");
+      return null;
     }
 
     // Increment version based on type
     const newVersion = incrementVersion(currentVersion, incrementType);
     if (!newVersion) {
-      throw new Error("Could not increment version");
+      console.log("Could not increment version");
+      return null;
     }
 
     // Update all version files
     const files = await versionService.updateVersionFiles(newVersion);
     if (files.length === 0) {
-      throw new Error("Could not update version file");
+      console.log("No version files were updated");
+      return null;
     } else {
-      stageUpdatedFiles(files);
+      // Stage the updated files immediately
+      await stageUpdatedFiles(files);
+      console.log(`Version updated to ${newVersion} and files staged`);
     }
 
     return newVersion;
@@ -103,16 +109,35 @@ function incrementVersion(
   return versionParts.join(".");
 }
 
-async function stageUpdatedFiles(updatedFiles: string[]) {
+async function stageUpdatedFiles(updatedFiles: string[]): Promise<void> {
   if (!updatedFiles.length) {
     return;
   }
+  
   const workspacePath = vscode.workspace.workspaceFolders![0].uri.fsPath;
   const git = simpleGit(workspacePath);
+  
   try {
     await git.add(updatedFiles);
     console.log("Staged updated version files:", updatedFiles);
   } catch (err) {
     console.error("Error staging files with simple-git:", err);
+    
+    // Try alternative staging method if simple-git fails
+    try {
+      // Use VS Code's git extension API as a fallback
+      const gitExtension = vscode.extensions.getExtension('vscode.git')?.exports;
+      if (gitExtension) {
+        const api = gitExtension.getAPI(1);
+        const repository = api.repositories[0];
+        
+        if (repository) {
+          await Promise.all(updatedFiles.map(file => repository.add(file)));
+          console.log("Staged files using VS Code API:", updatedFiles);
+        }
+      }
+    } catch (fallbackErr) {
+      console.error("Error with fallback staging method:", fallbackErr);
+    }
   }
 }
