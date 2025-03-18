@@ -122,7 +122,7 @@ export class CommitService {
         commitMessage = await generateWithCopilot(diff);
         if (!commitMessage) {
           vscode.window.showErrorMessage(
-            "Failed to generate message with Copilot "
+            "Failed to generate message with Copilot"
           );
           return;
         }
