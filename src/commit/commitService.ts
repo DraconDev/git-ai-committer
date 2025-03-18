@@ -8,8 +8,9 @@ import {
   getGitDiff,
   commitChanges,
   pushChanges,
+  getGitStatus,
 } from "../git/gitOperations";
-import { updateVersion } from "../version/versionService";
+import { updateVersion, isVersionBumpingEnabled } from "../version/versionService";
 import { generateGeminiMessage } from "../ai/geminiService";
 
 export class CommitService {
@@ -99,6 +100,13 @@ export class CommitService {
         console.debug("No diff found");
         return;
       }
+
+      // First, update version before staging if enabled
+      if (isVersionBumpingEnabled()) {
+        await updateVersion();
+      }
+
+      // Now stage all changes including version updates
       await stageAllChanges();
 
       let commitMessage = "";
@@ -124,13 +132,14 @@ export class CommitService {
         }
       }
 
-      await updateVersion();
-
       // Commit the changes
       await commitChanges(commitMessage);
 
       // Push changes
       await pushChanges();
+      
+      // Check for remaining changes after push and handle them
+      await this.handleRemainingChanges();
     } catch (error: any) {
       if (error.message === "No changes to commit") {
         return;
@@ -139,6 +148,32 @@ export class CommitService {
       vscode.window.showErrorMessage(
         `Failed to commit changes: ${error.message}`
       );
+    }
+  }
+
+  // New method to handle any changes that might remain after push
+  async handleRemainingChanges() {
+    const status = await git.status();
+    
+    // If we have any changes remaining after push
+    if (status.modified.length || status.not_added.length || status.deleted.length) {
+      console.log("Remaining changes detected after push:", {
+        modified: status.modified,
+        not_added: status.not_added,
+        deleted: status.deleted
+      });
+      
+      // Auto-stage and commit remaining changes if any
+      await stageAllChanges();
+      
+      // Generate a simple commit message for remaining changes
+      const commitMessage = "chore: update version and remaining changes";
+      await commitChanges(commitMessage);
+      
+      // Push these remaining changes
+      await pushChanges();
+      
+      vscode.window.showInformationMessage("Additional changes were committed and pushed");
     }
   }
 }
