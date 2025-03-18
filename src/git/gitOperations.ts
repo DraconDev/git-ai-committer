@@ -55,7 +55,7 @@ export async function commitChanges(message: string): Promise<boolean> {
 export async function pushChanges() {
   // First try to pull any remote changes
   try {
-    await git.pull();
+    // await git.pull();
   } catch (pullError) {
     console.error("Pull failed:", pullError);
     // If pull fails, show error but continue with push attempt
