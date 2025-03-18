@@ -99,6 +99,7 @@ export class CommitService {
         console.debug("No diff found");
         return;
       }
+      await updateVersion();
       await stageAllChanges();
 
       let commitMessage = "";
@@ -127,8 +128,6 @@ export class CommitService {
           return;
         }
       }
-
-      await updateVersion();
 
       // Commit the changes
       await commitChanges(commitMessage);
