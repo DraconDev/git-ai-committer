@@ -53,21 +53,35 @@ export async function commitChanges(message: string): Promise<boolean> {
 }
 
 export async function pushChanges() {
-  // First try to pull any remote changes
-  // try {
-  //   // await git.pull();
-  // } catch (pullError) {
-  //   console.error("Pull failed:", pullError);
-  //   // If pull fails, show error but continue with push attempt
-  //   // vscode.window.showErrorMessage(
-  //   //   `Failed to pull latest changes: ${
-  //   //     pullError instanceof Error ? pullError.message : "Unknown error"
-  //   //   }`
-  //   // );
-  // }
-  await git.push();
-
-  // Attempt to push
+  try {
+    // Check if there are any unstaged changes before pushing
+    const statusBeforePush = await git.status();
+    if (statusBeforePush.modified.length || statusBeforePush.not_added.length) {
+      // If there are unstaged changes, stage and commit them first
+      await stageAllChanges();
+      await git.commit("chore: commit changes before push");
+    }
+    
+    // Push changes
+    await git.push();
+    
+    // Check for changes that may have been created during the push process
+    const statusAfterPush = await git.status();
+    if (statusAfterPush.modified.length || statusAfterPush.not_added.length || statusAfterPush.deleted.length) {
+      console.log("Changes detected after push:", statusAfterPush);
+      // These will be handled in the next commit cycle
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("Push failed:", error);
+    vscode.window.showErrorMessage(
+      `Failed to push changes: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`
+    );
+    return false;
+  }
 }
 
 export async function getGitDiff(): Promise<string> {
