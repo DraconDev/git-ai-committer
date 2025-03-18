@@ -101,7 +101,6 @@ export class CommitService {
       }
 
       await updateVersion();
-      git.add(".");
       await stageAllChanges();
 
       let commitMessage = "";
