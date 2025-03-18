@@ -99,8 +99,8 @@ export class CommitService {
         console.debug("No diff found");
         return;
       }
-      await updateVersion();
       await stageAllChanges();
+      await updateVersion();
 
       let commitMessage = "";
       const provider = await getPreferredAIProvider();
