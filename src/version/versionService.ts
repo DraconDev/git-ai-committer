@@ -103,11 +103,16 @@ function incrementVersion(
   return versionParts.join(".");
 }
 
-async function stageUpdatedFiles(updatedFiles: string[]) {
+async function stageUpdatedFiles(updatedFiles: string[]): Promise<void> {
   if (!updatedFiles.length) {
     return;
   }
-  const workspacePath = vscode.workspace.workspaceFolders![0].uri.fsPath;
+  const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+  if (!workspaceFolder) {
+    console.error("No workspace folder found to stage version files.");
+    return;
+  }
+  const workspacePath = workspaceFolder.uri.fsPath;
   const git = simpleGit(workspacePath);
   try {
     await git.add(updatedFiles);
