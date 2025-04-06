@@ -11,7 +11,6 @@ import {
   enableVersionBumping,
   disableVersionBumping,
 } from "../version/versionService";
-import { stageAllChanges } from "../git/gitOperations";
 
 export function registerCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(
