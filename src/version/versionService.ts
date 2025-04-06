@@ -39,7 +39,7 @@ export function isVersionBumpingEnabled(): boolean {
 
 export async function updateVersion(
   incrementType: VersionIncrementType = "patch"
-): Promise<string | null> {
+): Promise<string | false | null> { // string: success, false: staging failed, null: other error/disabled
   if (!isVersionBumpingEnabled()) {
     // Return null to explicitly indicate version bumping is disabled
     return null;
@@ -71,7 +71,11 @@ export async function updateVersion(
     if (files.length === 0) {
       throw new Error("Could not update version file");
     } else {
-      stageUpdatedFiles(files);
+      const staged = await stageUpdatedFiles(files);
+      if (!staged) {
+        console.error("Failed to stage updated version files.");
+        return false; // Indicate staging failure
+      }
     }
 
     return newVersion;
@@ -103,21 +107,23 @@ function incrementVersion(
   return versionParts.join(".");
 }
 
-async function stageUpdatedFiles(updatedFiles: string[]): Promise<void> {
+async function stageUpdatedFiles(updatedFiles: string[]): Promise<boolean> {
   if (!updatedFiles.length) {
-    return;
+    return true; // Nothing to stage, technically success
   }
   const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
   if (!workspaceFolder) {
     console.error("No workspace folder found to stage version files.");
-    return;
+    return false;
   }
   const workspacePath = workspaceFolder.uri.fsPath;
   const git = simpleGit(workspacePath);
   try {
     await git.add(updatedFiles);
     console.log("Staged updated version files:", updatedFiles);
+    return true; // Staging successful
   } catch (err) {
     console.error("Error staging files with simple-git:", err);
+    return false; // Staging failed
   }
 }
