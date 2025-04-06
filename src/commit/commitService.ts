@@ -11,6 +11,7 @@ import {
 } from "../git/gitOperations";
 import { updateVersion } from "../version/versionService";
 import { generateGeminiMessage } from "../ai/geminiService";
+import { error } from "console";
 
 export class CommitService {
   private lastProcessedDiff = "";
@@ -99,7 +100,7 @@ export class CommitService {
         console.debug("No diff found");
         return;
       }
-      // Stage all user changes *before* the initial commit
+      await updateVersion();
       await stageAllChanges();
 
       let commitMessage = "";
@@ -130,18 +131,9 @@ export class CommitService {
       }
 
       // Commit the changes
-      // Commit only the user's changes first
       await commitChanges(commitMessage);
 
-      // Now, update version files and stage them
-      const newVersion = await updateVersion();
-
-      // Amend the previous commit to include the version bump without changing the message
-      if (newVersion) { // Only amend if version was actually updated
-        await amendCommit();
-      }
-
-      // Push the potentially amended commit
+      // Push changes
       await pushChanges();
     } catch (error: any) {
       if (error.message === "No changes to commit") {
