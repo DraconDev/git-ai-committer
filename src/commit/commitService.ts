@@ -100,7 +100,7 @@ export class CommitService {
         console.debug("No diff found");
         return;
       }
-      await updateVersion();
+      // Stage all user changes *before* the initial commit
       await stageAllChanges();
 
       let commitMessage = "";
@@ -131,10 +131,25 @@ export class CommitService {
       }
 
       // Commit the changes
-      await commitChanges(commitMessage);
+      // Commit only the user's changes first
+      const commitSuccess = await commitChanges(commitMessage);
 
-      // Push changes
-      await pushChanges();
+      if (commitSuccess) {
+        // Now, update version files and stage them
+        const newVersion = await updateVersion(); // updateVersion already stages the files
+
+        // Amend the previous commit to include the version bump without changing the message
+        if (newVersion) { // Only amend if version was actually updated
+          // We'll add the amendCommit function to gitOperations next
+          await amendCommitWithoutEdit();
+        }
+
+        // Push the potentially amended commit
+        await pushChanges();
+      } else {
+         // Handle the case where the initial commit failed
+         vscode.window.showErrorMessage("Initial commit failed. Aborting version bump and push.");
+      }
     } catch (error: any) {
       if (error.message === "No changes to commit") {
         return;
