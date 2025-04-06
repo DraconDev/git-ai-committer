@@ -82,18 +82,3 @@ export async function getGitDiff(): Promise<string> {
     return "";
   }
 }
-}
-
-export async function getStagedGitDiff(): Promise<string> {
-  try {
-    // Use --staged to get the diff of staged changes
-    return await git.diff(["--staged"]);
-  } catch (error) {
-    vscode.window.showErrorMessage(
-      `Failed to get staged diff: ${
-        error instanceof Error ? error.message : "Unknown error"
-      }`
-    );
-    return "";
-  }
-}
