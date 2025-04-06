@@ -24,9 +24,9 @@ export async function getGitStatus(): Promise<{
   };
 }
 
-export function stageAllChanges(): boolean {
+export async function stageAllChanges(): Promise<boolean> {
   try {
-    git.add(".");
+    await git.add(".");
     return true;
   } catch (error) {
     vscode.window.showErrorMessage(
