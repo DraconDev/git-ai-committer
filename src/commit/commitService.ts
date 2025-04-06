@@ -99,7 +99,7 @@ export class CommitService {
         console.debug("No diff found");
         return;
       }
-      await updateVersion();
+      // Stage all user changes *before* the initial commit
       await stageAllChanges();
 
       let commitMessage = "";
@@ -130,9 +130,18 @@ export class CommitService {
       }
 
       // Commit the changes
+      // Commit only the user's changes first
       await commitChanges(commitMessage);
 
-      // Push changes
+      // Now, update version files and stage them
+      const newVersion = await updateVersion();
+
+      // Amend the previous commit to include the version bump without changing the message
+      if (newVersion) { // Only amend if version was actually updated
+        await amendCommit();
+      }
+
+      // Push the potentially amended commit
       await pushChanges();
     } catch (error: any) {
       if (error.message === "No changes to commit") {
