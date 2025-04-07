@@ -100,8 +100,21 @@ export class CommitService {
         console.debug("No diff found");
         return;
       }
-      await updateVersion();
-      await stageAllChanges();
+      const versionUpdateResult = await updateVersion();
+      // Check if version update failed specifically due to staging
+      if (versionUpdateResult === false) {
+        vscode.window.showErrorMessage("Failed to stage version files. Aborting commit.");
+        return;
+      }
+      // Allow proceeding if version bumping is disabled (null) or succeeded (string)
+
+      const stagedAll = await stageAllChanges();
+      if (!stagedAll) {
+        vscode.window.showErrorMessage("Failed to stage changes. Aborting commit.");
+        // Consider if we need to unstage the version file here if versionUpdateResult was a string?
+        // For now, let's assume leaving it staged is acceptable as the commit is aborted.
+        return;
+      }
 
       let commitMessage = "";
       const provider = await getPreferredAIProvider();
