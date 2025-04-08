@@ -90,36 +90,29 @@ export class CommitService {
       !status.not_added.length &&
       !status.deleted.length
     ) {
-      return;
-    }
-
-    try {
-      // Check for changes first
-      const diff = await getGitDiff();
-      if (!diff) {
-        console.debug("No diff found");
-        return;
-      }
-      const versionUpdateResult = await updateVersion();
-      // Check if version update failed specifically due to staging
-      if (versionUpdateResult === false) {
-        vscode.window.showErrorMessage("Failed to stage version files. Aborting commit.");
-        return;
-      }
-      // Allow proceeding if version bumping is disabled (null) or succeeded (string)
-
-      const stagedAll = await stageAllChanges();
-      if (!stagedAll) {
-        vscode.window.showErrorMessage("Failed to stage changes. Aborting commit.");
-        // Consider if we need to unstage the version file here if versionUpdateResult was a string?
-        // For now, let's assume leaving it staged is acceptable as the commit is aborted.
         return;
       }
 
-      let commitMessage = "";
-      const provider = await getPreferredAIProvider();
+      try {
+        // 1. Check for changes first
+        const diff = await getGitDiff();
+        if (!diff) {
+          console.debug("No diff found");
+          return;
+        }
 
-      if (!provider) {
+        // 2. Stage all existing changes (excluding potential version files initially)
+        const stagedAll = await stageAllChanges();
+        if (!stagedAll) {
+          vscode.window.showErrorMessage("Failed to stage changes. Aborting commit.");
+          return;
+        }
+
+        // 3. Generate commit message based on the staged changes
+        let commitMessage = "";
+        const provider = await getPreferredAIProvider();
+
+        if (!provider) {
         vscode.window.showErrorMessage("No AI provider selected");
         return;
       }
@@ -143,10 +136,21 @@ export class CommitService {
         }
       }
 
-      // Commit the changes
+      // 4. Update version and stage version files (if enabled)
+      const versionUpdateResult = await updateVersion();
+      // Check if version update failed specifically due to staging
+      if (versionUpdateResult === false) {
+        vscode.window.showErrorMessage("Failed to stage version files. Aborting commit.");
+        // Note: We might want to unstage the previously staged changes here,
+        // but for now, we'll leave them staged and abort.
+        return;
+      }
+      // Allow proceeding if version bumping is disabled (null) or succeeded (string)
+
+      // 5. Commit all staged changes (original + version files)
       await commitChanges(commitMessage);
 
-      // Push changes
+      // 6. Push changes
       await pushChanges();
     } catch (error: any) {
       if (error.message === "No changes to commit") {
