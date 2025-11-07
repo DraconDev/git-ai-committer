@@ -84,7 +84,7 @@ export class CommitService {
         return;
       }
 
-      // 2. Generate commit message from all changes
+      // 2. Generate commit message from changes (before version bump)
       let commitMessage = "";
       const provider = await getPreferredAIProvider();
 
