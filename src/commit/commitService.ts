@@ -7,6 +7,7 @@ import {
   stageAllChanges,
   getGitDiff,
   commitChanges,
+  commitReset,
   pushChanges,
 } from "../git/gitOperations";
 import { updateVersion } from "../version/versionService";
@@ -78,28 +79,16 @@ export class CommitService {
     }
 
     try {
-      // 1. Auto-manage .gitignore first (to ensure ignored files are properly excluded)
+      // 1. Auto-manage .gitignore first
       await this.updateGitignore();
 
-      // 2. Capture snapshot of current changes (for accurate message/commit matching)
-      const currentStatus = await git.status();
-      const snapshotFiles = [
-        ...currentStatus.modified,
-        ...currentStatus.not_added,
-        ...currentStatus.deleted
-      ];
-
-      if (snapshotFiles.length === 0) {
-        return; // No changes to commit
-      }
-
-      // 3. Get diff from snapshot files only
-      const cleanDiff = await this.getSnapshotDiff(snapshotFiles);
-      if (!cleanDiff) {
+      // 2. Get current diff for AI message generation
+      const currentDiff = await getGitDiff();
+      if (!currentDiff) {
         return;
       }
 
-      // 4. Generate commit message from snapshot
+      // 3. Generate commit message from current changes
       let commitMessage = "";
       const provider = await getPreferredAIProvider();
 
@@ -109,18 +98,25 @@ export class CommitService {
       }
 
       if (provider === AIProvider.Gemini) {
-        const geminiMessage = await this.handleCommitMessageGeneration(cleanDiff);
+        const geminiMessage = await this.handleCommitMessageGeneration(currentDiff);
         if (!geminiMessage) {
           vscode.window.showErrorMessage("Failed to generate message with Gemini");
           return;
         }
         commitMessage = geminiMessage;
       } else if (provider === AIProvider.Copilot) {
-        commitMessage = await generateWithCopilot(cleanDiff);
+        commitMessage = await generateWithCopilot(currentDiff);
         if (!commitMessage) {
           vscode.window.showErrorMessage("Failed to generate message with Copilot");
           return;
         }
+      }
+
+      // 4. Stage ALL current changes first
+      const stagedAll = await stageAllChanges();
+      if (!stagedAll) {
+        vscode.window.showErrorMessage("Failed to stage changes");
+        return;
       }
 
       // 5. Bump version (this creates new changes)
@@ -130,19 +126,27 @@ export class CommitService {
         return;
       }
 
-      // 6. Stage ONLY the snapshot files (not any new changes)
-      const snapshotStaged = await this.stageSnapshotFiles(snapshotFiles);
-      if (!snapshotStaged) {
-        vscode.window.showErrorMessage("Failed to stage snapshot files");
+      // 6. Stage version changes too
+      const stagedVersion = await stageAllChanges();
+      if (!stagedVersion) {
+        vscode.window.showErrorMessage("Failed to stage version changes");
         return;
       }
 
-      // 7. Commit snapshot + version changes and push
-      await commitChanges(commitMessage);
-      await pushChanges();
-      
-      // Reset failure state on successful commit
-      this.lastCommitAttemptTime = 0;
+      // 7. Try to commit all changes
+      try {
+        await commitChanges(commitMessage);
+        
+        // 8. If commit succeeds, push
+        await pushChanges();
+        
+        // Reset failure state on successful commit
+        this.lastCommitAttemptTime = 0;
+      } catch (commitError) {
+        // 9. If commit fails, undo everything
+        await this.undoAllChanges();
+        vscode.window.showErrorMessage(`Failed to commit: ${commitError.message}`);
+      }
     } catch (error: any) {
       if (error.message === "No changes to commit") {
         return;
@@ -151,34 +155,19 @@ export class CommitService {
     }
   }
 
-  private async getSnapshotDiff(snapshotFiles: string[]): Promise<string | null> {
+  private async undoAllChanges(): Promise<void> {
     try {
-      // Generate diff only for the snapshot files
-      const diffs = await Promise.all(
-        snapshotFiles.map(file => this.getFileDiff(file))
-      );
-      return diffs.filter(diff => diff).join('\n\n');
+      // Reset the commit
+      await commitReset();
+      
+      // Stage and commit the version bump removal
+      const stagedVersion = await stageAllChanges();
+      if (stagedVersion) {
+        await commitChanges("Revert version bump due to commit failure");
+      }
     } catch (error) {
-      return null;
-    }
-  }
-
-  private async getFileDiff(filePath: string): Promise<string | null> {
-    try {
-      const diff = await git.diff(['--', filePath]);
-      return diff || null;
-    } catch (error) {
-      return null;
-    }
-  }
-
-  private async stageSnapshotFiles(snapshotFiles: string[]): Promise<boolean> {
-    try {
-      // Stage only the snapshot files, not any new changes
-      await git.add(snapshotFiles);
-      return true;
-    } catch (error) {
-      return false;
+      console.error('Failed to undo changes:', error);
+      // Don't show error to user, this is cleanup
     }
   }
 
