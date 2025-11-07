@@ -81,13 +81,25 @@ export class CommitService {
       // 1. Auto-manage .gitignore first (to ensure ignored files are properly excluded)
       await this.updateGitignore();
 
-      // 2. Get fresh diff after .gitignore update (excludes ignored files)
-      const cleanDiff = await getGitDiff();
+      // 2. Capture snapshot of current changes (for accurate message/commit matching)
+      const currentStatus = await git.status();
+      const snapshotFiles = [
+        ...currentStatus.modified,
+        ...currentStatus.not_added,
+        ...currentStatus.deleted
+      ];
+
+      if (snapshotFiles.length === 0) {
+        return; // No changes to commit
+      }
+
+      // 3. Get diff from snapshot files only
+      const cleanDiff = await this.getSnapshotDiff(snapshotFiles);
       if (!cleanDiff) {
         return;
       }
 
-      // 3. Generate commit message from clean changes
+      // 4. Generate commit message from snapshot
       let commitMessage = "";
       const provider = await getPreferredAIProvider();
 
@@ -111,21 +123,21 @@ export class CommitService {
         }
       }
 
-      // 4. Bump version (this creates new changes)
+      // 5. Bump version (this creates new changes)
       const versionUpdateResult = await updateVersion();
       if (versionUpdateResult === false) {
         vscode.window.showErrorMessage("Failed to update version");
         return;
       }
 
-      // 5. Stage all changes
-      const stagedAll = await stageAllChanges();
-      if (!stagedAll) {
-        vscode.window.showErrorMessage("Failed to stage changes");
+      // 6. Stage ONLY the snapshot files (not any new changes)
+      const snapshotStaged = await this.stageSnapshotFiles(snapshotFiles);
+      if (!snapshotStaged) {
+        vscode.window.showErrorMessage("Failed to stage snapshot files");
         return;
       }
 
-      // 6. Commit all and push
+      // 7. Commit snapshot + version changes and push
       await commitChanges(commitMessage);
       await pushChanges();
       
@@ -136,6 +148,37 @@ export class CommitService {
         return;
       }
       vscode.window.showErrorMessage(`Failed to commit changes: ${error.message}`);
+    }
+  }
+
+  private async getSnapshotDiff(snapshotFiles: string[]): Promise<string | null> {
+    try {
+      // Generate diff only for the snapshot files
+      const diffs = await Promise.all(
+        snapshotFiles.map(file => this.getFileDiff(file))
+      );
+      return diffs.filter(diff => diff).join('\n\n');
+    } catch (error) {
+      return null;
+    }
+  }
+
+  private async getFileDiff(filePath: string): Promise<string | null> {
+    try {
+      const diff = await git.diff(['--', filePath]);
+      return diff || null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  private async stageSnapshotFiles(snapshotFiles: string[]): Promise<boolean> {
+    try {
+      // Stage only the snapshot files, not any new changes
+      await git.add(snapshotFiles);
+      return true;
+    } catch (error) {
+      return false;
     }
   }
 
