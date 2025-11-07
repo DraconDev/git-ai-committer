@@ -146,7 +146,6 @@ export class CommitService {
       );
     }
   }
-  }
 
   private async updateGitignore(): Promise<void> {
     try {
@@ -203,6 +202,6 @@ export class CommitService {
     }
   }
 }
-}
+
 
 export const commitService = new CommitService();
