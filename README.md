@@ -2,92 +2,154 @@
 
 # Git AI Auto Committer
 
-### AI-powered automatic commit message generation and committing
+### AI-powered automatic commit message generation with smart filtering
 
 </div>
 
-Git AI Auto Committer is a VS Code extension that automatically generates meaningful commit messages using either Google's Gemini AI or GitHub Copilot. It helps developers maintain a clean and descriptive git history without the hassle of writing commit messages manually.
+Git AI Auto Committer is a VS Code extension that automatically generates meaningful commit messages and commits your changes. It works intelligently by monitoring your activity and committing when you naturally stop working, with advanced filtering to prevent noise commits.
 
 > Developed by [DraconDev](https://github.com/DraconDev)
 
-## Features
+## ✨ Features
 
-- Automatically generates commit messages based on your code changes
-- Multiple AI providers:
-  - Google's Gemini AI for intelligent message generation
-  - GitHub Copilot integration for commit messages
-- Smart source control integration:
-  - Uses existing message from the source control input box if available
-  - Falls back to AI generation if no message is provided
-- Configurable auto-commit intervals
-- Manual commit generation option
-- Inactivity-based commit triggers
-- Version bumping with patch/minor increments
-- Enable/disable version bumping functionality
+- **Smart Activity-Based Commits**: No more fixed intervals - commits when you naturally stop working
+- **AI-Powered Messages**: Uses Google's Gemini AI or GitHub Copilot for intelligent commit messages
+- **Smart File Filtering**: Automatically ignores temp files, logs, build artifacts, and sensitive files
+- **Intelligent Version Bumper**: Only commits when there are real code changes, not just version bumps
+- **Anti-Spam System**: Dual delay system prevents rapid commits and API spam
+- **Manual Override**: Always available for when you need immediate commits
 
-## Requirements
+## 📦 Requirements
 
 - VS Code 1.96.0 or higher
 - Node.js 20.x or higher
-- A Google Gemini API key (get it from [Google AI Studio](https://aistudio.google.com/apikey)) if using Gemini
-- GitHub Copilot extension installed and authenticated if using Copilot
-- Git repository with initialized git config
+- **For Gemini AI**: Google Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey)
+- **For Copilot**: GitHub Copilot extension installed and authenticated
+- Git repository with proper configuration
 
-## Extension Settings
+## ⚙️ Extension Settings
 
-This extension contributes the following settings:
+This extension contributes these settings (configure in VS Code settings):
 
-- `gitAiCommitter.enabled`: Enable/disable automatic commits (default: true)
-- `gitAiCommitter.preferredAIProvider`: Choose between "gemini" or "copilot" for commit message generation (default: "gemini")
-- `gitAiCommitter.geminiApiKey`: Your Google Gemini API key for generating commit messages
-- `gitAiCommitter.commitInterval`: Interval in minutes between automatic commits (0 to disable, default: 10)
-- `gitAiCommitter.inactivityTimeout`: Trigger commit after this many seconds of inactivity (0 to disable, default: 5)
-- `gitAiCommitter.minCommitDelay`: Minimum delay in seconds between commits (default: 15)
+**Core Settings:**
+- `gitAiCommitter.preferredAIProvider`: Choose `"gemini"` or `"copilot"` (default: `"gemini"`)
+- `gitAiCommitter.geminiApiKey`: Your Google Gemini API key
 
-## How to Use
+**Timing & Behavior:**
+- `gitAiCommitter.inactivityDelay`: Seconds to wait after stopping typing before checking for commits (default: 5)
+- `gitAiCommitter.minCommitDelay`: Minimum seconds between actual commits (default: 15)
 
-1. Install the extension
-2. Choose your preferred AI provider in settings:
-   - For Gemini: Get your API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
-   - For Copilot: Ensure you have GitHub Copilot installed and authenticated
-3. Enable auto-commit using the command palette or settings
-4. Start coding! The extension will:
-   - Check for messages in the source control input box
-   - Generate commit messages using your chosen AI provider if no message exists
-   - Commit changes after 5 seconds of inactivity
-   - Ensure at least 10 seconds between commits
-   - Commit every 2 minutes during active work
+**Smart Filtering:**
+- `gitAiCommitter.ignoredFilePatterns`: Array of file patterns to skip during commits (default: `["*.tmp", "*.temp", "*.log", "*.cache", "*.dll", "*.exe", "*.env"]`)
 
-## Manual Message Entry
+## 🚀 How It Works
 
-You can provide your own commit message at any time:
+### The Dual-Delay System
 
-1. Type your message in the source control input box
-2. The extension will use your message for the next commit
-3. The input box will be cleared after the commit
+Unlike simple auto-committers, this uses a sophisticated dual-delay system:
 
-## Commands
+1. **Inactivity Detection**: After you stop typing for the configured delay (5s default), the system checks if you should commit
+2. **Minimum Commit Delay**: Only commits if the minimum delay (15s default) has passed since your last commit
+3. **Real Change Detection**: Only commits when there are actual code changes (not just config or version files)
 
-Available commands can be accessed through the Command Palette (Ctrl+Shift+P):
+### Example Workflow
 
-- `AI Auto Committer Enable Auto Commit`: Enables automatic commit generation
-- `AI Auto Committer Disable Auto Commit`: Disables automatic commit generation
-- `AI Auto Committer Commit Now`: Manually triggers commit message generation and commits changes
-- `AI Auto Committer Set Gemini API Key`: Set your Gemini API key
-- `AI Auto Committer Set AI Provider`: Switch between Gemini and Copilot
-- `AI Auto Committer Set Commit Interval`: Configure automatic commit interval
-- `AI Auto Committer Set Inactivity Delay`: Configure inactivity delay before commit
-- `AI Auto Committer Enable Version Bumping`: Enables automatic version bumping on commits
-- `AI Auto Committer Disable Version Bumping`: Disables automatic version bumping on commits
+```
+Type some code → stop for 5s → system checks: only 5s since last work → NO COMMIT
+Continue typing → stop for 10s → system checks: 15s+ since last commit → COMMIT!
+```
 
-## License
+### Smart File Filtering
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+Automatically prevents commits containing:
+- **Temp files**: `.tmp`, `.temp`, editor swap files
+- **Log files**: `.log`, debug outputs
+- **Build artifacts**: `.dll`, `.exe`, `.o` files
+- **Cache files**: `.cache`, build cache
+- **Sensitive files**: `.env`, `.secrets` (while allowing `.env.example`)
 
-## Contributing
+## 🛠️ Commands
 
-Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+Access via Command Palette (Ctrl+Shift+P):
 
-## Support
+**Core Functions:**
+- `Git AI Committer: Enable Auto Commit` - Start automatic commits
+- `Git AI Committer: Disable Auto Commit` - Stop automatic commits
+- `Git AI Committer: Commit Now` - Force immediate commit
 
-If you encounter any issues or have questions, please [create an issue](https://github.com/DraconDev/git-ai-committer/issues) on GitHub.
+**AI Configuration:**
+- `Git AI Committer: Set Gemini API Key` - Configure your API key
+- `Git AI Committer: Set AI Provider` - Switch between Gemini and Copilot
+
+**Timing & Behavior:**
+- `Git AI Committer: Set Inactivity Delay` - Configure when to check for commits (5s default)
+- `Git AI Committer: Set Min Commit Delay` - Configure minimum time between commits (15s default)
+
+**Smart Features:**
+- `Git AI Committer: Manage Ignored Files` - Open settings to configure file filtering
+- `Git AI Committer: Enable/Disable Version Bumping` - Control automatic version updates
+
+## 💡 Usage Tips
+
+1. **Start Simple**: Enable auto-commit and let it work with defaults
+2. **Fine-Tune Timing**: Adjust delays based on your workflow
+3. **Configure Filtering**: Add your project's specific file patterns to ignore
+4. **Manual When Needed**: Use "Commit Now" for immediate commits
+
+### Recommended Settings
+
+**For Active Development:**
+- Inactivity Delay: 3-5 seconds
+- Min Commit Delay: 10-15 seconds
+
+**For Thinking-Heavy Work:**
+- Inactivity Delay: 10-15 seconds  
+- Min Commit Delay: 20-30 seconds
+
+## 🧠 AI Providers
+
+### Google Gemini (Recommended)
+- **Cost**: Free for our use case (API key required, generous free tier)
+- **Quality**: Excellent commit message generation
+- **Setup**: Get free API key from [Google AI Studio](https://aistudio.google.com/apikey)
+- **Reliability**: Consistent performance with good error handling
+
+### GitHub Copilot
+- **Cost**: Included with Copilot subscription
+- **Quality**: Good commit messages, uses existing code context
+- **Setup**: Requires Copilot extension and authentication
+- **Integration**: Seamlessly works with VS Code
+
+## 🔧 Troubleshooting
+
+**No Commits Happening:**
+- Check that you have actual code changes (not just config files)
+- Verify your AI provider is configured correctly
+- Ensure the minimum commit delay hasn't just reset
+
+**Too Many/Few Commits:**
+- Adjust `inactivityDelay` for responsiveness vs. interruptions
+- Adjust `minCommitDelay` for commit frequency
+- Add more patterns to `ignoredFilePatterns` if needed
+
+**AI Generation Issues:**
+- For Gemini: Verify your API key is valid and has quota
+- For Copilot: Ensure you're authenticated and have an active subscription
+- The system includes automatic retry with backoff for transient failures
+
+## 🤝 Contributing
+
+Contributions welcome! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License - see [LICENSE.md](LICENSE.md) for details.
+
+## 🆘 Support
+
+For issues, questions, or feature requests, please [create an issue](https://github.com/DraconDev/git-ai-committer/issues) on GitHub.

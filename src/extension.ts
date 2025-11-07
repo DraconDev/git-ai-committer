@@ -101,11 +101,8 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   // Enable auto-commit by default
-  const interval = vscode.workspace
-    .getConfiguration("gitAiCommitter")
-    .get<number>("commitInterval", 60000); // Default to 1 minute
   try {
-    enableAutoCommit(interval);
+    enableAutoCommit();
     // Periodically check for git repo initialization
     setInterval(async () => {
       if (!gitInitialized) {

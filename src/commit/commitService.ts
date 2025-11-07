@@ -72,16 +72,27 @@ export class CommitService {
   private async hasRealChanges(status: any): Promise<boolean> {
     // Check if there are changes to non-version files
     const versionFiles = this.getVersionFiles();
+    const ignoredExtensions = this.getIgnoredExtensions();
     const allChangedFiles = [
       ...status.modified,
       ...status.not_added,
       ...status.deleted
     ];
     
-    // Filter out version files to see if there are real changes
-    const realChanges = allChangedFiles.filter(file => 
-      !versionFiles.some(versionFile => file.includes(versionFile))
-    );
+    // Filter out version files and ignored extensions
+    const realChanges = allChangedFiles.filter(file => {
+      // Skip version files
+      if (versionFiles.some(versionFile => file.includes(versionFile))) {
+        return false;
+      }
+      
+      // Skip files with ignored patterns
+      if (ignoredExtensions.some(pattern => this.matchesPattern(file, pattern))) {
+        return false;
+      }
+      
+      return true;
+    });
     
     return realChanges.length > 0;
   }
@@ -94,6 +105,26 @@ export class CommitService {
       "wxt.config.ts", "wxt.config.js"
     ];
     return versionFiles;
+  }
+
+  private getIgnoredExtensions(): string[] {
+    const config = vscode.workspace.getConfiguration("gitAiCommitter");
+    return config.get<string[]>("ignoredFilePatterns", [
+      "*.tmp", "*.temp", "*.log", "*.cache", "*.dll", "*.exe", "*.env"
+    ]);
+  }
+
+  private matchesPattern(fileName: string, pattern: string): boolean {
+    // Handle simple patterns like "*.tmp" or specific files like ".env"
+    if (pattern.startsWith("*.")) {
+      const extension = pattern.substring(1); // Remove "*"
+      return fileName.endsWith(extension);
+    } else if (pattern.startsWith(".") && !pattern.includes("/")) {
+      // Handle specific file names like ".env" (but not paths like "./src/.env")
+      const basename = fileName.split("/").pop() || fileName;
+      return basename === pattern;
+    }
+    return false;
   }
 
   async performCommit() {

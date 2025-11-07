@@ -2,15 +2,14 @@ import * as vscode from "vscode";
 import { pushChanges } from "../git/gitOperations";
 import { commitService } from "../commit/commitService";
 
-let autoCommitInterval: NodeJS.Timeout | null = null;
 let inactivityTimeout: NodeJS.Timeout | null = null;
+let generatingMessage = false;
+let lastCommitAttemptTime = 0;
+let changeQueue: vscode.TextDocumentChangeEvent[] = [];
+let isProcessingQueue = false;
 
 function getConfig() {
   return vscode.workspace.getConfiguration("gitAiCommitter");
-}
-
-function getAutoCommitInterval() {
-  return (getConfig().get<number>("autoCommitInterval") || 10) * 60 * 1000;
 }
 
 function getInactivityDelay() {
@@ -20,10 +19,6 @@ function getInactivityDelay() {
 function getMinCommitDelay() {
   return (getConfig().get<number>("minCommitDelay") || 15) * 1000;
 }
-let generatingMessage = false;
-let lastCommitAttemptTime = 0;
-let changeQueue: vscode.TextDocumentChangeEvent[] = [];
-let isProcessingQueue = false;
 
 function resetInactivityTimer(event?: vscode.TextDocumentChangeEvent) {
   if (event) {
@@ -38,12 +33,11 @@ function resetInactivityTimer(event?: vscode.TextDocumentChangeEvent) {
   }, getInactivityDelay());
 }
 
-export function enableAutoCommit(intervalMs?: number): void {
-  if (autoCommitInterval) {
-    clearInterval(autoCommitInterval);
-  }
+export function enableAutoCommit(): void {
+  // Clear any existing timers
   if (inactivityTimeout) {
     clearTimeout(inactivityTimeout);
+    inactivityTimeout = null;
   }
 
   // Setup activity monitoring
@@ -53,14 +47,6 @@ export function enableAutoCommit(intervalMs?: number): void {
 
   // Start initial inactivity timer
   resetInactivityTimer();
-
-  // Start regular interval commits
-  autoCommitInterval = setInterval(async () => {
-    if (generatingMessage || isProcessingQueue) {
-      return;
-    }
-    await processChangeQueue();
-  }, intervalMs ?? getAutoCommitInterval());
 }
 
 async function processChangeQueue(): Promise<void> {
@@ -89,10 +75,6 @@ async function processChangeQueue(): Promise<void> {
 }
 
 export function disableAutoCommit(): void {
-  if (autoCommitInterval) {
-    clearInterval(autoCommitInterval);
-    autoCommitInterval = null;
-  }
   if (inactivityTimeout) {
     clearTimeout(inactivityTimeout);
     inactivityTimeout = null;
