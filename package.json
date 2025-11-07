@@ -2,7 +2,7 @@
   "name": "git-ai-committer",
   "displayName": "Git AI Auto Committer",
   "description": "Automatically generates commit messages and commits changes using AI",
-  "version": "3.6.0",
+  "version": "3.7.0",
   "publisher": "devdrac",
   "icon": "media/logo.png",
   "galleryBanner": {
@@ -28,51 +28,48 @@
     "commands": [
       {
         "command": "git-ai-committer.enableAutoCommit",
-        "title": "AI Auto Committer Enable Auto Commit"
+        "title": "Git AI Committer: Enable Auto Commit"
       },
       {
         "command": "git-ai-committer.disableAutoCommit",
-        "title": "AI Auto Committer Disable Auto Commit"
+        "title": "Git AI Committer: Disable Auto Commit"
       },
       {
         "command": "git-ai-committer.commitNow",
-        "title": "AI Auto Committer Commit Now"
+        "title": "Git AI Committer: Commit Now"
       },
       {
         "command": "git-ai-committer.setGeminiApiKey",
-        "title": "AI Auto Committer Set Gemini API Key"
-      },
-      {
-        "command": "git-ai-committer.setCommitInterval",
-        "title": "AI Auto Committer Set Commit Interval"
+        "title": "Git AI Committer: Set Gemini API Key"
       },
       {
         "command": "git-ai-committer.setInactivityDelay",
-        "title": "AI Auto Committer Set Inactivity Delay"
+        "title": "Git AI Committer: Set Inactivity Delay"
+      },
+      {
+        "command": "git-ai-committer.setMinCommitDelay",
+        "title": "Git AI Committer: Set Min Commit Delay"
+      },
+      {
+        "command": "git-ai-committer.manageIgnoredFiles",
+        "title": "Git AI Committer: Manage Ignored Files"
       },
       {
         "command": "git-ai-committer.enableVersionBumping",
-        "title": "AI Auto Committer Enable Version Bumping"
+        "title": "Git AI Committer: Enable Version Bumping"
       },
       {
         "command": "git-ai-committer.disableVersionBumping",
-        "title": "AI Auto Committer Disable Version Bumping"
+        "title": "Git AI Committer: Disable Version Bumping"
       },
       {
         "command": "git-ai-committer.setPreferredAIProvider",
-        "title": "AI Auto Committer Set Preferred AI Provider"
+        "title": "Git AI Committer: Set AI Provider"
       }
     ],
     "configuration": {
-      "title": "Git AI Auto Committer",
+      "title": "Git AI Committer",
       "properties": {
-        "gitAiCommitter.enabled": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enable/disable automatic commits",
-          "scope": "application",
-          "order": 1
-        },
         "gitAiCommitter.preferredAIProvider": {
           "type": "string",
           "enum": [
@@ -80,32 +77,39 @@
             "gemini"
           ],
           "default": "gemini",
-          "description": "Preferred AI provider for generating commit messages (will fallback to the other if preferred is not available)",
+          "description": "Preferred AI provider for generating commit messages",
           "scope": "application",
-          "order": 2
+          "order": 1
         },
         "gitAiCommitter.geminiApiKey": {
           "type": "string",
           "default": "",
           "description": "Google Gemini API Key for generating commit messages. Get your API key from https://aistudio.google.com/apikey",
           "scope": "application",
+          "order": 2
+        },
+        "gitAiCommitter.inactivityDelay": {
+          "type": "integer",
+          "default": 5,
+          "minimum": 1,
+          "maximum": 3600,
+          "description": "Seconds to wait after stopping typing before checking for commits",
+          "scope": "application",
           "order": 3
         },
-        "gitAiCommitter.commitInterval": {
+        "gitAiCommitter.minCommitDelay": {
           "type": "integer",
-          "default": 60,
-          "minimum": 0,
+          "default": 15,
+          "minimum": 5,
           "maximum": 3600,
-          "description": "Interval in seconds between automatic commits (0 to disable)",
+          "description": "Minimum seconds between actual commits (prevents rapid commits)",
           "scope": "application",
           "order": 4
         },
-        "gitAiCommitter.inactivityTimeout": {
-          "type": "integer",
-          "default": 10,
-          "minimum": 0,
-          "maximum": 3600,
-          "description": "Trigger commit after this many seconds of inactivity (0 to disable)",
+        "gitAiCommitter.ignoredFilePatterns": {
+          "type": "array",
+          "default": ["*.tmp", "*.temp", "*.log", "*.cache", "*.dll", "*.exe", "*.env"],
+          "description": "File patterns to ignore during auto commits (temp files, logs, etc.)",
           "scope": "application",
           "order": 5
         },
