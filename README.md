@@ -40,9 +40,9 @@ This extension contributes the following settings:
 - `gitAiCommitter.enabled`: Enable/disable automatic commits (default: true)
 - `gitAiCommitter.preferredAIProvider`: Choose between "gemini" or "copilot" for commit message generation (default: "gemini")
 - `gitAiCommitter.geminiApiKey`: Your Google Gemini API key for generating commit messages
-- `gitAiCommitter.commitInterval`: Interval in minutes between automatic commits (0 to disable, default: 2)
+- `gitAiCommitter.commitInterval`: Interval in minutes between automatic commits (0 to disable, default: 10)
 - `gitAiCommitter.inactivityTimeout`: Trigger commit after this many seconds of inactivity (0 to disable, default: 5)
-- `gitAiCommitter.minCommitDelay`: Minimum delay in seconds between commits (default: 10)
+- `gitAiCommitter.minCommitDelay`: Minimum delay in seconds between commits (default: 15)
 
 ## How to Use
 
@@ -79,3 +79,15 @@ Available commands can be accessed through the Command Palette (Ctrl+Shift+P):
 - `AI Auto Committer Set Inactivity Delay`: Configure inactivity delay before commit
 - `AI Auto Committer Enable Version Bumping`: Enables automatic version bumping on commits
 - `AI Auto Committer Disable Version Bumping`: Disables automatic version bumping on commits
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+
+## Support
+
+If you encounter any issues or have questions, please [create an issue](https://github.com/DraconDev/git-ai-committer/issues) on GitHub.
