@@ -157,12 +157,16 @@ export class CommitService {
 
   private async undoAllChanges(): Promise<void> {
     try {
-      // Reset the commit
+      // First, reset the commit to get all changes back
       await commitReset();
       
-      // Stage and commit the version bump removal
-      const stagedVersion = await stageAllChanges();
-      if (stagedVersion) {
+      // The version bump is still applied in the files
+      // We need to revert it to the previous version
+      const versionUpdateResult = await updateVersion("patch", true); // revert
+      if (versionUpdateResult) {
+        // Stage the version revert
+        await stageAllChanges();
+        // Commit the version revert
         await commitChanges("Revert version bump due to commit failure");
       }
     } catch (error) {
