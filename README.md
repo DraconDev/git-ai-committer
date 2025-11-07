@@ -37,7 +37,7 @@ This extension contributes these settings (configure in VS Code settings):
 
 **Timing & Behavior:**
 - `gitAiCommitter.inactivityDelay`: Seconds to wait after stopping typing before checking for commits (default: 5)
-- `gitAiCommitter.minCommitDelay`: Minimum seconds between actual commits (default: 15)
+- `gitAiCommitter.minCommitDelay`: Minimum time between commits (default: 15 seconds)
 
 **Smart Filtering:**
 - `gitAiCommitter.ignoredFilePatterns`: Array of file patterns to skip during commits (default: `["*.tmp", "*.temp", "*.log", "*.cache", "*.dll", "*.exe", "*.env"]`)
