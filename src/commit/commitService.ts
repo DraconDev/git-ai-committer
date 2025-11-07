@@ -98,16 +98,22 @@ export class CommitService {
       }
 
       if (provider === AIProvider.Gemini) {
-        const geminiMessage = await this.handleCommitMessageGeneration(currentDiff);
+        const geminiMessage = await this.handleCommitMessageGeneration(
+          currentDiff
+        );
         if (!geminiMessage) {
-          vscode.window.showErrorMessage("Failed to generate message with Gemini");
+          vscode.window.showErrorMessage(
+            "Failed to generate message with Gemini"
+          );
           return;
         }
         commitMessage = geminiMessage;
       } else if (provider === AIProvider.Copilot) {
         commitMessage = await generateWithCopilot(currentDiff);
         if (!commitMessage) {
-          vscode.window.showErrorMessage("Failed to generate message with Copilot");
+          vscode.window.showErrorMessage(
+            "Failed to generate message with Copilot"
+          );
           return;
         }
       }
@@ -136,41 +142,43 @@ export class CommitService {
       // 7. Try to commit all changes
       try {
         await commitChanges(commitMessage);
-        
+
         // 8. If commit succeeds, push
         await pushChanges();
-        
+
         // Reset failure state on successful commit
         this.lastCommitAttemptTime = 0;
       } catch (commitError) {
         // 9. If commit fails, undo everything
         await this.undoAllChanges();
-        vscode.window.showErrorMessage(`Failed to commit: ${commitError instanceof Error ? commitError.message : "Unknown error"}`);
+        vscode.window.showErrorMessage(
+          `Failed to commit: ${
+            commitError instanceof Error ? commitError.message : "Unknown error"
+          }`
+        );
       }
     } catch (error: any) {
       if (error.message === "No changes to commit") {
         return;
       }
-      vscode.window.showErrorMessage(`Failed to commit changes: ${error.message}`);
+      vscode.window.showErrorMessage(
+        `Failed to commit changes: ${error.message}`
+      );
     }
   }
 
   private async undoAllChanges(): Promise<void> {
     try {
-      // First, reset the commit to get all changes back
+      // Reset the commit
       await commitReset();
-      
-      // The version bump is still applied in the files
-      // We need to revert it to the previous version
-      const versionUpdateResult = await updateVersion("patch", true); // revert
-      if (versionUpdateResult) {
-        // Stage the version revert
-        await stageAllChanges();
-        // Commit the version revert
+
+      // Stage and commit the version bump removal
+      const stagedVersion = await stageAllChanges();
+      if (stagedVersion) {
         await commitChanges("Revert version bump due to commit failure");
       }
     } catch (error) {
-      console.error('Failed to undo changes:', error);
+      console.error("Failed to undo changes:", error);
       // Don't show error to user, this is cleanup
     }
   }
@@ -189,20 +197,22 @@ export class CommitService {
         return;
       }
 
-      const gitignorePath = workspaceFolder.uri.fsPath + '/.gitignore';
-      const fs = require('fs').promises;
-      
-      let currentContent = '';
+      const gitignorePath = workspaceFolder.uri.fsPath + "/.gitignore";
+      const fs = require("fs").promises;
+
+      let currentContent = "";
       try {
-        currentContent = await fs.readFile(gitignorePath, 'utf8');
+        currentContent = await fs.readFile(gitignorePath, "utf8");
       } catch (error) {
         // .gitignore doesn't exist, start with empty content
-        currentContent = '';
+        currentContent = "";
       }
 
       // Check which patterns are already in .gitignore
-      const existingLines = currentContent.split('\n').map(line => line.trim());
-      const patternsToAdd = ignoredPatterns.filter(pattern => {
+      const existingLines = currentContent
+        .split("\n")
+        .map((line) => line.trim());
+      const patternsToAdd = ignoredPatterns.filter((pattern) => {
         const cleanPattern = pattern.trim();
         return cleanPattern && !existingLines.includes(cleanPattern);
       });
@@ -212,20 +222,23 @@ export class CommitService {
       }
 
       // Add auto-committer section
-      const newContent = currentContent + (currentContent.endsWith('\n') ? '' : '\n') +
-        '\n# Auto-committer ignored files\n' +
-        patternsToAdd.map(pattern => pattern).join('\n') + '\n';
+      const newContent =
+        currentContent +
+        (currentContent.endsWith("\n") ? "" : "\n") +
+        "\n# Auto-committer ignored files\n" +
+        patternsToAdd.map((pattern) => pattern).join("\n") +
+        "\n";
 
       await fs.writeFile(gitignorePath, newContent);
-      
+
       // Add .gitignore to git if not already tracked
       try {
-        await git.add('.gitignore');
+        await git.add(".gitignore");
       } catch (error) {
         // .gitignore might not be in the repo yet, that's OK
       }
     } catch (error) {
-      console.error('Failed to update .gitignore:', error);
+      console.error("Failed to update .gitignore:", error);
       // Don't fail the commit if .gitignore update fails
     }
   }
