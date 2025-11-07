@@ -2,7 +2,7 @@
   "name": "git-ai-committer",
   "displayName": "Git AI Auto Committer",
   "description": "Automatically generates commit messages and commits changes using AI",
-  "version": "3.7.0",
+  "version": "3.8.0",
   "publisher": "devdrac",
   "icon": "media/logo.png",
   "galleryBanner": {
@@ -108,7 +108,15 @@
         },
         "gitAiCommitter.ignoredFilePatterns": {
           "type": "array",
-          "default": ["*.tmp", "*.temp", "*.log", "*.cache", "*.dll", "*.exe", "*.env"],
+          "default": [
+            "*.tmp",
+            "*.temp",
+            "*.log",
+            "*.cache",
+            "*.dll",
+            "*.exe",
+            "*.env"
+          ],
           "description": "File patterns to ignore during auto commits (temp files, logs, etc.)",
           "scope": "application",
           "order": 5
