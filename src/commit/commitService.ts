@@ -114,15 +114,15 @@ export class CommitService {
         }
       }
 
-      // 3. Auto-manage .gitignore
-      await this.updateGitignore();
-
-      // 4. Bump version
+      // 3. Bump version (this creates new changes)
       const versionUpdateResult = await updateVersion();
       if (versionUpdateResult === false) {
         vscode.window.showErrorMessage("Failed to update version");
         return;
       }
+
+      // 4. Auto-manage .gitignore
+      await this.updateGitignore();
 
       // 5. Stage all changes
       const stagedAll = await stageAllChanges();
