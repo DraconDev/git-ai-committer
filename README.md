@@ -83,7 +83,7 @@ Access via Command Palette (Ctrl+Shift+P):
 
 **Timing & Behavior:**
 - `Git AI Committer: Set Inactivity Delay` - Configure when to check for commits (5s default)
-- `Git AI Committer: Set Min Commit Delay` - Configure minimum time between commits (15s default)
+- `Git AI Committer: Set Min Time Between Commits` - Configure minimum time between commits (15s default)
 
 **Smart Features:**
 - `Git AI Committer: Manage Ignored Files` - Open settings to configure file filtering
