@@ -3,3 +3,15 @@ dist
 node_modules
 .vscode-test/
 *.vsix
+
+# Auto-committer ignored files
+*.tmp
+*.temp
+*.log
+*.cache
+*.dll
+*.exe
+*.o
+*.cache
+.env
+*.secrets
