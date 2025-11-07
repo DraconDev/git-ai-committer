@@ -78,16 +78,16 @@ export class CommitService {
     }
 
     try {
-      // 1. Get all changes
-      const fullDiff = await getGitDiff();
-      if (!fullDiff) {
+      // 1. Auto-manage .gitignore first (to ensure ignored files are properly excluded)
+      await this.updateGitignore();
+
+      // 2. Get fresh diff after .gitignore update (excludes ignored files)
+      const cleanDiff = await getGitDiff();
+      if (!cleanDiff) {
         return;
       }
 
-      // 2. Auto-manage .gitignore first (to ensure ignored files don't appear in diff)
-      await this.updateGitignore();
-
-      // 3. Generate commit message from changes (now excludes ignored files)
+      // 3. Generate commit message from clean changes
       let commitMessage = "";
       const provider = await getPreferredAIProvider();
 
@@ -97,35 +97,26 @@ export class CommitService {
       }
 
       if (provider === AIProvider.Gemini) {
-        const geminiMessage = await this.handleCommitMessageGeneration(
-          fullDiff
-        );
+        const geminiMessage = await this.handleCommitMessageGeneration(cleanDiff);
         if (!geminiMessage) {
-          vscode.window.showErrorMessage(
-            "Failed to generate message with Gemini"
-          );
+          vscode.window.showErrorMessage("Failed to generate message with Gemini");
           return;
         }
         commitMessage = geminiMessage;
       } else if (provider === AIProvider.Copilot) {
-        commitMessage = await generateWithCopilot(fullDiff);
+        commitMessage = await generateWithCopilot(cleanDiff);
         if (!commitMessage) {
-          vscode.window.showErrorMessage(
-            "Failed to generate message with Copilot"
-          );
+          vscode.window.showErrorMessage("Failed to generate message with Copilot");
           return;
         }
       }
 
-      // 3. Bump version (this creates new changes)
+      // 4. Bump version (this creates new changes)
       const versionUpdateResult = await updateVersion();
       if (versionUpdateResult === false) {
         vscode.window.showErrorMessage("Failed to update version");
         return;
       }
-
-      // 4. Auto-manage .gitignore
-      await this.updateGitignore();
 
       // 5. Stage all changes
       const stagedAll = await stageAllChanges();
@@ -137,16 +128,14 @@ export class CommitService {
       // 6. Commit all and push
       await commitChanges(commitMessage);
       await pushChanges();
-
+      
       // Reset failure state on successful commit
       this.lastCommitAttemptTime = 0;
     } catch (error: any) {
       if (error.message === "No changes to commit") {
         return;
       }
-      vscode.window.showErrorMessage(
-        `Failed to commit changes: ${error.message}`
-      );
+      vscode.window.showErrorMessage(`Failed to commit changes: ${error.message}`);
     }
   }
 
@@ -205,6 +194,5 @@ export class CommitService {
     }
   }
 }
-
 
 export const commitService = new CommitService();
