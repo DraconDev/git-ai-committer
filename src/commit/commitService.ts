@@ -127,6 +127,39 @@ export class CommitService {
     return false;
   }
 
+  private filterDiffForMessageGeneration(diff: string): string {
+    const versionFiles = this.getVersionFiles();
+    const lines = diff.split('\n');
+    const filteredLines: string[] = [];
+    let inVersionFile = false;
+
+    for (const line of lines) {
+      // Check if this line indicates a new file
+      if (line.startsWith('diff --git ') || line.startsWith('diff --git a/') || line.startsWith('diff --git b/')) {
+        // Extract filename from the line
+        const match = line.match(/diff --git a\/(.+?) b\/(.+)/);
+        if (match) {
+          const fileName = match[2]; // Get the 'b/' filename
+          inVersionFile = versionFiles.some(versionFile =>
+            fileName.includes(versionFile) || this.matchesPattern(fileName, versionFile)
+          );
+        }
+      }
+
+      // Only include lines that are not from version files
+      if (!inVersionFile) {
+        filteredLines.push(line);
+      }
+
+      // Reset when we hit a blank line (likely moving to next section)
+      if (line.trim() === '') {
+        inVersionFile = false;
+      }
+    }
+
+    return filteredLines.join('\n');
+  }
+
   async performCommit() {
     // Check if commit message generation is already in progress
     if (await this.checkIfGenerating()) {
