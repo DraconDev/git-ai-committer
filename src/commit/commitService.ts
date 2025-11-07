@@ -7,7 +7,6 @@ import {
   stageAllChanges,
   getGitDiff,
   commitChanges,
-  commitReset,
   pushChanges,
 } from "../git/gitOperations";
 import { updateVersion } from "../version/versionService";
@@ -97,89 +96,60 @@ export class CommitService {
         return;
       }
 
+      let messageGenerated = false;
+
       if (provider === AIProvider.Gemini) {
-        const geminiMessage = await this.handleCommitMessageGeneration(
-          currentDiff
-        );
+        const geminiMessage = await this.handleCommitMessageGeneration(currentDiff);
         if (!geminiMessage) {
-          vscode.window.showErrorMessage(
-            "Failed to generate message with Gemini"
-          );
+          // Message generation failed - don't commit
           return;
         }
         commitMessage = geminiMessage;
+        messageGenerated = true;
       } else if (provider === AIProvider.Copilot) {
         commitMessage = await generateWithCopilot(currentDiff);
         if (!commitMessage) {
-          vscode.window.showErrorMessage(
-            "Failed to generate message with Copilot"
-          );
+          // Message generation failed - don't commit
           return;
         }
+        messageGenerated = true;
       }
 
-      // 4. Stage ALL current changes first
-      const stagedAll = await stageAllChanges();
-      if (!stagedAll) {
-        vscode.window.showErrorMessage("Failed to stage changes");
-        return;
-      }
+      // 4. If we got a message, now commit everything
+      if (messageGenerated) {
+        // Stage ALL changes
+        const stagedAll = await stageAllChanges();
+        if (!stagedAll) {
+          vscode.window.showErrorMessage("Failed to stage changes");
+          return;
+        }
 
-      // 5. Bump version (this creates new changes)
-      const versionUpdateResult = await updateVersion();
-      if (versionUpdateResult === false) {
-        vscode.window.showErrorMessage("Failed to update version");
-        return;
-      }
+        // Bump version (this creates new changes)
+        const versionUpdateResult = await updateVersion();
+        if (versionUpdateResult === false) {
+          vscode.window.showErrorMessage("Failed to update version");
+          return;
+        }
 
-      // 6. Stage version changes too
-      const stagedVersion = await stageAllChanges();
-      if (!stagedVersion) {
-        vscode.window.showErrorMessage("Failed to stage version changes");
-        return;
-      }
+        // Stage version changes too
+        const stagedVersion = await stageAllChanges();
+        if (!stagedVersion) {
+          vscode.window.showErrorMessage("Failed to stage version changes");
+          return;
+        }
 
-      // 7. Try to commit all changes
-      try {
-        await commitChanges(commitMessage);
-
-        // 8. If commit succeeds, push
-        await pushChanges();
-
-        // Reset failure state on successful commit
-        this.lastCommitAttemptTime = 0;
-      } catch (commitError) {
-        // 9. If commit fails, undo everything
-        await this.undoAllChanges();
-        vscode.window.showErrorMessage(
-          `Failed to commit: ${
-            commitError instanceof Error ? commitError.message : "Unknown error"
-          }`
-        );
+        // Commit all and push
+        const commitSuccess = await commitChanges(commitMessage);
+        if (commitSuccess) {
+          await pushChanges();
+          this.lastCommitAttemptTime = 0; // Reset failure state
+        }
       }
     } catch (error: any) {
       if (error.message === "No changes to commit") {
         return;
       }
-      vscode.window.showErrorMessage(
-        `Failed to commit changes: ${error.message}`
-      );
-    }
-  }
-
-  private async undoAllChanges(): Promise<void> {
-    try {
-      // Reset the commit
-      await commitReset();
-
-      // Stage and commit the version bump removal
-      const stagedVersion = await stageAllChanges();
-      if (stagedVersion) {
-        await commitChanges("Revert version bump due to commit failure");
-      }
-    } catch (error) {
-      console.error("Failed to undo changes:", error);
-      // Don't show error to user, this is cleanup
+      vscode.window.showErrorMessage(`Failed to commit changes: ${error.message}`);
     }
   }
 
@@ -197,22 +167,20 @@ export class CommitService {
         return;
       }
 
-      const gitignorePath = workspaceFolder.uri.fsPath + "/.gitignore";
-      const fs = require("fs").promises;
-
-      let currentContent = "";
+      const gitignorePath = workspaceFolder.uri.fsPath + '/.gitignore';
+      const fs = require('fs').promises;
+      
+      let currentContent = '';
       try {
-        currentContent = await fs.readFile(gitignorePath, "utf8");
+        currentContent = await fs.readFile(gitignorePath, 'utf8');
       } catch (error) {
         // .gitignore doesn't exist, start with empty content
-        currentContent = "";
+        currentContent = '';
       }
 
       // Check which patterns are already in .gitignore
-      const existingLines = currentContent
-        .split("\n")
-        .map((line) => line.trim());
-      const patternsToAdd = ignoredPatterns.filter((pattern) => {
+      const existingLines = currentContent.split('\n').map(line => line.trim());
+      const patternsToAdd = ignoredPatterns.filter(pattern => {
         const cleanPattern = pattern.trim();
         return cleanPattern && !existingLines.includes(cleanPattern);
       });
@@ -222,23 +190,20 @@ export class CommitService {
       }
 
       // Add auto-committer section
-      const newContent =
-        currentContent +
-        (currentContent.endsWith("\n") ? "" : "\n") +
-        "\n# Auto-committer ignored files\n" +
-        patternsToAdd.map((pattern) => pattern).join("\n") +
-        "\n";
+      const newContent = currentContent + (currentContent.endsWith('\n') ? '' : '\n') +
+        '\n# Auto-committer ignored files\n' +
+        patternsToAdd.map(pattern => pattern).join('\n') + '\n';
 
       await fs.writeFile(gitignorePath, newContent);
-
+      
       // Add .gitignore to git if not already tracked
       try {
-        await git.add(".gitignore");
+        await git.add('.gitignore');
       } catch (error) {
         // .gitignore might not be in the repo yet, that's OK
       }
     } catch (error) {
-      console.error("Failed to update .gitignore:", error);
+      console.error('Failed to update .gitignore:', error);
       // Don't fail the commit if .gitignore update fails
     }
   }
