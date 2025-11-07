@@ -108,21 +108,24 @@ export class CommitService {
         }
       }
 
-      // 3. Bump version
+      // 3. Auto-manage .gitignore
+      await this.updateGitignore();
+
+      // 4. Bump version
       const versionUpdateResult = await updateVersion();
       if (versionUpdateResult === false) {
         vscode.window.showErrorMessage("Failed to update version");
         return;
       }
 
-      // 4. Stage all changes
+      // 5. Stage all changes
       const stagedAll = await stageAllChanges();
       if (!stagedAll) {
         vscode.window.showErrorMessage("Failed to stage changes");
         return;
       }
 
-      // 5. Commit all and push
+      // 6. Commit all and push
       await commitChanges(commitMessage);
       await pushChanges();
       
@@ -133,6 +136,63 @@ export class CommitService {
         return;
       }
       vscode.window.showErrorMessage(`Failed to commit changes: ${error.message}`);
+    }
+  }
+
+  private async updateGitignore(): Promise<void> {
+    try {
+      const config = vscode.workspace.getConfiguration("gitAiCommitter");
+      const ignoredPatterns = config.get<string[]>("ignoredFilePatterns", [
+        "*.tmp", "*.temp", "*.log", "*.cache", "*.dll", "*.exe", "*.env"
+      ]);
+
+      if (ignoredPatterns.length === 0) {
+        return; // No patterns to add
+      }
+
+      const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+      if (!workspaceFolder) {
+        return;
+      }
+
+      const gitignorePath = workspaceFolder.uri.fsPath + '/.gitignore';
+      const fs = require('fs').promises;
+      
+      let currentContent = '';
+      try {
+        currentContent = await fs.readFile(gitignorePath, 'utf8');
+      } catch (error) {
+        // .gitignore doesn't exist, start with empty content
+        currentContent = '';
+      }
+
+      // Check which patterns are already in .gitignore
+      const existingLines = currentContent.split('\n').map(line => line.trim());
+      const patternsToAdd = ignoredPatterns.filter(pattern => {
+        const cleanPattern = pattern.trim();
+        return cleanPattern && !existingLines.includes(cleanPattern);
+      });
+
+      if (patternsToAdd.length === 0) {
+        return; // All patterns already in .gitignore
+      }
+
+      // Add auto-committer section
+      const newContent = currentContent + (currentContent.endsWith('\n') ? '' : '\n') +
+        '\n# Auto-committer ignored files\n' +
+        patternsToAdd.map(pattern => pattern).join('\n') + '\n';
+
+      await fs.writeFile(gitignorePath, newContent);
+      
+      // Add .gitignore to git if not already tracked
+      try {
+        await git.add('.gitignore');
+      } catch (error) {
+        // .gitignore might not be in the repo yet, that's OK
+      }
+    } catch (error) {
+      console.error('Failed to update .gitignore:', error);
+      // Don't fail the commit if .gitignore update fails
     }
   }
 }
