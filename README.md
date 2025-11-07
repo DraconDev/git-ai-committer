@@ -44,19 +44,26 @@ This extension contributes these settings (configure in VS Code settings):
 
 ## 🚀 How It Works
 
-### The Dual-Delay System
+### How It Works
 
-Unlike simple auto-committers, this uses a sophisticated dual-delay system:
+**Smart Activity Monitoring:**
+- Monitors your typing patterns and editor activity
+- Detects when you naturally pause your coding work
+- Waits for a configurable delay to ensure you're actually finished
 
-1. **Inactivity Detection**: After you stop typing for the configured delay (5s default), the system checks if you should commit
-2. **Minimum Commit Delay**: Only commits if the minimum delay (15s default) has passed since your last commit
-3. **Real Change Detection**: Only commits when there are actual code changes (not just config or version files)
+**Intelligent Commit Process:**
+1. **Snapshot Changes**: Captures the exact files you've modified
+2. **AI Message Generation**: Creates meaningful commit messages from your changes
+3. **Version Management**: Automatically bumps version numbers when needed
+4. **Clean Commits**: Ensures commit messages accurately reflect your actual code changes
 
-### Example Workflow
+**Example Workflow:**
 
 ```
-Type some code → stop for 5s → system checks: only 5s since last work → NO COMMIT
-Continue typing → stop for 10s → system checks: 15s+ since last commit → COMMIT!
+You code for 10 minutes → make changes to multiple files
+You stop typing → system waits 5 seconds
+If it's been 15+ seconds since last commit → commits your work
+Result: Professional commit message describing exactly what you implemented
 ```
 
 ### Smart File Filtering
