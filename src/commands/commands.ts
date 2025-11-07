@@ -129,7 +129,8 @@ export function registerCommands(context: vscode.ExtensionContext) {
       "git-ai-committer.setInactivityDelay",
       async () => {
         const delay = await vscode.window.showInputBox({
-          prompt: "Enter inactivity delay in seconds (when to check for commits)",
+          prompt:
+            "Enter inactivity delay in seconds (when to check for commits)",
           placeHolder: "e.g. 5",
           validateInput: (value) => {
             const num = Number(value);
@@ -155,10 +156,10 @@ export function registerCommands(context: vscode.ExtensionContext) {
       }
     ),
     vscode.commands.registerCommand(
-      "git-ai-committer.setMinCommitDelay",
+      "git-ai-committer.setMinTimeBetweenCommits",
       async () => {
         const delay = await vscode.window.showInputBox({
-          prompt: "Enter minimum commit delay in seconds (time between commits)",
+          prompt: "Enter minimum time between commits in seconds",
           placeHolder: "e.g. 15",
           validateInput: (value) => {
             const num = Number(value);
@@ -212,7 +213,72 @@ export function registerCommands(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       "git-ai-committer.manageIgnoredFiles",
       async () => {
-        vscode.commands.executeCommand("workbench.action.openSettings", "gitAiCommitter.ignoredFilePatterns");
+        const currentPatterns = vscode.workspace
+          .getConfiguration("gitAiCommitter")
+          .get<string[]>("ignoredFilePatterns", [
+            "*.tmp",
+            "*.temp",
+            "*.log",
+            "*.cache",
+            "*.dll",
+            "*.exe",
+            "*.env",
+          ]);
+
+        const patternsText = currentPatterns.join(", ");
+
+        const choice = await vscode.window.showQuickPick(
+          [
+            {
+              label: `View Current Patterns: ${patternsText}`,
+              description: "Show all ignored file patterns",
+            },
+            {
+              label: "Edit Patterns",
+              description: "Modify the ignored file patterns",
+            },
+            {
+              label: "Open Settings",
+              description: "Open VS Code settings for this extension",
+            },
+          ],
+          { placeHolder: "Choose an action" }
+        );
+
+        if (choice?.label === "Edit Patterns") {
+          const patternsInput = await vscode.window.showInputBox({
+            prompt: "Enter file patterns to ignore (comma-separated)",
+            placeHolder: "*.tmp, *.log, *.cache, .env, *.exe",
+            value: patternsText,
+          });
+
+          if (patternsInput) {
+            const patterns = patternsInput
+              .split(",")
+              .map((p) => p.trim())
+              .filter((p) => p.length > 0);
+            await vscode.workspace
+              .getConfiguration("gitAiCommitter")
+              .update(
+                "ignoredFilePatterns",
+                patterns,
+                vscode.ConfigurationTarget.Global
+              );
+
+            vscode.window.showInformationMessage(
+              `Ignored file patterns updated: ${patterns.join(", ")}`
+            );
+          }
+        } else if (choice?.label?.includes("Open Settings")) {
+          vscode.commands.executeCommand(
+            "workbench.action.openSettings",
+            "gitAiCommitter"
+          );
+        } else if (choice) {
+          vscode.window.showInformationMessage(
+            `Current ignored patterns: ${patternsText}`
+          );
+        }
       }
     )
   );

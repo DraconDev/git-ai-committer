@@ -47,8 +47,8 @@
         "title": "Git AI Committer: Set Inactivity Delay"
       },
       {
-        "command": "git-ai-committer.setMinCommitDelay",
-        "title": "Git AI Committer: Set Min Commit Delay"
+        "command": "git-ai-committer.setMinTimeBetweenCommits",
+        "title": "Git AI Committer: Set Min Time Between Commits"
       },
       {
         "command": "git-ai-committer.manageIgnoredFiles",
