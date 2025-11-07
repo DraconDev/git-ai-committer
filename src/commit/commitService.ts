@@ -145,7 +145,7 @@ export class CommitService {
       } catch (commitError) {
         // 9. If commit fails, undo everything
         await this.undoAllChanges();
-        vscode.window.showErrorMessage(`Failed to commit: ${commitError.message}`);
+        vscode.window.showErrorMessage(`Failed to commit: ${commitError instanceof Error ? commitError.message : "Unknown error"}`);
       }
     } catch (error: any) {
       if (error.message === "No changes to commit") {
