@@ -10,7 +10,7 @@ function getConfig() {
 }
 
 function getAutoCommitInterval() {
-  return (getConfig().get<number>("autoCommitInterval") || 2) * 60 * 1000;
+  return (getConfig().get<number>("autoCommitInterval") || 10) * 60 * 1000;
 }
 
 function getInactivityDelay() {
@@ -18,7 +18,7 @@ function getInactivityDelay() {
 }
 
 function getMinCommitDelay() {
-  return (getConfig().get<number>("minCommitDelay") || 10) * 1000;
+  return (getConfig().get<number>("minCommitDelay") || 15) * 1000;
 }
 let generatingMessage = false;
 let lastCommitAttemptTime = 0;
@@ -80,7 +80,7 @@ async function processChangeQueue(): Promise<void> {
     await pushChanges();
     changeQueue = [];
   } catch (error) {
-    console.error("Error processing changes:", error);
+    // Error processing changes
     // Retry after delay
     setTimeout(() => processChangeQueue(), getMinCommitDelay());
   } finally {
@@ -110,7 +110,7 @@ export async function autoCommitChanges(): Promise<void> {
   try {
     await commitService.performCommit();
   } catch (error: any) {
-    console.error("Error committing changes", error);
+    // Error committing changes
     throw error;
   } finally {
     generatingMessage = false;

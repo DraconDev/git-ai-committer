@@ -11,12 +11,13 @@ import {
 } from "../git/gitOperations";
 import { updateVersion } from "../version/versionService";
 import { generateGeminiMessage } from "../ai/geminiService";
-import { error } from "console";
 
 export class CommitService {
   private lastProcessedDiff = "";
   private isGeneratingMessage = false;
   private maxRetries = 2;
+  private lastCommitAttemptTime = 0;
+  private readonly retryDelay = 60000; // 1 minute
 
   async checkIfGenerating() {
     if (this.isGeneratingMessage) {
@@ -38,42 +39,61 @@ export class CommitService {
   async handleCommitMessageGeneration(diff: string): Promise<string | null> {
     try {
       this.isGeneratingMessage = true;
-      let attempt = 0;
-      let error: any;
+      
+      // Check if we need to wait (backoff)
+      const now = Date.now();
+      if (now - this.lastCommitAttemptTime < this.retryDelay) {
+        return null; // Skip during backoff period
+      }
 
-      // Try multiple times if generation fails
-      while (attempt < this.maxRetries) {
-        try {
-          const commitMessage = await generateGeminiMessage(diff);
-          if (commitMessage) {
-            this.lastProcessedDiff = diff;
-            return commitMessage;
-          }
-        } catch (e) {
-          error = e;
-          attempt++;
-          if (attempt < this.maxRetries) {
-            await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1s between retries
-          }
+      try {
+        const commitMessage = await generateGeminiMessage(diff);
+        if (commitMessage) {
+          this.lastProcessedDiff = diff;
+          this.lastCommitAttemptTime = 0; // Reset on success
+          return commitMessage;
         }
+      } catch (error) {
+        this.lastCommitAttemptTime = now; // Record failure time
+        vscode.window.showErrorMessage(
+          `Failed to generate commit message: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`
+        );
+        return null;
       }
 
-      // If all retries failed, throw the last error
-      if (error) {
-        throw error;
-      }
-
-      return null;
-    } catch (error) {
-      vscode.window.showErrorMessage(
-        `Failed to generate commit message with Gemini: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
       return null;
     } finally {
       this.isGeneratingMessage = false;
     }
+  }
+
+  private async hasRealChanges(status: any): Promise<boolean> {
+    // Check if there are changes to non-version files
+    const versionFiles = this.getVersionFiles();
+    const allChangedFiles = [
+      ...status.modified,
+      ...status.not_added,
+      ...status.deleted
+    ];
+    
+    // Filter out version files to see if there are real changes
+    const realChanges = allChangedFiles.filter(file => 
+      !versionFiles.some(versionFile => file.includes(versionFile))
+    );
+    
+    return realChanges.length > 0;
+  }
+
+  private getVersionFiles(): string[] {
+    const versionFiles = [
+      "package.json", "package-lock.json", "pnpm-lock.yaml", "yarn.lock",
+      "pyproject.toml", "build.gradle", "pom.xml", "Cargo.toml", "composer.json",
+      "project.clj", "*.csproj", "setup.py", "version.txt", "VERSION",
+      "wxt.config.ts", "wxt.config.js"
+    ];
+    return versionFiles;
   }
 
   async performCommit() {
@@ -97,7 +117,7 @@ export class CommitService {
         // 1. Check for changes first
         const diff = await getGitDiff();
         if (!diff) {
-          console.debug("No diff found");
+          // No changes to commit
           return;
         }
 
@@ -107,61 +127,69 @@ export class CommitService {
           vscode.window.showErrorMessage("Failed to stage changes. Aborting commit.");
           return;
         }
-
-        // 3. Generate commit message based on the staged changes
+ 
+        // 3. Check if we have real changes (not just version files)
+        const hasRealChanges = await this.hasRealChanges(status);
+        if (!hasRealChanges) {
+          // No real code changes, only version file changes or nothing meaningful
+          return;
+        }
+  
+        // 4. Generate commit message based on the staged changes
         let commitMessage = "";
         const provider = await getPreferredAIProvider();
-
+  
         if (!provider) {
-        vscode.window.showErrorMessage("No AI provider selected");
-        return;
-      }
-
-      if (provider === AIProvider.Gemini) {
-        const geminiMessage = await this.handleCommitMessageGeneration(diff);
-        if (!geminiMessage) {
-          vscode.window.showErrorMessage(
-            "Failed to generate message with Gemini"
-          );
+          vscode.window.showErrorMessage("No AI provider selected");
           return;
         }
-        commitMessage = geminiMessage;
-      } else if (provider === AIProvider.Copilot) {
-        commitMessage = await generateWithCopilot(diff);
-        if (!commitMessage) {
-          vscode.window.showErrorMessage(
-            "Failed to generate message with Copilot"
-          );
+  
+        if (provider === AIProvider.Gemini) {
+          const geminiMessage = await this.handleCommitMessageGeneration(diff);
+          if (!geminiMessage) {
+            vscode.window.showErrorMessage(
+              "Failed to generate message with Gemini"
+            );
+            return;
+          }
+          commitMessage = geminiMessage;
+        } else if (provider === AIProvider.Copilot) {
+          commitMessage = await generateWithCopilot(diff);
+          if (!commitMessage) {
+            vscode.window.showErrorMessage(
+              "Failed to generate message with Copilot"
+            );
+            return;
+          }
+        }
+  
+        // 5. Update version and stage version files (if enabled)
+        const versionUpdateResult = await updateVersion();
+        // Check if version update failed specifically due to staging
+        if (versionUpdateResult === false) {
+          vscode.window.showErrorMessage("Failed to stage version files. Aborting commit.");
           return;
         }
+        // Allow proceeding if version bumping is disabled (null) or succeeded (string)
+  
+        // 6. Commit all staged changes (original + version files)
+        await commitChanges(commitMessage);
+  
+        // 7. Push changes
+        await pushChanges();
+        
+        // Reset failure state on successful commit
+        this.lastCommitAttemptTime = 0; // Reset on successful commit
+      } catch (error: any) {
+        if (error.message === "No changes to commit") {
+          return;
+        }
+        // Commit failed
+        vscode.window.showErrorMessage(
+          `Failed to commit changes: ${error.message}`
+        );
       }
-
-      // 4. Update version and stage version files (if enabled)
-      const versionUpdateResult = await updateVersion();
-      // Check if version update failed specifically due to staging
-      if (versionUpdateResult === false) {
-        vscode.window.showErrorMessage("Failed to stage version files. Aborting commit.");
-        // Note: We might want to unstage the previously staged changes here,
-        // but for now, we'll leave them staged and abort.
-        return;
-      }
-      // Allow proceeding if version bumping is disabled (null) or succeeded (string)
-
-      // 5. Commit all staged changes (original + version files)
-      await commitChanges(commitMessage);
-
-      // 6. Push changes
-      await pushChanges();
-    } catch (error: any) {
-      if (error.message === "No changes to commit") {
-        return;
-      }
-      console.error("Commit failed:", error);
-      vscode.window.showErrorMessage(
-        `Failed to commit changes: ${error.message}`
-      );
     }
-  }
 }
 
 export const commitService = new CommitService();
