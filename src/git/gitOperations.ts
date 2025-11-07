@@ -52,6 +52,16 @@ export async function commitChanges(message: string): Promise<boolean> {
   }
 }
 
+export async function commitReset(): Promise<void> {
+  try {
+    // Reset the last commit and keep all changes staged
+    await git.reset(['--soft', 'HEAD^']);
+  } catch (error) {
+    console.error('Failed to reset commit:', error);
+    throw error;
+  }
+}
+
 export async function pushChanges() {
   // TODO: Consider adding pull logic back with configuration options
   await git.push();
