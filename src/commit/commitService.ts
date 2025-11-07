@@ -15,7 +15,6 @@ import { generateGeminiMessage } from "../ai/geminiService";
 export class CommitService {
   private lastProcessedDiff = "";
   private isGeneratingMessage = false;
-  private maxRetries = 2;
   private lastCommitAttemptTime = 0;
   private readonly retryDelay = 60000; // 1 minute
 
@@ -26,14 +25,6 @@ export class CommitService {
       );
       return true;
     }
-  }
-
-  checkIfDiffChanged(diff: string) {
-    // Compare full diff content but normalize whitespace
-    const normalizedCurrent = diff.replace(/\s+/g, " ").trim();
-    const normalizedLast = this.lastProcessedDiff.replace(/\s+/g, " ").trim();
-
-    return normalizedCurrent !== normalizedLast;
   }
 
   async handleCommitMessageGeneration(diff: string): Promise<string | null> {
@@ -69,97 +60,6 @@ export class CommitService {
     }
   }
 
-  private async hasRealChanges(status: any): Promise<boolean> {
-    // Check if there are changes to non-version files
-    const versionFiles = this.getVersionFiles();
-    const ignoredExtensions = this.getIgnoredExtensions();
-    const allChangedFiles = [
-      ...status.modified,
-      ...status.not_added,
-      ...status.deleted
-    ];
-    
-    // Filter out version files and ignored extensions
-    const realChanges = allChangedFiles.filter(file => {
-      // Skip version files
-      if (versionFiles.some(versionFile => file.includes(versionFile))) {
-        return false;
-      }
-      
-      // Skip files with ignored patterns
-      if (ignoredExtensions.some(pattern => this.matchesPattern(file, pattern))) {
-        return false;
-      }
-      
-      return true;
-    });
-    
-    return realChanges.length > 0;
-  }
-
-  private getVersionFiles(): string[] {
-    const versionFiles = [
-      "package.json", "package-lock.json", "pnpm-lock.yaml", "yarn.lock",
-      "pyproject.toml", "build.gradle", "pom.xml", "Cargo.toml", "composer.json",
-      "project.clj", "*.csproj", "setup.py", "version.txt", "VERSION",
-      "wxt.config.ts", "wxt.config.js"
-    ];
-    return versionFiles;
-  }
-
-  private getIgnoredExtensions(): string[] {
-    const config = vscode.workspace.getConfiguration("gitAiCommitter");
-    return config.get<string[]>("ignoredFilePatterns", [
-      "*.tmp", "*.temp", "*.log", "*.cache", "*.dll", "*.exe", "*.env"
-    ]);
-  }
-
-  private matchesPattern(fileName: string, pattern: string): boolean {
-    // Handle simple patterns like "*.tmp" or specific files like ".env"
-    if (pattern.startsWith("*.")) {
-      const extension = pattern.substring(1); // Remove "*"
-      return fileName.endsWith(extension);
-    } else if (pattern.startsWith(".") && !pattern.includes("/")) {
-      // Handle specific file names like ".env" (but not paths like "./src/.env")
-      const basename = fileName.split("/").pop() || fileName;
-      return basename === pattern;
-    }
-    return false;
-  }
-
-  private filterDiffForMessageGeneration(diff: string): string {
-    const versionFiles = this.getVersionFiles();
-    const lines = diff.split('\n');
-    const filteredLines: string[] = [];
-    let inVersionFile = false;
-
-    for (const line of lines) {
-      // Check if this line indicates a new file
-      if (line.startsWith('diff --git ') || line.startsWith('diff --git a/') || line.startsWith('diff --git b/')) {
-        // Extract filename from the line
-        const match = line.match(/diff --git a\/(.+?) b\/(.+)/);
-        if (match) {
-          const fileName = match[2]; // Get the 'b/' filename
-          inVersionFile = versionFiles.some(versionFile =>
-            fileName.includes(versionFile) || this.matchesPattern(fileName, versionFile)
-          );
-        }
-      }
-
-      // Only include lines that are not from version files
-      if (!inVersionFile) {
-        filteredLines.push(line);
-      }
-
-      // Reset when we hit a blank line (likely moving to next section)
-      if (line.trim() === '') {
-        inVersionFile = false;
-      }
-    }
-
-    return filteredLines.join('\n');
-  }
-
   async performCommit() {
     // Check if commit message generation is already in progress
     if (await this.checkIfGenerating()) {
@@ -174,89 +74,67 @@ export class CommitService {
       !status.not_added.length &&
       !status.deleted.length
     ) {
+      return;
+    }
+
+    try {
+      // 1. Get all changes
+      const fullDiff = await getGitDiff();
+      if (!fullDiff) {
         return;
       }
 
-      try {
-        // 1. Check for changes first
-        const fullDiff = await getGitDiff();
-        if (!fullDiff) {
-          // No changes to commit
-          return;
-        }
+      // 2. Generate commit message from all changes
+      let commitMessage = "";
+      const provider = await getPreferredAIProvider();
 
-        // 2. Check if we have real changes (not just version files)
-        const hasRealChanges = await this.hasRealChanges(status);
-        if (!hasRealChanges) {
-          // No real code changes, only version file changes or nothing meaningful
-          return;
-        }
-        
-        // 3. Filter diff to exclude version files for AI message generation
-        const filteredDiff = this.filterDiffForMessageGeneration(fullDiff);
-
-        // 4. Stage all existing changes
-        const stagedAll = await stageAllChanges();
-        if (!stagedAll) {
-          vscode.window.showErrorMessage("Failed to stage changes. Aborting commit.");
-          return;
-        }
- 
-        // 5. Generate commit message based on filtered diff (no version files)
-        let commitMessage = "";
-        const provider = await getPreferredAIProvider();
-
-        if (!provider) {
+      if (!provider) {
         vscode.window.showErrorMessage("No AI provider selected");
         return;
       }
 
       if (provider === AIProvider.Gemini) {
-        const geminiMessage = await this.handleCommitMessageGeneration(filteredDiff);
+        const geminiMessage = await this.handleCommitMessageGeneration(fullDiff);
         if (!geminiMessage) {
-          vscode.window.showErrorMessage(
-            "Failed to generate message with Gemini"
-          );
+          vscode.window.showErrorMessage("Failed to generate message with Gemini");
           return;
         }
         commitMessage = geminiMessage;
       } else if (provider === AIProvider.Copilot) {
-        commitMessage = await generateWithCopilot(filteredDiff);
+        commitMessage = await generateWithCopilot(fullDiff);
         if (!commitMessage) {
-          vscode.window.showErrorMessage(
-            "Failed to generate message with Copilot"
-          );
+          vscode.window.showErrorMessage("Failed to generate message with Copilot");
           return;
         }
       }
 
-      // 6. Update version and stage version files (if enabled)
+      // 3. Bump version
       const versionUpdateResult = await updateVersion();
-      // Check if version update failed specifically due to staging
       if (versionUpdateResult === false) {
-        vscode.window.showErrorMessage("Failed to stage version files. Aborting commit.");
+        vscode.window.showErrorMessage("Failed to update version");
         return;
       }
-      // Allow proceeding if version bumping is disabled (null) or succeeded (string)
-  
-        // 6. Commit all staged changes (original + version files)
-        await commitChanges(commitMessage);
-  
-        // 7. Push changes
-        await pushChanges();
-        
-        // Reset failure state on successful commit
-        this.lastCommitAttemptTime = 0; // Reset on successful commit
-      } catch (error: any) {
-        if (error.message === "No changes to commit") {
-          return;
-        }
-        // Commit failed
-        vscode.window.showErrorMessage(
-          `Failed to commit changes: ${error.message}`
-        );
+
+      // 4. Stage all changes
+      const stagedAll = await stageAllChanges();
+      if (!stagedAll) {
+        vscode.window.showErrorMessage("Failed to stage changes");
+        return;
       }
+
+      // 5. Commit all and push
+      await commitChanges(commitMessage);
+      await pushChanges();
+      
+      // Reset failure state on successful commit
+      this.lastCommitAttemptTime = 0;
+    } catch (error: any) {
+      if (error.message === "No changes to commit") {
+        return;
+      }
+      vscode.window.showErrorMessage(`Failed to commit changes: ${error.message}`);
     }
+  }
 }
 
 export const commitService = new CommitService();
