@@ -146,62 +146,65 @@ export class CommitService {
 
       try {
         // 1. Check for changes first
-        const diff = await getGitDiff();
-        if (!diff) {
+        const fullDiff = await getGitDiff();
+        if (!fullDiff) {
           // No changes to commit
           return;
         }
 
-        // 2. Stage all existing changes (excluding potential version files initially)
+        // 2. Check if we have real changes (not just version files)
+        const hasRealChanges = await this.hasRealChanges(status);
+        if (!hasRealChanges) {
+          // No real code changes, only version file changes or nothing meaningful
+          return;
+        }
+        
+        // 3. Filter diff to exclude version files for AI message generation
+        const filteredDiff = this.filterDiffForMessageGeneration(fullDiff);
+
+        // 4. Stage all existing changes
         const stagedAll = await stageAllChanges();
         if (!stagedAll) {
           vscode.window.showErrorMessage("Failed to stage changes. Aborting commit.");
           return;
         }
  
-        // 3. Check if we have real changes (not just version files)
-        const hasRealChanges = await this.hasRealChanges(status);
-        if (!hasRealChanges) {
-          // No real code changes, only version file changes or nothing meaningful
-          return;
-        }
-  
-        // 4. Generate commit message based on the staged changes
+        // 5. Generate commit message based on filtered diff (no version files)
         let commitMessage = "";
         const provider = await getPreferredAIProvider();
-  
+
         if (!provider) {
-          vscode.window.showErrorMessage("No AI provider selected");
+        vscode.window.showErrorMessage("No AI provider selected");
+        return;
+      }
+
+      if (provider === AIProvider.Gemini) {
+        const geminiMessage = await this.handleCommitMessageGeneration(filteredDiff);
+        if (!geminiMessage) {
+          vscode.window.showErrorMessage(
+            "Failed to generate message with Gemini"
+          );
           return;
         }
-  
-        if (provider === AIProvider.Gemini) {
-          const geminiMessage = await this.handleCommitMessageGeneration(diff);
-          if (!geminiMessage) {
-            vscode.window.showErrorMessage(
-              "Failed to generate message with Gemini"
-            );
-            return;
-          }
-          commitMessage = geminiMessage;
-        } else if (provider === AIProvider.Copilot) {
-          commitMessage = await generateWithCopilot(diff);
-          if (!commitMessage) {
-            vscode.window.showErrorMessage(
-              "Failed to generate message with Copilot"
-            );
-            return;
-          }
-        }
-  
-        // 5. Update version and stage version files (if enabled)
-        const versionUpdateResult = await updateVersion();
-        // Check if version update failed specifically due to staging
-        if (versionUpdateResult === false) {
-          vscode.window.showErrorMessage("Failed to stage version files. Aborting commit.");
+        commitMessage = geminiMessage;
+      } else if (provider === AIProvider.Copilot) {
+        commitMessage = await generateWithCopilot(filteredDiff);
+        if (!commitMessage) {
+          vscode.window.showErrorMessage(
+            "Failed to generate message with Copilot"
+          );
           return;
         }
-        // Allow proceeding if version bumping is disabled (null) or succeeded (string)
+      }
+
+      // 6. Update version and stage version files (if enabled)
+      const versionUpdateResult = await updateVersion();
+      // Check if version update failed specifically due to staging
+      if (versionUpdateResult === false) {
+        vscode.window.showErrorMessage("Failed to stage version files. Aborting commit.");
+        return;
+      }
+      // Allow proceeding if version bumping is disabled (null) or succeeded (string)
   
         // 6. Commit all staged changes (original + version files)
         await commitChanges(commitMessage);
