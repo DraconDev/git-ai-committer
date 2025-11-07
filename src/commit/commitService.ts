@@ -84,7 +84,10 @@ export class CommitService {
         return;
       }
 
-      // 2. Generate commit message from changes (before version bump)
+      // 2. Auto-manage .gitignore first (to ensure ignored files don't appear in diff)
+      await this.updateGitignore();
+
+      // 3. Generate commit message from changes (now excludes ignored files)
       let commitMessage = "";
       const provider = await getPreferredAIProvider();
 
