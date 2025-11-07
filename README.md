@@ -66,14 +66,18 @@ If it's been 15+ seconds since last commit → commits your work
 Result: Professional commit message describing exactly what you implemented
 ```
 
-### Smart File Filtering
+### Smart File Management
 
-Automatically prevents commits containing:
-- **Temp files**: `.tmp`, `.temp`, editor swap files
-- **Log files**: `.log`, debug outputs
-- **Build artifacts**: `.dll`, `.exe`, `.o` files
-- **Cache files**: `.cache`, build cache
-- **Sensitive files**: `.env`, `.secrets` (while allowing `.env.example`)
+**Automatic .gitignore Management:**
+- Automatically adds common ignore patterns to your `.gitignore` file
+- Keeps your repository clean by ignoring temp files, logs, and build artifacts
+- Customizable ignore patterns through extension settings
+
+**What Gets Ignored:**
+- Temporary and cache files (`.tmp`, `.temp`, `.cache`)
+- Log files and debug outputs
+- Build artifacts and compiled files
+- Sensitive configuration files
 
 ## 🛠️ Commands
 
