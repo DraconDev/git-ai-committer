@@ -4,6 +4,9 @@ import { git } from "../extension";
 import { updateVersion } from "../version/versionService";
 import { error } from "console";
 
+// Shared Gemini model configuration
+export const GEMINI_MODEL_NAME = "gemini-2.5-flash-lite";
+
 export let genAI: GoogleGenerativeAI;
 export let model: any;
 
@@ -16,8 +19,7 @@ export function getApiKey(): string | undefined {
 export function initializeModel(apiKey: string) {
   genAI = new GoogleGenerativeAI(apiKey);
   model = genAI.getGenerativeModel({
-    // model: "gemini-2.0-flash",
-    model: "gemini-2.5-flash-lite",
+    model: GEMINI_MODEL_NAME,
   });
 }
 

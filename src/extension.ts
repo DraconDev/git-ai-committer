@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { getApiKey } from "./ai/geminiService";
+import { getApiKey, GEMINI_MODEL_NAME } from "./ai/geminiService";
 import {
   initializeVersionBumping,
   disposeVersionBumping,
@@ -66,7 +66,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   genAI = new GoogleGenerativeAI(apiKey);
   model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
+    model: GEMINI_MODEL_NAME,
   });
   // }
 
@@ -78,7 +78,7 @@ export async function activate(context: vscode.ExtensionContext) {
         if (apiKey) {
           genAI = new GoogleGenerativeAI(apiKey);
           model = genAI.getGenerativeModel({
-            model: "gemini-2.0-flash",
+            model: GEMINI_MODEL_NAME,
           });
           vscode.window.showInformationMessage(
             "Gemini API Key has been updated and validated successfully!"
