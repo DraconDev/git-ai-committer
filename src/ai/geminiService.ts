@@ -1,11 +1,9 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as vscode from "vscode";
 import { git } from "../extension";
-import { updateVersion } from "../version/versionService";
-import { error } from "console";
 
-// Shared Gemini model configuration - Updated to use Gemini 3 Pro (Antigravity's underlying model)
-export const GEMINI_MODEL_NAME = "gemini-3-pro";
+// Shared Gemini model configuration
+export const GEMINI_MODEL_NAME = "gemini-flash-lite-latest";
 
 export let genAI: GoogleGenerativeAI;
 export let model: any;
