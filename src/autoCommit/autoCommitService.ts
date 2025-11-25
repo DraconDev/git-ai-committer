@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
-import { pushChanges } from "../git/gitOperations";
 import { commitService } from "../commit/commitService";
+import { pushChanges } from "../git/gitOperations";
+import { versionService } from "../version/versionCoreService";
 
 let inactivityTimeout: NodeJS.Timeout | null = null;
 let generatingMessage = false;
@@ -22,6 +23,10 @@ function getMinCommitDelay() {
 
 function resetInactivityTimer(event?: vscode.TextDocumentChangeEvent) {
   if (event) {
+    // Ignore changes to version files to prevent infinite loops
+    if (versionService.isVersionFile(event.document.fileName)) {
+      return;
+    }
     changeQueue.push(event);
   }
 
