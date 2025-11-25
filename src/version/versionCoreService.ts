@@ -1,7 +1,6 @@
-import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
-import { isVersionBumpingEnabled } from "./versionService";
+import * as vscode from "vscode";
 
 export class VersionService {
   private static instance: VersionService;
@@ -15,6 +14,35 @@ export class VersionService {
     return VersionService.instance;
   }
 
+  private static readonly VERSION_FILES = [
+    "package.json", // Node.js
+    "package-lock.json", // npm lock file
+    "pnpm-lock.yaml", // pnpm lock file
+    "yarn.lock", // Yarn lock file
+    "pyproject.toml", // Python
+    "build.gradle", // Gradle
+    "pom.xml", // Maven
+    "Cargo.toml", // Rust
+    "composer.json", // PHP
+    "project.clj", // Clojure
+    "*.csproj", // .NET
+    "setup.py", // Python
+    "version.txt", // Generic
+    "VERSION", // Generic
+    "wxt.config.ts", // WXT TypeScript configuration
+    "wxt.config.js", // WXT JavaScript configuration
+  ];
+
+  public isVersionFile(filePath: string): boolean {
+    const fileName = path.basename(filePath);
+    return VersionService.VERSION_FILES.some((pattern) => {
+      if (pattern.startsWith("*.")) {
+        return fileName.endsWith(pattern.slice(1));
+      }
+      return fileName === pattern;
+    });
+  }
+
   async detectVersionFiles(): Promise<string[]> {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (!workspaceFolders) {
@@ -22,24 +50,7 @@ export class VersionService {
     }
 
     // Common version files across different ecosystems
-    const versionFiles = [
-      "package.json", // Node.js
-      "package-lock.json", // npm lock file
-      "pnpm-lock.yaml", // pnpm lock file
-      "yarn.lock", // Yarn lock file
-      "pyproject.toml", // Python
-      "build.gradle", // Gradle
-      "pom.xml", // Maven
-      "Cargo.toml", // Rust
-      "composer.json", // PHP
-      "project.clj", // Clojure
-      "*.csproj", // .NET
-      "setup.py", // Python
-      "version.txt", // Generic
-      "VERSION", // Generic
-      "wxt.config.ts", // WXT TypeScript configuration
-      "wxt.config.js", // WXT JavaScript configuration
-    ];
+    const versionFiles = VersionService.VERSION_FILES;
 
     const detectedFiles: string[] = [];
 
