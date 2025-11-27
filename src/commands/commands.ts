@@ -223,6 +223,8 @@ export function registerCommands(context: vscode.ExtensionContext) {
             "*.dll",
             "*.exe",
             "*.env",
+            "node_modules/**",
+            "*"
           ]);
 
         const patternsText = currentPatterns.join(", ");
