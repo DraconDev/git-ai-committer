@@ -1,15 +1,14 @@
 import * as vscode from "vscode";
 import {
-  enableAutoCommit,
   disableAutoCommit,
+  enableAutoCommit,
 } from "../autoCommit/autoCommitService";
 
-import { commitService } from "../commit/commitService";
 import { git } from "../extension";
 import {
-  updateVersion,
-  enableVersionBumping,
   disableVersionBumping,
+  enableVersionBumping,
+  updateVersion,
 } from "../version/versionService";
 
 export function registerCommands(context: vscode.ExtensionContext) {
@@ -224,7 +223,8 @@ export function registerCommands(context: vscode.ExtensionContext) {
             "*.exe",
             "*.env",
             "node_modules/**",
-            "*"
+            "*.vsix",
+            "*.kilocode",
           ]);
 
         const patternsText = currentPatterns.join(", ");
