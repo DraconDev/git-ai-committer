@@ -7,3 +7,6 @@
     -   [x] lets have 2 backup ais for commits
 -   [x] lets also rename github copilot to just editor built in ai option
 -   [x] update the read me after this is done
+
+-   [ ] Are version bumping related ai commits fixed now?
+    -   [ ] if not lets fix it

@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { AIProvider } from "./aiService";
 import { generateWithCopilot } from "./copilotService";
 import { generateGeminiMessage } from "./geminiService";
+import { generateOpenRouterMessage } from "./openRouterService";
 
 interface FailoverAttempt {
     provider: string;
@@ -21,38 +22,56 @@ export async function generateCommitMessageWithFailover(
     const attempts: FailoverAttempt[] = [];
     const startTime = Date.now();
 
-    // Attempt 1: Primary provider
-    let message = await tryProvider(primaryProvider, diff, attempts);
-    if (message) {
-        logSuccess(primaryProvider, attempts, startTime);
-        return message;
+    // Define provider order based on primary
+    let providerOrder: AIProvider[] = [];
+
+    if (primaryProvider === AIProvider.Gemini) {
+        providerOrder = [
+            AIProvider.Gemini,
+            AIProvider.OpenRouter,
+            AIProvider.Copilot,
+        ];
+    } else if (primaryProvider === AIProvider.OpenRouter) {
+        providerOrder = [
+            AIProvider.OpenRouter,
+            AIProvider.Gemini,
+            AIProvider.Copilot,
+        ];
+    } else {
+        // Copilot / Editor Built-in AI
+        providerOrder = [
+            AIProvider.Copilot,
+            AIProvider.Gemini,
+            AIProvider.OpenRouter,
+        ];
     }
 
-    // Attempt 2: Backup provider (opposite of primary)
-    const backupProvider =
-        primaryProvider === AIProvider.Gemini
-            ? AIProvider.Copilot
-            : AIProvider.Gemini;
-
-    vscode.window.showInformationMessage(
-        `Primary AI failed, trying backup provider...`
-    );
-
-    message = await tryProvider(backupProvider, diff, attempts);
-    if (message) {
-        logSuccess(backupProvider, attempts, startTime);
-        vscode.window.showInformationMessage(
-            `Backup AI provider generated commit message successfully`
-        );
-        return message;
+    // Attempt 1-3: Try each provider in order
+    for (const provider of providerOrder) {
+        const message = await tryProvider(provider, diff, attempts);
+        if (message) {
+            logSuccess(provider, attempts, startTime);
+            if (provider !== primaryProvider) {
+                vscode.window.showInformationMessage(
+                    `Primary AI failed, switched to ${getProviderName(
+                        provider
+                    )}`
+                );
+            }
+            return message;
+        }
     }
 
-    // Attempt 3: Primary again with simplified prompt (2nd backup)
+    // Attempt 4: Primary again with simplified prompt (last resort)
     vscode.window.showInformationMessage(
-        `First backup failed, trying simplified prompt...`
+        `All providers failed, trying simplified prompt with primary AI...`
     );
 
-    message = await tryProviderSimplified(primaryProvider, diff, attempts);
+    const message = await tryProviderSimplified(
+        primaryProvider,
+        diff,
+        attempts
+    );
     if (message) {
         logSuccess(primaryProvider, attempts, startTime);
         vscode.window.showInformationMessage(
@@ -77,19 +96,33 @@ export async function generateCommitMessageWithFailover(
     return null;
 }
 
+function getProviderName(provider: AIProvider): string {
+    switch (provider) {
+        case AIProvider.Gemini:
+            return "Gemini";
+        case AIProvider.OpenRouter:
+            return "OpenRouter";
+        case AIProvider.Copilot:
+            return "Editor Built-in AI";
+        default:
+            return "Unknown Provider";
+    }
+}
+
 async function tryProvider(
     provider: AIProvider,
     diff: string,
     attempts: FailoverAttempt[]
 ): Promise<string | null> {
-    const providerName =
-        provider === AIProvider.Gemini ? "Gemini" : "Editor Built-in AI";
+    const providerName = getProviderName(provider);
 
     try {
         let message: string | null = null;
 
         if (provider === AIProvider.Gemini) {
             message = await generateGeminiMessage(diff);
+        } else if (provider === AIProvider.OpenRouter) {
+            message = await generateOpenRouterMessage(diff);
         } else {
             message = await generateWithCopilot(diff);
         }
@@ -106,7 +139,7 @@ async function tryProvider(
         attempts.push({
             provider: providerName,
             success: false,
-            error: "Invalid message format",
+            error: "Invalid message format or empty response",
         });
         return null;
     } catch (error: any) {
@@ -124,10 +157,7 @@ async function tryProviderSimplified(
     diff: string,
     attempts: FailoverAttempt[]
 ): Promise<string | null> {
-    const providerName =
-        provider === AIProvider.Gemini
-            ? "Gemini (Simplified)"
-            : "Editor Built-in AI (Simplified)";
+    const providerName = `${getProviderName(provider)} (Simplified)`;
 
     try {
         // Create a much simpler prompt
@@ -137,6 +167,8 @@ async function tryProviderSimplified(
 
         if (provider === AIProvider.Gemini) {
             message = await generateGeminiMessage(simplifiedDiff);
+        } else if (provider === AIProvider.OpenRouter) {
+            message = await generateOpenRouterMessage(simplifiedDiff);
         } else {
             message = await generateWithCopilot(simplifiedDiff);
         }
