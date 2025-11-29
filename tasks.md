@@ -2,7 +2,7 @@
 
 ## Do
 
-- feature evaluation? ok let me explain currently we commit all the time, and the user can sometimes make a commit with version bumper enabled that also bumps the minor version, and this is presumably meant to meant a 
+- feature evaluation? ok let me explain currently we commit all the time, and the user can sometimes make a commit with version bumper enabled that also bumps the minor version, and this is presumably meant to meant a somewhat of a break point or we did a bigger feature, but what if we look backed the commit history 
 
 ## Done
 
