@@ -31,7 +31,9 @@ export async function generateCommitMessageWithFailover(
 
     // Helper to convert string to AIProvider enum
     const getProviderEnum = (val: string): AIProvider | null => {
-        if (val === "none") return null;
+        if (val === "none") {
+            return null;
+        }
         return Object.values(AIProvider).find((p) => p === val) || null;
     };
 
@@ -47,7 +49,7 @@ export async function generateCommitMessageWithFailover(
         order.push(backupProvider2);
     }
 
-    providerOrder = order;
+    const providerOrder = order;
 
     // Attempt 1-3: Try each provider in order
     for (const provider of providerOrder) {
