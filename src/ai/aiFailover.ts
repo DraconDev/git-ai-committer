@@ -1,8 +1,10 @@
 import * as vscode from "vscode";
 import { AIProvider } from "./aiService";
+import { generateAnthropicMessage } from "./anthropicService";
 import { generateWithCopilot } from "./copilotService";
 import { generateGeminiMessage } from "./geminiService";
 import { generateOpenRouterMessage } from "./openRouterService";
+import { generateOpenAIMessage } from "./openaiService";
 
 interface FailoverAttempt {
     provider: string;
@@ -22,29 +24,30 @@ export async function generateCommitMessageWithFailover(
     const attempts: FailoverAttempt[] = [];
     const startTime = Date.now();
 
-    // Define provider order based on primary
-    let providerOrder: AIProvider[] = [];
+    // Get backup providers from config
+    const config = vscode.workspace.getConfiguration("gitAiCommitter");
+    const backup1 = config.get<string>("backupProvider1", "openRouter");
+    const backup2 = config.get<string>("backupProvider2", "copilot");
 
-    if (primaryProvider === AIProvider.Gemini) {
-        providerOrder = [
-            AIProvider.Gemini,
-            AIProvider.OpenRouter,
-            AIProvider.Copilot,
-        ];
-    } else if (primaryProvider === AIProvider.OpenRouter) {
-        providerOrder = [
-            AIProvider.OpenRouter,
-            AIProvider.Gemini,
-            AIProvider.Copilot,
-        ];
-    } else {
-        // Copilot / Editor Built-in AI
-        providerOrder = [
-            AIProvider.Copilot,
-            AIProvider.Gemini,
-            AIProvider.OpenRouter,
-        ];
+    // Helper to convert string to AIProvider enum
+    const getProviderEnum = (val: string): AIProvider | null => {
+        if (val === "none") return null;
+        return Object.values(AIProvider).find((p) => p === val) || null;
+    };
+
+    const backupProvider1 = getProviderEnum(backup1);
+    const backupProvider2 = getProviderEnum(backup2);
+
+    // Build unique provider order
+    const order = [primaryProvider];
+    if (backupProvider1 && !order.includes(backupProvider1)) {
+        order.push(backupProvider1);
     }
+    if (backupProvider2 && !order.includes(backupProvider2)) {
+        order.push(backupProvider2);
+    }
+
+    providerOrder = order;
 
     // Attempt 1-3: Try each provider in order
     for (const provider of providerOrder) {
@@ -102,6 +105,10 @@ function getProviderName(provider: AIProvider): string {
             return "Gemini";
         case AIProvider.OpenRouter:
             return "OpenRouter";
+        case AIProvider.OpenAI:
+            return "OpenAI";
+        case AIProvider.Anthropic:
+            return "Anthropic";
         case AIProvider.Copilot:
             return "Editor Built-in AI";
         default:
@@ -123,6 +130,10 @@ async function tryProvider(
             message = await generateGeminiMessage(diff);
         } else if (provider === AIProvider.OpenRouter) {
             message = await generateOpenRouterMessage(diff);
+        } else if (provider === AIProvider.OpenAI) {
+            message = await generateOpenAIMessage(diff);
+        } else if (provider === AIProvider.Anthropic) {
+            message = await generateAnthropicMessage(diff);
         } else {
             message = await generateWithCopilot(diff);
         }
@@ -169,6 +180,10 @@ async function tryProviderSimplified(
             message = await generateGeminiMessage(simplifiedDiff);
         } else if (provider === AIProvider.OpenRouter) {
             message = await generateOpenRouterMessage(simplifiedDiff);
+        } else if (provider === AIProvider.OpenAI) {
+            message = await generateOpenAIMessage(simplifiedDiff);
+        } else if (provider === AIProvider.Anthropic) {
+            message = await generateAnthropicMessage(simplifiedDiff);
         } else {
             message = await generateWithCopilot(simplifiedDiff);
         }
@@ -223,8 +238,7 @@ function logSuccess(
     startTime: number
 ) {
     const duration = Date.now() - startTime;
-    const providerName =
-        provider === AIProvider.Gemini ? "Gemini" : "Editor Built-in AI";
+    const providerName = getProviderName(provider);
 
     console.log(`✓ Commit message generated successfully`, {
         provider: providerName,
