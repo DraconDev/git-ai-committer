@@ -46,6 +46,10 @@
                     ],
                     "default": "gemini",
                     "description": "Preferred AI provider for generating commit messages",
+                    "enumDescriptions": [
+                        "Use Editor Built-in AI (Copilot) for commit messages",
+                        "Use Google Gemini for commit messages"
+                    ],
                     "scope": "application",
                     "order": 1
                 },

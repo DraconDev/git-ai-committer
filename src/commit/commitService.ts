@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 import { generateCommitMessageWithFailover } from "../ai/aiFailover";
-import { AIProvider } from "../ai/aiService";
+import { AIProvider, getPreferredAIProvider } from "../ai/aiService";
 import { generateGeminiMessage } from "../ai/geminiService";
 import { git } from "../extension";
 import {

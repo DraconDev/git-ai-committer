@@ -480,7 +480,7 @@ export class SettingsPanel {
                     </div>
                     <div class="radio-option">
                         <input type="radio" id="provider-copilot" name="aiProvider" value="copilot">
-                        <label for="provider-copilot" style="margin: 0;">GitHub Copilot</label>
+                        <label for="provider-copilot" style="margin: 0;">Editor Built-in AI</label>
                     </div>
                 </div>
                 <div class="description">Choose which AI service to use for generating commit messages</div>
