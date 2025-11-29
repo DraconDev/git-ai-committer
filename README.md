@@ -159,6 +159,51 @@ Result: Professional commit message describing exactly what you implemented
 -   **Setup**: Requires Copilot extension and authentication
 -   **Integration**: Seamlessly works with VS Code
 
+## 🔢 Multi-Language Version Bumping
+
+The extension **automatically detects and updates version numbers across multiple languages and ecosystems**. It's not limited to just `package.json`!
+
+### Supported Version Files
+
+**Node.js/JavaScript:**
+
+-   `package.json` - Main package manifest
+-   `package-lock.json` - npm lock file
+-   `pnpm-lock.yaml` - pnpm lock file
+-   `yarn.lock` - Yarn lock file
+-   `wxt.config.ts` / `wxt.config.js` - WXT configuration
+
+**Python:**
+
+-   `pyproject.toml` - Modern Python projects
+-   `setup.py` - Traditional Python setup
+
+**Java:**
+
+-   `build.gradle` - Gradle projects
+-   `pom.xml` - Maven projects
+
+**Other Languages:**
+
+-   `Cargo.toml` - Rust projects
+-   `composer.json` - PHP projects
+-   `project.clj` - Clojure projects
+-   `*.csproj` - .NET projects
+
+**Generic:**
+
+-   `version.txt` - Plain text version files
+-   `VERSION` - Standard version file
+
+### How It Works
+
+1. **Auto-Detection**: The extension scans your workspace for supported version files
+2. **Multi-File Update**: When enabled, all detected version files are updated simultaneously
+3. **Semver Compliant**: Follows semantic versioning (MAJOR.MINOR.PATCH)
+4. **Smart Parsing**: Each file type is parsed and updated according to its format (JSON, TOML, XML, etc.)
+
+**Example**: In a monorepo with Python and Node.js projects, version bumping will update both `package.json` and `pyproject.toml` at the same time!
+
 ## 🔧 Troubleshooting
 
 **No Commits Happening:**
