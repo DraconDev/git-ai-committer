@@ -70,6 +70,17 @@ export class SettingsPanel {
                 "gemini"
             ),
             geminiApiKey: config.get<string>("geminiApiKey", ""),
+            openRouterApiKey: config.get<string>("openRouterApiKey", ""),
+            openRouterModel: config.get<string>("openRouterModel", ""),
+            openaiApiKey: config.get<string>("openaiApiKey", ""),
+            openaiModel: config.get<string>("openaiModel", ""),
+            anthropicApiKey: config.get<string>("anthropicApiKey", ""),
+            anthropicModel: config.get<string>("anthropicModel", ""),
+            backupProvider1: config.get<string>(
+                "backupProvider1",
+                "openRouter"
+            ),
+            backupProvider2: config.get<string>("backupProvider2", "copilot"),
             inactivityDelay: config.get<number>("inactivityDelay", 5),
             minCommitDelay: config.get<number>("minCommitDelay", 15),
             ignoredFilePatterns: config.get<string[]>("ignoredFilePatterns", [
@@ -109,6 +120,70 @@ export class SettingsPanel {
                 await config.update(
                     "geminiApiKey",
                     settings.geminiApiKey,
+                    vscode.ConfigurationTarget.Global
+                );
+            }
+
+            if (settings.openRouterApiKey !== undefined) {
+                await config.update(
+                    "openRouterApiKey",
+                    settings.openRouterApiKey,
+                    vscode.ConfigurationTarget.Global
+                );
+            }
+
+            if (settings.openRouterModel !== undefined) {
+                await config.update(
+                    "openRouterModel",
+                    settings.openRouterModel,
+                    vscode.ConfigurationTarget.Global
+                );
+            }
+
+            if (settings.openaiApiKey !== undefined) {
+                await config.update(
+                    "openaiApiKey",
+                    settings.openaiApiKey,
+                    vscode.ConfigurationTarget.Global
+                );
+            }
+
+            if (settings.openaiModel !== undefined) {
+                await config.update(
+                    "openaiModel",
+                    settings.openaiModel,
+                    vscode.ConfigurationTarget.Global
+                );
+            }
+
+            if (settings.anthropicApiKey !== undefined) {
+                await config.update(
+                    "anthropicApiKey",
+                    settings.anthropicApiKey,
+                    vscode.ConfigurationTarget.Global
+                );
+            }
+
+            if (settings.anthropicModel !== undefined) {
+                await config.update(
+                    "anthropicModel",
+                    settings.anthropicModel,
+                    vscode.ConfigurationTarget.Global
+                );
+            }
+
+            if (settings.backupProvider1 !== undefined) {
+                await config.update(
+                    "backupProvider1",
+                    settings.backupProvider1,
+                    vscode.ConfigurationTarget.Global
+                );
+            }
+
+            if (settings.backupProvider2 !== undefined) {
+                await config.update(
+                    "backupProvider2",
+                    settings.backupProvider2,
                     vscode.ConfigurationTarget.Global
                 );
             }
