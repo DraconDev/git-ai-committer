@@ -518,21 +518,60 @@ export class SettingsPanel {
         }
 
         .api-provider-block {
-            border-bottom: 1px solid var(--vscode-panel-border);
-            padding-bottom: 20px;
-            margin-bottom: 20px;
+            border: 1px solid var(--vscode-panel-border);
+            border-radius: 4px;
+            margin-bottom: 12px;
         }
         
         .api-provider-block:last-child {
-            border-bottom: none;
-            padding-bottom: 0;
             margin-bottom: 0;
+        }
+        
+        .api-provider-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            cursor: pointer;
+            user-select: none;
+            background-color: var(--vscode-input-background);
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        
+        .api-provider-header:hover {
+            background-color: var(--vscode-list-hoverBackground);
         }
         
         .api-provider-title {
             font-weight: 600;
-            margin-bottom: 12px;
             color: var(--vscode-foreground);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .chevron {
+            width: 16px;
+            height: 16px;
+            transition: transform 0.2s;
+        }
+        
+        .chevron.expanded {
+            transform: rotate(90deg);
+        }
+        
+        .api-provider-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            padding: 0 16px;
+        }
+        
+        .api-provider-content.expanded {
+            max-height: 500px;
+            padding: 16px;
+            transition: max-height 0.3s ease-in;
         }
     </style>
 </head>
@@ -546,61 +585,89 @@ export class SettingsPanel {
             <div class="section-header">API Configuration</div>
             
             <div class="api-provider-block">
-                <div class="api-provider-title">Google Gemini</div>
-                <div class="form-group">
-                    <label for="gemini-api-key">API Key</label>
-                    <input type="password" id="gemini-api-key" placeholder="Enter your API key">
-                    <div class="description">
-                        Get your free API key from <a href="#" class="link" id="api-key-link">Google AI Studio</a>
+                <div class="api-provider-header" data-provider="gemini">
+                    <div class="api-provider-title">
+                        <span class="chevron">▶</span>
+                        <span>Google Gemini</span>
+                    </div>
+                </div>
+                <div class="api-provider-content" id="gemini-content">
+                    <div class="form-group">
+                        <label for="gemini-api-key">API Key</label>
+                        <input type="password" id="gemini-api-key" placeholder="Enter your API key">
+                        <div class="description">
+                            Get your free API key from <a href="#" class="link" id="api-key-link">Google AI Studio</a>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div class="api-provider-block">
-                <div class="api-provider-title">OpenRouter</div>
-                <div class="form-group">
-                    <label for="openrouter-api-key">API Key</label>
-                    <input type="password" id="openrouter-api-key" placeholder="sk-or-...">
-                    <div class="description">
-                        Get your API key from <a href="https://openrouter.ai/keys" class="link">OpenRouter</a>
+                <div class="api-provider-header" data-provider="openrouter">
+                    <div class="api-provider-title">
+                        <span class="chevron">▶</span>
+                        <span>OpenRouter</span>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label for="openrouter-model">Model</label>
-                    <input type="text" id="openrouter-model" placeholder="google/gemini-2.0-flash-lite-preview-02-05:free">
-                    <div class="description">
-                        Enter the model ID (e.g., anthropic/claude-3-opus, openai/gpt-4)
+                <div class="api-provider-content" id="openrouter-content">
+                    <div class="form-group">
+                        <label for="openrouter-api-key">API Key</label>
+                        <input type="password" id="openrouter-api-key" placeholder="sk-or-...">
+                        <div class="description">
+                            Get your API key from <a href="https://openrouter.ai/keys" class="link">OpenRouter</a>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="openrouter-model">Model</label>
+                        <input type="text" id="openrouter-model" placeholder="google/gemini-2.0-flash-lite-preview-02-05:free">
+                        <div class="description">
+                            Enter the model ID (e.g., anthropic/claude-3-opus, openai/gpt-4)
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div class="api-provider-block">
-                <div class="api-provider-title">OpenAI</div>
-                <div class="form-group">
-                    <label for="openai-api-key">API Key</label>
-                    <input type="password" id="openai-api-key" placeholder="sk-...">
-                    <div class="description">
-                        Get your API key from <a href="https://platform.openai.com/api-keys" class="link">OpenAI Platform</a>
+                <div class="api-provider-header" data-provider="openai">
+                    <div class="api-provider-title">
+                        <span class="chevron">▶</span>
+                        <span>OpenAI</span>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label for="openai-model">Model</label>
-                    <input type="text" id="openai-model" placeholder="gpt-4o">
+                <div class="api-provider-content" id="openai-content">
+                    <div class="form-group">
+                        <label for="openai-api-key">API Key</label>
+                        <input type="password" id="openai-api-key" placeholder="sk-...">
+                        <div class="description">
+                            Get your API key from <a href="https://platform.openai.com/api-keys" class="link">OpenAI Platform</a>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="openai-model">Model</label>
+                        <input type="text" id="openai-model" placeholder="gpt-4o">
+                    </div>
                 </div>
             </div>
 
             <div class="api-provider-block">
-                <div class="api-provider-title">Anthropic</div>
-                <div class="form-group">
-                    <label for="anthropic-api-key">API Key</label>
-                    <input type="password" id="anthropic-api-key" placeholder="sk-ant-...">
-                    <div class="description">
-                        Get your API key from <a href="https://console.anthropic.com/settings/keys" class="link">Anthropic Console</a>
+                <div class="api-provider-header" data-provider="anthropic">
+                    <div class="api-provider-title">
+                        <span class="chevron">▶</span>
+                        <span>Anthropic</span>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label for="anthropic-model">Model</label>
-                    <input type="text" id="anthropic-model" placeholder="claude-3-5-sonnet-20240620">
+                <div class="api-provider-content" id="anthropic-content">
+                    <div class="form-group">
+                        <label for="anthropic-api-key">API Key</label>
+                        <input type="password" id="anthropic-api-key" placeholder="sk-ant-...">
+                        <div class="description">
+                            Get your API key from <a href="https://console.anthropic.com/settings/keys" class="link">Anthropic Console</a>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="anthropic-model">Model</label>
+                        <input type="text" id="anthropic-model" placeholder="claude-3-5-sonnet-20240620">
+                    </div>
                 </div>
             </div>
         </div>
