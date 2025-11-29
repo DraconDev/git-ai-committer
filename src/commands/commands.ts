@@ -90,7 +90,7 @@ export function registerCommands(context: vscode.ExtensionContext) {
                                 formatFeatureSummaryMessage,
                                 createFeatureSummaryCommit,
                             } = await import(
-                                "../features/featureSummaryService"
+                                "../features/featureSummaryService.js"
                             );
 
                             progress.report({
