@@ -12,20 +12,20 @@ Git AI Auto Committer is a VS Code extension that automatically commits your cod
 
 ## ✨ Features
 
--   **Automatic Code Commits**: Detects when you stop coding and automatically commits your changes
--   **AI-Generated Messages**: Creates meaningful, professional commit messages using AI
--   **Version Control Integration**: Automatically updates version numbers and manages .gitignore files
--   **Smart File Management**: Ignores temporary files, logs, and build artifacts automatically
--   **Zero Configuration**: Works out of the box with sensible defaults
--   **Manual Control**: Override automatic commits with instant manual commits when needed
+- **Automatic Code Commits**: Detects when you stop coding and automatically commits your changes
+- **AI-Generated Messages**: Creates meaningful, professional commit messages using AI
+- **Version Control Integration**: Automatically updates version numbers and manages .gitignore files
+- **Smart File Management**: Ignores temporary files, logs, and build artifacts automatically
+- **Zero Configuration**: Works out of the box with sensible defaults
+- **Manual Control**: Override automatic commits with instant manual commits when needed
 
 ## 📦 Requirements
 
--   VS Code 1.96.0 or higher
--   Node.js 20.x or higher
--   **For Gemini AI**: Google Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey)
--   **For Editor Built-in AI**: GitHub Copilot extension installed and authenticated
--   Git repository with proper configuration
+- VS Code 1.96.0 or higher
+- Node.js 20.x or higher
+- **For Gemini AI**: Google Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey)
+- **For Editor Built-in AI**: GitHub Copilot extension installed and authenticated
+- Git repository with proper configuration
 
 ## ⚙️ Extension Settings
 
@@ -33,17 +33,17 @@ This extension contributes these settings (configure in VS Code settings):
 
 **Core Settings:**
 
--   `gitAiCommitter.preferredAIProvider`: Choose `"gemini"` or `"copilot"` (default: `"gemini"`)
--   `gitAiCommitter.geminiApiKey`: Your Google Gemini API key
+- `gitAiCommitter.preferredAIProvider`: Choose `"gemini"` or `"copilot"` (default: `"gemini"`)
+- `gitAiCommitter.geminiApiKey`: Your Google Gemini API key
 
 **Timing & Behavior:**
 
--   `gitAiCommitter.inactivityDelay`: Seconds to wait after stopping typing before checking for commits (default: 5)
--   `gitAiCommitter.minCommitDelay`: Minimum time between commits (default: 15 seconds)
+- `gitAiCommitter.inactivityDelay`: Seconds to wait after stopping typing before checking for commits (default: 5)
+- `gitAiCommitter.minCommitDelay`: Minimum time between commits (default: 15 seconds)
 
 **Smart Filtering:**
 
--   `gitAiCommitter.ignoredFilePatterns`: Array of file patterns to skip during commits (default: `["*.tmp", "*.temp", "*.log", "*.cache", "*.dll", "*.exe", "*.env"]`)
+- `gitAiCommitter.ignoredFilePatterns`: Array of file patterns to skip during commits (default: `["*.tmp", "*.temp", "*.log", "*.cache", "*.dll", "*.exe", "*.env"]`)
 
 ## 🚀 How It Works
 
@@ -51,9 +51,9 @@ This extension contributes these settings (configure in VS Code settings):
 
 **Smart Activity Monitoring:**
 
--   Monitors your typing patterns and editor activity
--   Detects when you naturally pause your coding work
--   Waits for a configurable delay to ensure you're actually finished
+- Monitors your typing patterns and editor activity
+- Detects when you naturally pause your coding work
+- Waits for a configurable delay to ensure you're actually finished
 
 **Intelligent Commit Process:**
 
@@ -75,34 +75,34 @@ Result: Professional commit message describing exactly what you implemented
 
 **Automatic .gitignore Management:**
 
--   Automatically adds common ignore patterns to your `.gitignore` file
--   Keeps your repository clean by ignoring temp files, logs, and build artifacts
--   Customizable ignore patterns through extension settings
+- Automatically adds common ignore patterns to your `.gitignore` file
+- Keeps your repository clean by ignoring temp files, logs, and build artifacts
+- Customizable ignore patterns through extension settings
 
 **What Gets Ignored:**
 
--   Temporary and cache files (`.tmp`, `.temp`, `.cache`)
--   Log files and debug outputs
--   Build artifacts and compiled files
--   Sensitive configuration files
+- Temporary and cache files (`.tmp`, `.temp`, `.cache`)
+- Log files and debug outputs
+- Build artifacts and compiled files
+- Sensitive configuration files
 
 ## 🛠️ Commands
 
 Access via Command Palette (Ctrl+Shift+P):
 
--   **`Git AI Committer: Commit Now`** - Force an immediate manual commit
--   **`Git AI Committer: Open Settings`** - Open comprehensive settings panel
+- **`Git AI Committer: Commit Now`** - Force an immediate manual commit
+- **`Git AI Committer: Open Settings`** - Open comprehensive settings panel
 
 ### Settings Panel
 
 The settings panel provides a beautiful, intuitive interface to configure all extension options:
 
--   `Git AI Committer: Set AI Provider` - Switch between Gemini and Editor Built-in AI, manage API keys
--   **Auto-Commit Timing** - Adjust inactivity delay and minimum commit intervals with sliders
--   **Version Bumping** - Toggle automatic version bumping on/off
--   **Ignored File Patterns** - Manage file patterns to exclude from auto-commits
--   **Real-time Validation** - Get instant feedback on your settings
--   **Theme Integration** - Automatically matches VS Code's light/dark theme
+- `Git AI Committer: Set AI Provider` - Switch between Gemini and Editor Built-in AI, manage API keys
+- **Auto-Commit Timing** - Adjust inactivity delay and minimum commit intervals with sliders
+- **Version Bumping** - Toggle automatic version bumping on/off
+- **Ignored File Patterns** - Manage file patterns to exclude from auto-commits
+- **Real-time Validation** - Get instant feedback on your settings
+- **Theme Integration** - Automatically matches VS Code's light/dark theme
 
 ## 💡 Usage Tips
 
@@ -116,49 +116,49 @@ The settings panel provides a beautiful, intuitive interface to configure all ex
 
 **For Active Development:**
 
--   Inactivity Delay: 3-5 seconds
--   Min Commit Delay: 10-15 seconds
+- Inactivity Delay: 3-5 seconds
+- Min Commit Delay: 10-15 seconds
 
 **For Thinking-Heavy Work:**
 
--   Inactivity Delay: 10-15 seconds
--   Min Commit Delay: 20-30 seconds
+- Inactivity Delay: 10-15 seconds
+- Min Commit Delay: 20-30 seconds
 
 ## 🧠 AI Providers
 
 ### Google Gemini (Recommended)
 
--   **Cost**: Free for our use case (API key required, generous free tier)
--   **Quality**: Excellent commit message generation
--   **Setup**: Get free API key from [Google AI Studio](https://aistudio.google.com/apikey)
--   **Reliability**: Consistent performance with good error handling
+- **Cost**: Free for our use case (API key required, generous free tier)
+- **Quality**: Excellent commit message generation
+- **Setup**: Get free API key from [Google AI Studio](https://aistudio.google.com/apikey)
+- **Reliability**: Consistent performance with good error handling
 
 ### Editor Built-in AI (GitHub Copilot)
 
--   **Cost**: Included with Copilot subscription
--   **Quality**: Good commit messages, uses existing code context
--   **Setup**: Requires Copilot extension and authentication
--   **Integration**: Seamlessly works with VS Code
+- **Cost**: Included with Copilot subscription
+- **Quality**: Good commit messages, uses existing code context
+- **Setup**: Requires Copilot extension and authentication
+- **Integration**: Seamlessly works with VS Code
 
 ## 🔧 Troubleshooting
 
 **No Commits Happening:**
 
--   Check that you have actual code changes (not just config files)
--   Verify your AI provider is configured correctly
--   Ensure the minimum commit delay hasn't just reset
+- Check that you have actual code changes (not just config files)
+- Verify your AI provider is configured correctly
+- Ensure the minimum commit delay hasn't just reset
 
 **Too Many/Few Commits:**
 
--   Adjust `inactivityDelay` for responsiveness vs. interruptions
--   Adjust `minCommitDelay` for commit frequency
--   Add more patterns to `ignoredFilePatterns` if needed
+- Adjust `inactivityDelay` for responsiveness vs. interruptions
+- Adjust `minCommitDelay` for commit frequency
+- Add more patterns to `ignoredFilePatterns` if needed
 
 **AI Generation Issues:**
 
--   For Gemini: Verify your API key is valid and has quota
--   For Copilot: Ensure you're authenticated and have an active subscription
--   The system includes automatic retry with backoff for transient failures
+- For Gemini: Verify your API key is valid and has quota
+- For Copilot: Ensure you're authenticated and have an active subscription
+- The system includes automatic retry with backoff for transient failures
 
 ## 🤝 Contributing
 
