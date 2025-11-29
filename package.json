@@ -43,14 +43,18 @@
                     "enum": [
                         "copilot",
                         "gemini",
-                        "openRouter"
+                        "openRouter",
+                        "openai",
+                        "anthropic"
                     ],
                     "default": "gemini",
                     "description": "Preferred AI provider for generating commit messages",
                     "enumDescriptions": [
                         "Use Editor Built-in AI (Copilot) for commit messages",
                         "Use Google Gemini for commit messages",
-                        "Use OpenRouter for commit messages"
+                        "Use OpenRouter for commit messages",
+                        "Use OpenAI for commit messages",
+                        "Use Anthropic for commit messages"
                     ],
                     "scope": "application",
                     "order": 1
@@ -75,6 +79,64 @@
                     "description": "Model ID to use with OpenRouter",
                     "scope": "application",
                     "order": 4
+                },
+                "gitAiCommitter.openaiApiKey": {
+                    "type": "string",
+                    "default": "",
+                    "description": "API Key for OpenAI",
+                    "scope": "application",
+                    "order": 5
+                },
+                "gitAiCommitter.openaiModel": {
+                    "type": "string",
+                    "default": "gpt-4o",
+                    "description": "Model ID to use with OpenAI",
+                    "scope": "application",
+                    "order": 6
+                },
+                "gitAiCommitter.anthropicApiKey": {
+                    "type": "string",
+                    "default": "",
+                    "description": "API Key for Anthropic",
+                    "scope": "application",
+                    "order": 7
+                },
+                "gitAiCommitter.anthropicModel": {
+                    "type": "string",
+                    "default": "claude-3-5-sonnet-20240620",
+                    "description": "Model ID to use with Anthropic",
+                    "scope": "application",
+                    "order": 8
+                },
+                "gitAiCommitter.backupProvider1": {
+                    "type": "string",
+                    "enum": [
+                        "copilot",
+                        "gemini",
+                        "openRouter",
+                        "openai",
+                        "anthropic",
+                        "none"
+                    ],
+                    "default": "openRouter",
+                    "description": "First backup AI provider if primary fails",
+                    "scope": "application",
+                    "order": 9
+                },
+                "gitAiCommitter.backupProvider2": {
+                    "type": "string",
+                    "enum": [
+                        "copilot",
+                        "gemini",
+                        "openRouter",
+                        "openai",
+                        "anthropic",
+                        "none"
+                    ],
+                    "default": "copilot",
+                    "description": "Second backup AI provider if primary and first backup fail",
+                    "scope": "application",
+                    "order": 10
                 },
                 "gitAiCommitter.inactivityDelay": {
                     "type": "integer",
