@@ -3,11 +3,12 @@
 ## Do
 
 - the settings panel looks off when i switch between providers i still can only set gemini api key, also we should be able to set keys in one section and in another set priority, where we set primary secondary tertiary
-- the timing and behavior should be able to support much longer delay times, so slider is good but also have an input field for exact delay time,
-- our ignored file patters is empty now, i used to have a list, make sure that we use it and auto fill it our list of ignored files
+- amazing but out api configuration section is huge, is there a way to perhaps handle it better,  this is only going to get worse the more we add,
 
 ## Done
 
+- the timing and behavior should be able to support much longer delay times, so slider is good but also have an input field for exact delay time,
+- our ignored file patters is empty now, i used to have a list, make sure that we use it and auto fill it our list of ignored files
 - we should be able to set which provider is primary and which is backup 1 and which is backup 2
 - Are version bumping related ai commits fixed now?
   - if not lets fix it
