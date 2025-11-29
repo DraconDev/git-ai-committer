@@ -26,6 +26,8 @@ Git AI Auto Committer is a VS Code extension that automatically commits your cod
 -   **For Gemini AI**: Google Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey)
 -   **For Editor Built-in AI**: GitHub Copilot extension installed and authenticated
 -   **For OpenRouter**: API key from [OpenRouter](https://openrouter.ai/keys)
+-   **For OpenAI**: API key from [OpenAI Platform](https://platform.openai.com/api-keys)
+-   **For Anthropic**: API key from [Anthropic Console](https://console.anthropic.com/settings/keys)
 -   Git repository with proper configuration
 
 ## ⚙️ Extension Settings
@@ -34,10 +36,16 @@ This extension contributes these settings (configure in VS Code settings):
 
 **Core Settings:**
 
--   `gitAiCommitter.preferredAIProvider`: Choose `"gemini"`, `"openRouter"`, or `"copilot"` (default: `"gemini"`)
+-   `gitAiCommitter.preferredAIProvider`: Choose `"gemini"`, `"openRouter"`, `"openai"`, `"anthropic"`, or `"copilot"` (default: `"gemini"`)
 -   `gitAiCommitter.geminiApiKey`: Your Google Gemini API key
 -   `gitAiCommitter.openRouterApiKey`: Your OpenRouter API key
--   `gitAiCommitter.openRouterModel`: Model ID for OpenRouter (default: `google/gemini-2.0-flash-lite-preview-02-05:free`)
+-   `gitAiCommitter.openRouterModel`: Model ID for OpenRouter
+-   `gitAiCommitter.openaiApiKey`: Your OpenAI API key
+-   `gitAiCommitter.openaiModel`: Model ID for OpenAI (default: `gpt-4o`)
+-   `gitAiCommitter.anthropicApiKey`: Your Anthropic API key
+-   `gitAiCommitter.anthropicModel`: Model ID for Anthropic (default: `claude-3-5-sonnet-20240620`)
+-   `gitAiCommitter.backupProvider1`: First backup provider (default: `openRouter`)
+-   `gitAiCommitter.backupProvider2`: Second backup provider (default: `copilot`)
 
 **Timing & Behavior:**
 
@@ -109,11 +117,11 @@ The settings panel provides a beautiful, intuitive interface to configure all ex
 
 ## 💡 Usage Tips
 
-1. **Quick Setup**: Open the Settings panel and configure your AI provider
-2. **Fine-Tune Timing**: Use the sliders to adjust delays based on your workflow
-3. **Configure Filtering**: Add your project's specific file patterns in the settings panel
-4. **Manual When Needed**: Use "Commit Now" for immediate commits
-5. **Auto-Enabled**: Auto-commit is enabled by default when you install the extension
+1.  **Quick Setup**: Open the Settings panel and configure your AI provider
+2.  **Fine-Tune Timing**: Use the sliders to adjust delays based on your workflow
+3.  **Configure Filtering**: Add your project's specific file patterns in the settings panel
+4.  **Manual When Needed**: Use "Commit Now" for immediate commits
+5.  **Auto-Enabled**: Auto-commit is enabled by default when you install the extension
 
 ### Recommended Settings
 
@@ -142,6 +150,18 @@ The settings panel provides a beautiful, intuitive interface to configure all ex
 -   **Quality**: Access to top models like Claude 3, GPT-4, Llama 3, etc.
 -   **Setup**: Get API key from [OpenRouter](https://openrouter.ai/keys)
 -   **Flexibility**: Choose any model supported by OpenRouter
+
+### OpenAI
+
+-   **Cost**: Paid (per token)
+-   **Quality**: Industry leading models (GPT-4o)
+-   **Setup**: Get API key from [OpenAI Platform](https://platform.openai.com/api-keys)
+
+### Anthropic
+
+-   **Cost**: Paid (per token)
+-   **Quality**: High reasoning capabilities (Claude 3.5 Sonnet)
+-   **Setup**: Get API key from [Anthropic Console](https://console.anthropic.com/settings/keys)
 
 ### Editor Built-in AI (GitHub Copilot)
 
