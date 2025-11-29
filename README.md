@@ -24,7 +24,7 @@ Git AI Auto Committer is a VS Code extension that automatically commits your cod
 -   VS Code 1.96.0 or higher
 -   Node.js 20.x or higher
 -   **For Gemini AI**: Google Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey)
--   **For Copilot**: GitHub Copilot extension installed and authenticated
+-   **For Editor Built-in AI**: GitHub Copilot extension installed and authenticated
 -   Git repository with proper configuration
 
 ## ⚙️ Extension Settings
@@ -97,7 +97,7 @@ Access via Command Palette (Ctrl+Shift+P):
 
 The settings panel provides a beautiful, intuitive interface to configure all extension options:
 
--   **AI Provider Configuration** - Choose between Gemini and Copilot, manage API keys
+-   `Git AI Committer: Set AI Provider` - Switch between Gemini and Editor Built-in AI, manage API keys
 -   **Auto-Commit Timing** - Adjust inactivity delay and minimum commit intervals with sliders
 -   **Version Bumping** - Toggle automatic version bumping on/off
 -   **Ignored File Patterns** - Manage file patterns to exclude from auto-commits
@@ -133,7 +133,7 @@ The settings panel provides a beautiful, intuitive interface to configure all ex
 -   **Setup**: Get free API key from [Google AI Studio](https://aistudio.google.com/apikey)
 -   **Reliability**: Consistent performance with good error handling
 
-### GitHub Copilot
+### Editor Built-in AI (GitHub Copilot)
 
 -   **Cost**: Included with Copilot subscription
 -   **Quality**: Good commit messages, uses existing code context
