@@ -107,6 +107,18 @@ export class SettingsPanel {
                 "versionBumpingEnabled",
                 false
             ),
+            featureSummaryDefaultCount: config.get<number>(
+                "featureSummary.defaultCommitCount",
+                25
+            ),
+            featureSummaryAutoVersionBump: config.get<boolean>(
+                "featureSummary.autoVersionBump",
+                false
+            ),
+            featureSummaryIncludeFiles: config.get<boolean>(
+                "featureSummary.includeFileList",
+                true
+            ),
         };
 
         this._panel.webview.postMessage({

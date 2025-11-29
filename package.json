@@ -33,6 +33,10 @@
             {
                 "command": "git-ai-committer.openSettings",
                 "title": "Git AI Committer: Open Settings"
+            },
+            {
+                "command": "git-ai-committer.createFeatureSummary",
+                "title": "Git AI: Summarize Recent Work"
             }
         ],
         "configuration": {
@@ -202,6 +206,32 @@
                     "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
                     "scope": "application",
                     "order": 14
+                },
+                "gitAiCommitter.featureSummary.defaultCommitCount": {
+                    "type": "number",
+                    "default": 25,
+                    "minimum": 1,
+                    "maximum": 200,
+                    "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nDefault number of commits to analyze when creating feature summary",
+                    "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+                    "scope": "application",
+                    "order": 15
+                },
+                "gitAiCommitter.featureSummary.autoVersionBump": {
+                    "type": "boolean",
+                    "default": false,
+                    "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nAutomatically bump version when creating feature summary (based on AI suggestion)",
+                    "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+                    "scope": "application",
+                    "order": 16
+                },
+                "gitAiCommitter.featureSummary.includeFileList": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nInclude list of modified files in feature summary commit message",
+                    "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+                    "scope": "application",
+                    "order": 17
                 }
             }
         }
