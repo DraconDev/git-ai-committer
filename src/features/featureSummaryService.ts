@@ -34,8 +34,20 @@ export async function analyzeCommitsForFeature(
         // Build AI prompt
         const prompt = buildAnalysisPrompt(commits);
 
-        // Get AI analysis
-        const aiResponse = await generateCommitMessageWithFailover(prompt);
+        // Get AI analysis - use primary provider from config
+        const config = vscode.workspace.getConfiguration("gitAiCommitter");
+        const primaryProvider = config.get<string>(
+            "preferredAIProvider",
+            "gemini"
+        );
+
+        let aiResponse: string | null = null;
+
+        // Try to get AI response using failover
+        aiResponse = await generateCommitMessageWithFailover(
+            prompt,
+            primaryProvider as any
+        );
 
         if (!aiResponse) {
             vscode.window.showErrorMessage(
@@ -229,7 +241,7 @@ export async function createFeatureSummaryCommit(
 }
 
 async function checkForUnstagedChanges(): Promise<boolean> {
-    const { getGitStatus } = await import("../git/gitOperations");
+    const { getGitStatus } = await import("../git/gitOperations.js");
     const status = await getGitStatus();
     return (
         status.modified.length > 0 ||
