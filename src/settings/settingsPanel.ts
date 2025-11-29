@@ -927,7 +927,9 @@ export class SettingsPanel {
                     minCommitDelay: 15,
                     versionBumpingEnabled: false,
                     ignoredFilePatterns: [
-                        "*.tmp", "*.temp", "*.log", "*.cache", "*.dll", "*.exe", "*.env"
+                        "*.tmp", "*.temp", "*.log", "*.cache", "*.dll", "*.exe", "*.env",
+                        ".vscode/**", ".idea/**", ".vs/**", "node_modules/**", ".git/**",
+                        "dist/**", "build/**", "*.swp", "*.swo", ".DS_Store", "Thumbs.db"
                     ]
                 };
                 populateSettings(defaults);
