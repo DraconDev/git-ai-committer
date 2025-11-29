@@ -1,129 +1,138 @@
+import simpleGit from "simple-git";
 import * as vscode from "vscode";
 import { versionService } from "./versionCoreService";
-import simpleGit from "simple-git";
 
 let configListener: vscode.Disposable;
 
 export function initializeVersionBumping(): void {
-  // Listen for config changes
-  configListener = vscode.workspace.onDidChangeConfiguration((e) => {
-    if (e.affectsConfiguration("gitAiCommitter.versionBumpingEnabled")) {
-      // Configuration change handler
-    }
-  });
+    // Listen for config changes
+    configListener = vscode.workspace.onDidChangeConfiguration((e) => {
+        if (e.affectsConfiguration("gitAiCommitter.versionBumpingEnabled")) {
+            // Configuration change handler
+        }
+    });
 }
 
 export function disposeVersionBumping(): void {
-  configListener?.dispose();
+    configListener?.dispose();
 }
 
-export type VersionIncrementType = "patch" | "minor";
+export type VersionIncrementType = "patch" | "minor" | "major";
 
 export function enableVersionBumping(): void {
-  vscode.workspace
-    .getConfiguration("gitAiCommitter")
-    .update("versionBumpingEnabled", true, vscode.ConfigurationTarget.Global);
+    vscode.workspace
+        .getConfiguration("gitAiCommitter")
+        .update(
+            "versionBumpingEnabled",
+            true,
+            vscode.ConfigurationTarget.Global
+        );
 }
 
 export function disableVersionBumping(): void {
-  vscode.workspace
-    .getConfiguration("gitAiCommitter")
-    .update("versionBumpingEnabled", false, vscode.ConfigurationTarget.Global);
+    vscode.workspace
+        .getConfiguration("gitAiCommitter")
+        .update(
+            "versionBumpingEnabled",
+            false,
+            vscode.ConfigurationTarget.Global
+        );
 }
 
 export function isVersionBumpingEnabled(): boolean {
-  return vscode.workspace
-    .getConfiguration("gitAiCommitter")
-    .get("versionBumpingEnabled", false);
+    return vscode.workspace
+        .getConfiguration("gitAiCommitter")
+        .get("versionBumpingEnabled", false);
 }
 
 export async function updateVersion(
-  incrementType: VersionIncrementType = "patch"
-): Promise<string | false | null> { // string: success, false: staging failed, null: other error/disabled
-  if (!isVersionBumpingEnabled()) {
-    // Return null to explicitly indicate version bumping is disabled
-    return null;
-  }
-
-  try {
-    // Detect version files
-    const versionFiles = await versionService.detectVersionFiles();
-    if (versionFiles.length === 0) {
-      throw new Error("No version files found");
+    incrementType: VersionIncrementType = "patch"
+): Promise<string | false | null> {
+    // string: success, false: staging failed, null: other error/disabled
+    if (!isVersionBumpingEnabled()) {
+        // Return null to explicitly indicate version bumping is disabled
+        return null;
     }
 
-    // Get current version from first detected file
-    const currentVersion = await versionService.getCurrentVersion(
-      versionFiles[0]
-    );
-    if (!currentVersion) {
-      throw new Error("Could not determine current version");
-    }
+    try {
+        // Detect version files
+        const versionFiles = await versionService.detectVersionFiles();
+        if (versionFiles.length === 0) {
+            throw new Error("No version files found");
+        }
 
-    // Increment version based on type
-    const newVersion = incrementVersion(currentVersion, incrementType);
-    if (!newVersion) {
-      throw new Error("Could not increment version");
-    }
+        // Get current version from first detected file
+        const currentVersion = await versionService.getCurrentVersion(
+            versionFiles[0]
+        );
+        if (!currentVersion) {
+            throw new Error("Could not determine current version");
+        }
 
-    // Update all version files
-    const files = await versionService.updateVersionFiles(newVersion);
-    if (files.length === 0) {
-      throw new Error("Could not update version file");
-    } else {
-      const staged = await stageUpdatedFiles(files);
-      if (!staged) {
-        console.error("Failed to stage updated version files.");
-        return false; // Indicate staging failure
-      }
-    }
+        // Increment version based on type
+        const newVersion = incrementVersion(currentVersion, incrementType);
+        if (!newVersion) {
+            throw new Error("Could not increment version");
+        }
 
-    return newVersion;
-  } catch (error) {
-    console.error("Error updating version:", error);
-    return null;
-  }
+        // Update all version files
+        const files = await versionService.updateVersionFiles(newVersion);
+        if (files.length === 0) {
+            throw new Error("Could not update version file");
+        } else {
+            const staged = await stageUpdatedFiles(files);
+            if (!staged) {
+                console.error("Failed to stage updated version files.");
+                return false; // Indicate staging failure
+            }
+        }
+
+        return newVersion;
+    } catch (error) {
+        console.error("Error updating version:", error);
+        return null;
+    }
 }
 
 function incrementVersion(
-  version: string,
-  incrementType: VersionIncrementType
+    version: string,
+    incrementType: VersionIncrementType
 ): string | null {
-  if (!versionService.validateSemver(version)) {
-    return null;
-  }
+    if (!versionService.validateSemver(version)) {
+        return null;
+    }
 
-  const versionParts = version.split(".");
+    const versionParts = version.split(".");
 
-  if (incrementType === "patch") {
-    const patch = parseInt(versionParts[2]);
-    versionParts[2] = (patch + 1).toString();
-  } else if (incrementType === "minor") {
-    const minor = parseInt(versionParts[1]);
-    versionParts[1] = (minor + 1).toString();
-    versionParts[2] = "0"; // Reset patch version
-  }
+    if (incrementType === "patch") {
+        const patch = parseInt(versionParts[2]);
+        versionParts[2] = (patch + 1).toString();
+    } else if (incrementType === "minor") {
+        const minor = parseInt(versionParts[1]);
+        versionParts[1] = (minor + 1).toString();
+        versionParts[2] = "0"; // Reset patch version
+    }
 
-  return versionParts.join(".");
+    return versionParts.join(".");
 }
 
 async function stageUpdatedFiles(updatedFiles: string[]): Promise<boolean> {
-  if (!updatedFiles.length) {
-    return true; // Nothing to stage, technically success
-  }
-  const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-  if (!workspaceFolder) {
-    console.error("No workspace folder found to stage version files.");
-    return false;
-  }
-  const workspacePath = workspaceFolder.uri.fsPath;
-  const git = simpleGit(workspacePath);
-  try {
-    await git.add(updatedFiles);
-    console.log("Staged updated version files:", updatedFiles);
-    return true; // Staging successful
-  } catch (err) {
-    console.error("Error staging files with simple-git:", err);
-    return false; // Staging failed
-  }
+    if (!updatedFiles.length) {
+        return true; // Nothing to stage, technically success
+    }
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+    if (!workspaceFolder) {
+        console.error("No workspace folder found to stage version files.");
+        return false;
+    }
+    const workspacePath = workspaceFolder.uri.fsPath;
+    const git = simpleGit(workspacePath);
+    try {
+        await git.add(updatedFiles);
+        console.log("Staged updated version files:", updatedFiles);
+        return true; // Staging successful
+    } catch (err) {
+        console.error("Error staging files with simple-git:", err);
+        return false; // Staging failed
+    }
 }
