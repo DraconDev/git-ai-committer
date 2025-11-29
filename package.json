@@ -42,13 +42,15 @@
                     "type": "string",
                     "enum": [
                         "copilot",
-                        "gemini"
+                        "gemini",
+                        "openRouter"
                     ],
                     "default": "gemini",
                     "description": "Preferred AI provider for generating commit messages",
                     "enumDescriptions": [
                         "Use Editor Built-in AI (Copilot) for commit messages",
-                        "Use Google Gemini for commit messages"
+                        "Use Google Gemini for commit messages",
+                        "Use OpenRouter for commit messages"
                     ],
                     "scope": "application",
                     "order": 1
@@ -56,9 +58,23 @@
                 "gitAiCommitter.geminiApiKey": {
                     "type": "string",
                     "default": "",
-                    "description": "Google Gemini API Key for generating commit messages. Get your API key from https://aistudio.google.com/apikey",
+                    "description": "API Key for Google Gemini",
                     "scope": "application",
                     "order": 2
+                },
+                "gitAiCommitter.openRouterApiKey": {
+                    "type": "string",
+                    "default": "",
+                    "description": "API Key for OpenRouter",
+                    "scope": "application",
+                    "order": 3
+                },
+                "gitAiCommitter.openRouterModel": {
+                    "type": "string",
+                    "default": "google/gemini-2.0-flash-lite-preview-02-05:free",
+                    "description": "Model ID to use with OpenRouter",
+                    "scope": "application",
+                    "order": 4
                 },
                 "gitAiCommitter.inactivityDelay": {
                     "type": "integer",

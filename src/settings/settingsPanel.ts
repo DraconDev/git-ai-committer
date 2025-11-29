@@ -479,6 +479,10 @@ export class SettingsPanel {
                         <label for="provider-gemini" style="margin: 0;">Google Gemini</label>
                     </div>
                     <div class="radio-option">
+                        <input type="radio" id="provider-openRouter" name="aiProvider" value="openRouter">
+                        <label for="provider-openRouter" style="margin: 0;">OpenRouter</label>
+                    </div>
+                    <div class="radio-option">
                         <input type="radio" id="provider-copilot" name="aiProvider" value="copilot">
                         <label for="provider-copilot" style="margin: 0;">Editor Built-in AI</label>
                     </div>
@@ -492,6 +496,23 @@ export class SettingsPanel {
                 <div class="description">
                     Get your free API key from 
                     <a href="#" class="link" id="api-key-link">Google AI Studio</a>
+                </div>
+            </div>
+
+            <div id="openrouter-group" style="display: none;">
+                <div class="form-group">
+                    <label for="openrouter-api-key">OpenRouter API Key</label>
+                    <input type="password" id="openrouter-api-key" placeholder="sk-or-...">
+                    <div class="description">
+                        Get your API key from <a href="https://openrouter.ai/keys" class="link">OpenRouter</a>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="openrouter-model">Model</label>
+                    <input type="text" id="openrouter-model" placeholder="google/gemini-2.0-flash-lite-preview-02-05:free">
+                    <div class="description">
+                        Enter the model ID (e.g., anthropic/claude-3-opus, openai/gpt-4)
+                    </div>
                 </div>
             </div>
         </div>
@@ -581,11 +602,12 @@ export class SettingsPanel {
             }
         });
 
-        function populateSettings(settings) {
             // AI Provider
             document.getElementById('provider-' + settings.preferredAIProvider).checked = true;
             document.getElementById('gemini-api-key').value = settings.geminiApiKey || '';
-            updateGeminiKeyVisibility(settings.preferredAIProvider);
+            document.getElementById('openrouter-api-key').value = settings.openRouterApiKey || '';
+            document.getElementById('openrouter-model').value = settings.openRouterModel || 'google/gemini-2.0-flash-lite-preview-02-05:free';
+            updateProviderVisibility(settings.preferredAIProvider);
 
             // Timing
             document.getElementById('inactivity-delay').value = settings.inactivityDelay;
@@ -598,12 +620,15 @@ export class SettingsPanel {
             updateVersionBumpingStatus(settings.versionBumpingEnabled);
 
             // Ignored Patterns
-            document.getElementById('ignored-patterns').value = settings.ignoredFilePatterns.join('\\n');
+            document.getElementById('ignored-patterns').value = settings.ignoredFilePatterns.join('\n');
         }
 
-        function updateGeminiKeyVisibility(provider) {
+        function updateProviderVisibility(provider) {
             const geminiGroup = document.getElementById('gemini-key-group');
+            const openRouterGroup = document.getElementById('openrouter-group');
+            
             geminiGroup.style.display = provider === 'gemini' ? 'block' : 'none';
+            openRouterGroup.style.display = provider === 'openRouter' ? 'block' : 'none';
         }
 
         function updateVersionBumpingStatus(enabled) {
