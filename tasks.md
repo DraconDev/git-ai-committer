@@ -3,6 +3,8 @@
 ## Do
 
 - one clarification that we don't only version bump the package.json but whatever version system the current project uses, so we support many languages pay attention to this
+- also should we ban more life patterns like *.vscode?
+
 ## Done
 
 -   when we open the settings with the gear icon we only see an old settings page, we should see the new settings page, and get rid of the old one
