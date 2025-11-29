@@ -1,168 +1,136 @@
 {
-  "name": "git-ai-committer",
-  "displayName": "Git AI Auto Committer",
-  "description": "Automatically generates commit messages and commits changes using AI",
-  "version": "4.1.4",
-  "publisher": "devdrac",
-  "icon": "media/logo.png",
-  "galleryBanner": {
-    "color": "#1E1E1E",
-    "theme": "dark"
-  },
-  "engines": {
-    "vscode": "^1.96.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/DraconDev/git-ai-committer"
-  },
-  "categories": [
-    "Other",
-    "AI"
-  ],
-  "activationEvents": [
-    "workspaceContains:.git"
-  ],
-  "main": "./dist/extension.js",
-  "contributes": {
-    "commands": [
-      {
-        "command": "git-ai-committer.enableAutoCommit",
-        "title": "Git AI Committer: Enable Auto Commit"
-      },
-      {
-        "command": "git-ai-committer.disableAutoCommit",
-        "title": "Git AI Committer: Disable Auto Commit"
-      },
-      {
-        "command": "git-ai-committer.commitNow",
-        "title": "Git AI Committer: Commit Now"
-      },
-      {
-        "command": "git-ai-committer.setGeminiApiKey",
-        "title": "Git AI Committer: Set Gemini API Key"
-      },
-      {
-        "command": "git-ai-committer.setInactivityDelay",
-        "title": "Git AI Committer: Set Inactivity Delay"
-      },
-      {
-        "command": "git-ai-committer.setMinTimeBetweenCommits",
-        "title": "Git AI Committer: Set Min Time Between Commits"
-      },
-      {
-        "command": "git-ai-committer.manageIgnoredFiles",
-        "title": "Git AI Committer: Manage Ignored Files"
-      },
-      {
-        "command": "git-ai-committer.enableVersionBumping",
-        "title": "Git AI Committer: Enable Version Bumping"
-      },
-      {
-        "command": "git-ai-committer.disableVersionBumping",
-        "title": "Git AI Committer: Disable Version Bumping"
-      },
-      {
-        "command": "git-ai-committer.setPreferredAIProvider",
-        "title": "Git AI Committer: Set AI Provider"
-      }
+    "name": "git-ai-committer",
+    "displayName": "Git AI Auto Committer",
+    "description": "Automatically generates commit messages and commits changes using AI",
+    "version": "4.1.4",
+    "publisher": "devdrac",
+    "icon": "media/logo.png",
+    "galleryBanner": {
+        "color": "#1E1E1E",
+        "theme": "dark"
+    },
+    "engines": {
+        "vscode": "^1.96.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DraconDev/git-ai-committer"
+    },
+    "categories": [
+        "Other",
+        "AI"
     ],
-    "configuration": {
-      "title": "Git AI Committer",
-      "properties": {
-        "gitAiCommitter.preferredAIProvider": {
-          "type": "string",
-          "enum": [
-            "copilot",
-            "gemini"
-          ],
-          "default": "gemini",
-          "description": "Preferred AI provider for generating commit messages",
-          "scope": "application",
-          "order": 1
-        },
-        "gitAiCommitter.geminiApiKey": {
-          "type": "string",
-          "default": "",
-          "description": "Google Gemini API Key for generating commit messages. Get your API key from https://aistudio.google.com/apikey",
-          "scope": "application",
-          "order": 2
-        },
-        "gitAiCommitter.inactivityDelay": {
-          "type": "integer",
-          "default": 5,
-          "minimum": 1,
-          "maximum": 3600,
-          "description": "Seconds to wait after stopping typing before checking for commits",
-          "scope": "application",
-          "order": 3
-        },
-        "gitAiCommitter.minCommitDelay": {
-          "type": "integer",
-          "default": 15,
-          "minimum": 5,
-          "maximum": 3600,
-          "description": "Minimum seconds between actual commits (prevents rapid commits)",
-          "scope": "application",
-          "order": 4
-        },
-        "gitAiCommitter.ignoredFilePatterns": {
-          "type": "array",
-          "default": [
-            "*.tmp",
-            "*.temp",
-            "*.log",
-            "*.cache",
-            "*.dll",
-            "*.exe",
-            "*.env"
-          ],
-          "description": "File patterns to ignore during auto commits (temp files, logs, etc.)",
-          "scope": "application",
-          "order": 5
-        },
-        "gitAiCommitter.versionBumpingEnabled": {
-          "type": "boolean",
-          "default": false,
-          "description": "Enable/disable automatic version bumping on commits",
-          "scope": "application",
-          "order": 6
+    "activationEvents": [
+        "workspaceContains:.git"
+    ],
+    "main": "./dist/extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "git-ai-committer.commitNow",
+                "title": "Git AI Committer: Commit Now"
+            },
+            {
+                "command": "git-ai-committer.openSettings",
+                "title": "Git AI Committer: Open Settings"
+            }
+        ],
+        "configuration": {
+            "title": "Git AI Committer",
+            "properties": {
+                "gitAiCommitter.preferredAIProvider": {
+                    "type": "string",
+                    "enum": [
+                        "copilot",
+                        "gemini"
+                    ],
+                    "default": "gemini",
+                    "description": "Preferred AI provider for generating commit messages",
+                    "scope": "application",
+                    "order": 1
+                },
+                "gitAiCommitter.geminiApiKey": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Google Gemini API Key for generating commit messages. Get your API key from https://aistudio.google.com/apikey",
+                    "scope": "application",
+                    "order": 2
+                },
+                "gitAiCommitter.inactivityDelay": {
+                    "type": "integer",
+                    "default": 5,
+                    "minimum": 1,
+                    "maximum": 3600,
+                    "description": "Seconds to wait after stopping typing before checking for commits",
+                    "scope": "application",
+                    "order": 3
+                },
+                "gitAiCommitter.minCommitDelay": {
+                    "type": "integer",
+                    "default": 15,
+                    "minimum": 5,
+                    "maximum": 3600,
+                    "description": "Minimum seconds between actual commits (prevents rapid commits)",
+                    "scope": "application",
+                    "order": 4
+                },
+                "gitAiCommitter.ignoredFilePatterns": {
+                    "type": "array",
+                    "default": [
+                        "*.tmp",
+                        "*.temp",
+                        "*.log",
+                        "*.cache",
+                        "*.dll",
+                        "*.exe",
+                        "*.env"
+                    ],
+                    "description": "File patterns to ignore during auto commits (temp files, logs, etc.)",
+                    "scope": "application",
+                    "order": 5
+                },
+                "gitAiCommitter.versionBumpingEnabled": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Enable/disable automatic version bumping on commits",
+                    "scope": "application",
+                    "order": 6
+                }
+            }
         }
-      }
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run package",
+        "compile": "npm run check-types && npm run lint && node esbuild.js",
+        "watch": "npm-run-all -p watch:*",
+        "watch:esbuild": "node esbuild.js --watch",
+        "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+        "package": "npm run check-types && npm run lint && node esbuild.js --production",
+        "compile-tests": "tsc -p . --outDir out",
+        "watch-tests": "tsc -p . -w --outDir out",
+        "pretest": "npm run compile-tests && npm run compile && npm run lint",
+        "check-types": "tsc --noEmit",
+        "lint": "eslint src",
+        "test": "vscode-test"
+    },
+    "dependencies": {
+        "@google/generative-ai": "^0.21.0",
+        "simple-git": "^3.22.0"
+    },
+    "devDependencies": {
+        "@types/mocha": "^10.0.10",
+        "@types/node": "20.x",
+        "@types/vscode": "^1.96.0",
+        "@typescript-eslint/eslint-plugin": "^8.17.0",
+        "@typescript-eslint/parser": "^8.17.0",
+        "@vscode/test-cli": "^0.0.10",
+        "@vscode/test-electron": "^2.4.1",
+        "esbuild": "^0.24.0",
+        "eslint": "^9.16.0",
+        "npm-run-all": "^4.1.5",
+        "typescript": "^5.7.2"
+    },
+    "author": {
+        "name": "DraconDev"
     }
-  },
-  "scripts": {
-    "vscode:prepublish": "npm run package",
-    "compile": "npm run check-types && npm run lint && node esbuild.js",
-    "watch": "npm-run-all -p watch:*",
-    "watch:esbuild": "node esbuild.js --watch",
-    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
-    "package": "npm run check-types && npm run lint && node esbuild.js --production",
-    "compile-tests": "tsc -p . --outDir out",
-    "watch-tests": "tsc -p . -w --outDir out",
-    "pretest": "npm run compile-tests && npm run compile && npm run lint",
-    "check-types": "tsc --noEmit",
-    "lint": "eslint src",
-    "test": "vscode-test"
-  },
-  "dependencies": {
-    "@google/generative-ai": "^0.21.0",
-    "simple-git": "^3.22.0"
-  },
-  "devDependencies": {
-    "@types/mocha": "^10.0.10",
-    "@types/node": "20.x",
-    "@types/vscode": "^1.96.0",
-    "@typescript-eslint/eslint-plugin": "^8.17.0",
-    "@typescript-eslint/parser": "^8.17.0",
-    "@vscode/test-cli": "^0.0.10",
-    "@vscode/test-electron": "^2.4.1",
-    "esbuild": "^0.24.0",
-    "eslint": "^9.16.0",
-    "npm-run-all": "^4.1.5",
-    "typescript": "^5.7.2"
-  },
-  "author": {
-    "name": "DraconDev"
-  }
 }
