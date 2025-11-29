@@ -16,3 +16,4 @@ lets also rename github copilot to just editor built in ai option
 
 ### 
 
+update the read me after this is done 
