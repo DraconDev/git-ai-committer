@@ -243,6 +243,30 @@ export class SettingsPanel {
                 );
             }
 
+            if (settings.featureSummaryDefaultCount !== undefined) {
+                await config.update(
+                    "featureSummary.defaultCommitCount",
+                    settings.featureSummaryDefaultCount,
+                    vscode.ConfigurationTarget.Global
+                );
+            }
+
+            if (settings.featureSummaryAutoVersionBump !== undefined) {
+                await config.update(
+                    "featureSummary.autoVersionBump",
+                    settings.featureSummaryAutoVersionBump,
+                    vscode.ConfigurationTarget.Global
+                );
+            }
+
+            if (settings.featureSummaryIncludeFiles !== undefined) {
+                await config.update(
+                    "featureSummary.includeFileList",
+                    settings.featureSummaryIncludeFiles,
+                    vscode.ConfigurationTarget.Global
+                );
+            }
+
             vscode.window.showInformationMessage(
                 "Settings saved successfully!"
             );
