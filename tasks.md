@@ -9,6 +9,7 @@ It only stopped in my example because i turned off version bumping
 
 ###
 have backup ais for commits?
+lets have 2 backup ais for commits much like ai provider config 
 
 ###
 lets also rename github copilot to just editor built in ai option
