@@ -850,6 +850,24 @@ export class SettingsPanel {
         syncInputs('min-commit-delay', 'min-commit-input');
         syncInputs('min-commit-input', 'min-commit-delay');
 
+        // Accordion toggle functionality for API providers
+        document.querySelectorAll('.api-provider-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const provider = header.getAttribute('data-provider');
+                const content = document.getElementById(`${provider}-content`);
+                const chevron = header.querySelector('.chevron');
+                
+                // Toggle the content
+                if (content.classList.contains('expanded')) {
+                    content.classList.remove('expanded');
+                    chevron.classList.remove('expanded');
+                } else {
+                    content.classList.add('expanded');
+                    chevron.classList.add('expanded');
+                }
+            });
+        });
+
         document.getElementById('version-bumping').addEventListener('change', (e) => {
             updateVersionBumpingStatus(e.target.checked);
         });
