@@ -2,6 +2,8 @@
 
 ## Do
 
+- feature evaluation? ok let me explain currently we commit all the time, and the user can sometimes make a commit with version bumper enabled that also bumps the minor version, and this is presumably meant to meant a 
+
 ## Done
 
 -   also should we ban more life patterns like \*.vscode?
