@@ -1,4 +1,3 @@
-import fetch from "node-fetch";
 import * as vscode from "vscode";
 
 export const DEFAULT_OPENROUTER_MODEL =
