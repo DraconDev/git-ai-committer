@@ -371,22 +371,6 @@ export class SettingsPanel {
             font-family: var(--vscode-editor-font-family);
         }
 
-        .radio-group {
-            display: flex;
-            gap: 20px;
-            margin-top: 8px;
-        }
-
-        .radio-option {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        input[type="radio"] {
-            cursor: pointer;
-        }
-
         .toggle-switch {
             position: relative;
             display: inline-block;
@@ -475,11 +459,8 @@ export class SettingsPanel {
             border: none;
         }
 
-        .range-value {
-            min-width: 60px;
-            text-align: right;
-            font-weight: 500;
-            color: var(--vscode-foreground);
+        .number-input {
+            width: 80px !important;
         }
 
         .button-group {
@@ -535,6 +516,24 @@ export class SettingsPanel {
             font-weight: 500;
             margin-left: 8px;
         }
+
+        .api-provider-block {
+            border-bottom: 1px solid var(--vscode-panel-border);
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .api-provider-block:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+            margin-bottom: 0;
+        }
+        
+        .api-provider-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--vscode-foreground);
+        }
     </style>
 </head>
 <body>
@@ -542,49 +541,25 @@ export class SettingsPanel {
         <h1>Git AI Committer Settings</h1>
         <p class="subtitle">Configure your auto-commit preferences and AI provider settings</p>
 
-        <!-- AI Provider Section -->
+        <!-- API Configuration Section -->
         <div class="section">
-            <div class="section-header">AI Provider Configuration</div>
+            <div class="section-header">API Configuration</div>
             
-            <div class="form-group">
-                <label>Preferred AI Provider</label>
-                <div class="radio-group">
-                    <div class="radio-option">
-                        <input type="radio" id="provider-gemini" name="aiProvider" value="gemini">
-                        <label for="provider-gemini" style="margin: 0;">Google Gemini</label>
-                    </div>
-                    <div class="radio-option">
-                        <input type="radio" id="provider-openRouter" name="aiProvider" value="openRouter">
-                        <label for="provider-openRouter" style="margin: 0;">OpenRouter</label>
-                    </div>
-                    <div class="radio-option">
-                        <input type="radio" id="provider-openai" name="aiProvider" value="openai">
-                        <label for="provider-openai" style="margin: 0;">OpenAI</label>
-                    </div>
-                    <div class="radio-option">
-                        <input type="radio" id="provider-anthropic" name="aiProvider" value="anthropic">
-                        <label for="provider-anthropic" style="margin: 0;">Anthropic</label>
-                    </div>
-                    <div class="radio-option">
-                        <input type="radio" id="provider-copilot" name="aiProvider" value="copilot">
-                        <label for="provider-copilot" style="margin: 0;">Editor Built-in AI</label>
-                    </div>
-                </div>
-                <div class="description">Choose which AI service to use for generating commit messages</div>
-            </div>
-
-            <div class="form-group" id="gemini-key-group">
-                <label for="gemini-api-key">Gemini API Key</label>
-                <input type="password" id="gemini-api-key" placeholder="Enter your API key">
-                <div class="description">
-                    Get your free API key from 
-                    <a href="#" class="link" id="api-key-link">Google AI Studio</a>
-                </div>
-            </div>
-
-            <div id="openrouter-group" style="display: none;">
+            <div class="api-provider-block">
+                <div class="api-provider-title">Google Gemini</div>
                 <div class="form-group">
-                    <label for="openrouter-api-key">OpenRouter API Key</label>
+                    <label for="gemini-api-key">API Key</label>
+                    <input type="password" id="gemini-api-key" placeholder="Enter your API key">
+                    <div class="description">
+                        Get your free API key from <a href="#" class="link" id="api-key-link">Google AI Studio</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="api-provider-block">
+                <div class="api-provider-title">OpenRouter</div>
+                <div class="form-group">
+                    <label for="openrouter-api-key">API Key</label>
                     <input type="password" id="openrouter-api-key" placeholder="sk-or-...">
                     <div class="description">
                         Get your API key from <a href="https://openrouter.ai/keys" class="link">OpenRouter</a>
@@ -599,9 +574,10 @@ export class SettingsPanel {
                 </div>
             </div>
 
-            <div id="openai-group" style="display: none;">
+            <div class="api-provider-block">
+                <div class="api-provider-title">OpenAI</div>
                 <div class="form-group">
-                    <label for="openai-api-key">OpenAI API Key</label>
+                    <label for="openai-api-key">API Key</label>
                     <input type="password" id="openai-api-key" placeholder="sk-...">
                     <div class="description">
                         Get your API key from <a href="https://platform.openai.com/api-keys" class="link">OpenAI Platform</a>
@@ -613,9 +589,10 @@ export class SettingsPanel {
                 </div>
             </div>
 
-            <div id="anthropic-group" style="display: none;">
+            <div class="api-provider-block">
+                <div class="api-provider-title">Anthropic</div>
                 <div class="form-group">
-                    <label for="anthropic-api-key">Anthropic API Key</label>
+                    <label for="anthropic-api-key">API Key</label>
                     <input type="password" id="anthropic-api-key" placeholder="sk-ant-...">
                     <div class="description">
                         Get your API key from <a href="https://console.anthropic.com/settings/keys" class="link">Anthropic Console</a>
@@ -626,9 +603,24 @@ export class SettingsPanel {
                     <input type="text" id="anthropic-model" placeholder="claude-3-5-sonnet-20240620">
                 </div>
             </div>
+        </div>
 
-            <div class="section-header" style="margin-top: 24px;">Failover Configuration</div>
+        <!-- Provider Priority Section -->
+        <div class="section">
+            <div class="section-header">Provider Priority</div>
             
+            <div class="form-group">
+                <label for="primary-provider">Primary Provider</label>
+                <select id="primary-provider">
+                    <option value="gemini">Google Gemini</option>
+                    <option value="openRouter">OpenRouter</option>
+                    <option value="openai">OpenAI</option>
+                    <option value="anthropic">Anthropic</option>
+                    <option value="copilot">Editor Built-in AI</option>
+                </select>
+                <div class="description">Your main AI service for generating commit messages</div>
+            </div>
+
             <div class="form-group">
                 <label for="backup-provider-1">Backup Provider 1</label>
                 <select id="backup-provider-1">
@@ -662,12 +654,12 @@ export class SettingsPanel {
             
             <div class="form-group">
                 <label for="inactivity-delay">
-                    Inactivity Delay
+                    Inactivity Delay (seconds)
                     <span class="info-badge">Auto-enabled</span>
                 </label>
                 <div class="range-container">
-                    <input type="range" id="inactivity-delay" min="1" max="60" step="1">
-                    <span class="range-value"><span id="inactivity-value">5</span>s</span>
+                    <input type="range" id="inactivity-delay" min="1" max="300" step="1">
+                    <input type="number" id="inactivity-input" class="number-input" min="1" max="300">
                 </div>
                 <div class="description">
                     Seconds to wait after you stop typing before checking for changes to commit
@@ -675,10 +667,10 @@ export class SettingsPanel {
             </div>
 
             <div class="form-group">
-                <label for="min-commit-delay">Minimum Time Between Commits</label>
+                <label for="min-commit-delay">Minimum Time Between Commits (seconds)</label>
                 <div class="range-container">
-                    <input type="range" id="min-commit-delay" min="5" max="120" step="5">
-                    <span class="range-value"><span id="min-commit-value">15</span>s</span>
+                    <input type="range" id="min-commit-delay" min="5" max="300" step="5">
+                    <input type="number" id="min-commit-input" class="number-input" min="5" max="300">
                 </div>
                 <div class="description">
                     Minimum seconds between actual commits to prevent rapid consecutive commits
@@ -741,8 +733,8 @@ export class SettingsPanel {
             }
         });
 
-            // AI Provider
-            document.getElementById('provider-' + settings.preferredAIProvider).checked = true;
+        function populateSettings(settings) {
+            // API Keys & Models
             document.getElementById('gemini-api-key').value = settings.geminiApiKey || '';
             document.getElementById('openrouter-api-key').value = settings.openRouterApiKey || '';
             document.getElementById('openrouter-model').value = settings.openRouterModel || 'google/gemini-2.0-flash-lite-preview-02-05:free';
@@ -751,78 +743,53 @@ export class SettingsPanel {
             document.getElementById('anthropic-api-key').value = settings.anthropicApiKey || '';
             document.getElementById('anthropic-model').value = settings.anthropicModel || 'claude-3-5-sonnet-20240620';
             
+            // Provider Priority
+            document.getElementById('primary-provider').value = settings.preferredAIProvider || 'gemini';
             document.getElementById('backup-provider-1').value = settings.backupProvider1 || 'openRouter';
             document.getElementById('backup-provider-2').value = settings.backupProvider2 || 'copilot';
             
-            updateProviderVisibility(settings.preferredAIProvider);
-
             // Timing
             document.getElementById('inactivity-delay').value = settings.inactivityDelay;
-            document.getElementById('inactivity-value').textContent = settings.inactivityDelay;
+            document.getElementById('inactivity-input').value = settings.inactivityDelay;
+            
             document.getElementById('min-commit-delay').value = settings.minCommitDelay;
-            document.getElementById('min-commit-value').textContent = settings.minCommitDelay;
+            document.getElementById('min-commit-input').value = settings.minCommitDelay;
 
             // Version Bumping
             document.getElementById('version-bumping').checked = settings.versionBumpingEnabled;
             updateVersionBumpingStatus(settings.versionBumpingEnabled);
 
             // Ignored Patterns
-            document.getElementById('ignored-patterns').value = settings.ignoredFilePatterns.join('\n');
-        }
-
-        function updateProviderVisibility(provider) {
-            const geminiGroup = document.getElementById('gemini-key-group');
-            const openRouterGroup = document.getElementById('openrouter-group');
-            const openaiGroup = document.getElementById('openai-group');
-            const anthropicGroup = document.getElementById('anthropic-group');
-            
-            geminiGroup.style.display = provider === 'gemini' ? 'block' : 'none';
-            openRouterGroup.style.display = provider === 'openRouter' ? 'block' : 'none';
-            openaiGroup.style.display = provider === 'openai' ? 'block' : 'none';
-            anthropicGroup.style.display = provider === 'anthropic' ? 'block' : 'none';
+            const patterns = settings.ignoredFilePatterns || [];
+            document.getElementById('ignored-patterns').value = patterns.join('\\n');
         }
 
         function updateVersionBumpingStatus(enabled) {
             document.getElementById('version-bumping-status').textContent = enabled ? 'Enabled' : 'Disabled';
         }
 
-        // AI Provider change
-        document.querySelectorAll('input[name="aiProvider"]').forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                updateProviderVisibility(e.target.value);
+        // Sync Range and Number inputs
+        function syncInputs(sourceId, targetId) {
+            const source = document.getElementById(sourceId);
+            const target = document.getElementById(targetId);
+            
+            source.addEventListener('input', (e) => {
+                target.value = e.target.value;
             });
-        });
+        }
 
-        // Range sliders
-        document.getElementById('inactivity-delay').addEventListener('input', (e) => {
-            document.getElementById('inactivity-value').textContent = e.target.value;
-        });
+        syncInputs('inactivity-delay', 'inactivity-input');
+        syncInputs('inactivity-input', 'inactivity-delay');
+        syncInputs('min-commit-delay', 'min-commit-input');
+        syncInputs('min-commit-input', 'min-commit-delay');
 
-        document.getElementById('min-commit-delay').addEventListener('input', (e) => {
-            document.getElementById('min-commit-value').textContent = e.target.value;
-        });
-
-        // Version bumping toggle
         document.getElementById('version-bumping').addEventListener('change', (e) => {
             updateVersionBumpingStatus(e.target.checked);
         });
 
-        // API key link
-        document.getElementById('api-key-link').addEventListener('click', (e) => {
-            e.preventDefault();
-            vscode.postMessage({ type: 'openApiKeyLink' });
-        });
-
-        // Save button
         document.getElementById('save-button').addEventListener('click', () => {
-            const provider = document.querySelector('input[name="aiProvider"]:checked').value;
-            const patterns = document.getElementById('ignored-patterns').value
-                .split('\\n')
-                .map(p => p.trim())
-                .filter(p => p.length > 0);
-
             const settings = {
-                preferredAIProvider: provider,
+                preferredAIProvider: document.getElementById('primary-provider').value,
                 geminiApiKey: document.getElementById('gemini-api-key').value,
                 openRouterApiKey: document.getElementById('openrouter-api-key').value,
                 openRouterModel: document.getElementById('openrouter-model').value,
@@ -832,29 +799,52 @@ export class SettingsPanel {
                 anthropicModel: document.getElementById('anthropic-model').value,
                 backupProvider1: document.getElementById('backup-provider-1').value,
                 backupProvider2: document.getElementById('backup-provider-2').value,
-                inactivityDelay: parseInt(document.getElementById('inactivity-delay').value),
-                minCommitDelay: parseInt(document.getElementById('min-commit-delay').value),
+                inactivityDelay: parseInt(document.getElementById('inactivity-input').value),
+                minCommitDelay: parseInt(document.getElementById('min-commit-input').value),
                 versionBumpingEnabled: document.getElementById('version-bumping').checked,
-                ignoredFilePatterns: patterns
+                ignoredFilePatterns: document.getElementById('ignored-patterns').value
+                    .split('\\n')
+                    .map(line => line.trim())
+                    .filter(line => line.length > 0)
             };
 
-            vscode.postMessage({ 
+            vscode.postMessage({
                 type: 'updateSettings',
-                settings 
+                settings
             });
         });
 
-        // Reset button
         document.getElementById('reset-button').addEventListener('click', () => {
-            const defaults = {
-                preferredAIProvider: 'gemini',
-                geminiApiKey: '',
-                inactivityDelay: 5,
-                minCommitDelay: 15,
-                versionBumpingEnabled: false,
-                ignoredFilePatterns: ['*.tmp', '*.temp', '*.log', '*.cache', '*.dll', '*.exe', '*.env']
-            };
-            populateSettings(defaults);
+            if (confirm('Are you sure you want to reset all settings to defaults?')) {
+                const defaults = {
+                    preferredAIProvider: 'gemini',
+                    geminiApiKey: '',
+                    openRouterApiKey: '',
+                    openRouterModel: 'google/gemini-2.0-flash-lite-preview-02-05:free',
+                    openaiApiKey: '',
+                    openaiModel: 'gpt-4o',
+                    anthropicApiKey: '',
+                    anthropicModel: 'claude-3-5-sonnet-20240620',
+                    backupProvider1: 'openRouter',
+                    backupProvider2: 'copilot',
+                    inactivityDelay: 5,
+                    minCommitDelay: 15,
+                    versionBumpingEnabled: false,
+                    ignoredFilePatterns: [
+                        "*.tmp", "*.temp", "*.log", "*.cache", "*.dll", "*.exe", "*.env"
+                    ]
+                };
+                populateSettings(defaults);
+                // Auto-save defaults
+                vscode.postMessage({
+                    type: 'updateSettings',
+                    settings: defaults
+                });
+            }
+        });
+
+        document.getElementById('api-key-link').addEventListener('click', () => {
+            vscode.postMessage({ type: 'openApiKeyLink' });
         });
     </script>
 </body>
