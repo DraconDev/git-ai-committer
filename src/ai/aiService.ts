@@ -4,6 +4,8 @@ export enum AIProvider {
     Copilot = "copilot",
     Gemini = "gemini",
     OpenRouter = "openRouter",
+    OpenAI = "openai",
+    Anthropic = "anthropic",
 }
 
 export async function getPreferredAIProvider(): Promise<AIProvider> {
