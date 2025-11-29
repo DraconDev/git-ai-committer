@@ -30,9 +30,17 @@ Git AI Auto Committer is a VS Code extension that automatically commits your cod
 -   **For Anthropic**: API key from [Anthropic Console](https://console.anthropic.com/settings/keys)
 -   Git repository with proper configuration
 
-## ⚙️ Extension Settings
+## ⚙️ Configuration
 
-This extension contributes these settings (configure in VS Code settings):
+**The easiest way to configure Git AI Committer is via the built-in Settings Panel.**
+
+1. Open the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`)
+2. Run **`Git AI Committer: Open Settings`**
+3. Configure your AI provider, API keys, and preferences in the beautiful UI
+
+### Advanced / Manual Configuration
+
+If you prefer to edit your `settings.json` directly, the following settings are available:
 
 **Core Settings:**
 
