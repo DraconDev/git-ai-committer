@@ -3,7 +3,7 @@
 ## Do
 
 - [ ] the settings panel looks off when i switch between providers i still can only set gemini api key, also we should be able to set keys in one section and in another set priority, where we set primary secondary tertiary
-- [ ] the timing and behavior should be able to support much longer delay times
+- [ ] the timing and behavior should be able to support much longer delay times, so slider is good but also have an input field for exact delay time
 
 
 
