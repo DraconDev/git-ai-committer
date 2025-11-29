@@ -558,6 +558,14 @@ export class SettingsPanel {
                         <label for="provider-openRouter" style="margin: 0;">OpenRouter</label>
                     </div>
                     <div class="radio-option">
+                        <input type="radio" id="provider-openai" name="aiProvider" value="openai">
+                        <label for="provider-openai" style="margin: 0;">OpenAI</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="provider-anthropic" name="aiProvider" value="anthropic">
+                        <label for="provider-anthropic" style="margin: 0;">Anthropic</label>
+                    </div>
+                    <div class="radio-option">
                         <input type="radio" id="provider-copilot" name="aiProvider" value="copilot">
                         <label for="provider-copilot" style="margin: 0;">Editor Built-in AI</label>
                     </div>
@@ -589,6 +597,62 @@ export class SettingsPanel {
                         Enter the model ID (e.g., anthropic/claude-3-opus, openai/gpt-4)
                     </div>
                 </div>
+            </div>
+
+            <div id="openai-group" style="display: none;">
+                <div class="form-group">
+                    <label for="openai-api-key">OpenAI API Key</label>
+                    <input type="password" id="openai-api-key" placeholder="sk-...">
+                    <div class="description">
+                        Get your API key from <a href="https://platform.openai.com/api-keys" class="link">OpenAI Platform</a>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="openai-model">Model</label>
+                    <input type="text" id="openai-model" placeholder="gpt-4o">
+                </div>
+            </div>
+
+            <div id="anthropic-group" style="display: none;">
+                <div class="form-group">
+                    <label for="anthropic-api-key">Anthropic API Key</label>
+                    <input type="password" id="anthropic-api-key" placeholder="sk-ant-...">
+                    <div class="description">
+                        Get your API key from <a href="https://console.anthropic.com/settings/keys" class="link">Anthropic Console</a>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="anthropic-model">Model</label>
+                    <input type="text" id="anthropic-model" placeholder="claude-3-5-sonnet-20240620">
+                </div>
+            </div>
+
+            <div class="section-header" style="margin-top: 24px;">Failover Configuration</div>
+            
+            <div class="form-group">
+                <label for="backup-provider-1">Backup Provider 1</label>
+                <select id="backup-provider-1">
+                    <option value="none">None</option>
+                    <option value="copilot">Editor Built-in AI</option>
+                    <option value="gemini">Google Gemini</option>
+                    <option value="openRouter">OpenRouter</option>
+                    <option value="openai">OpenAI</option>
+                    <option value="anthropic">Anthropic</option>
+                </select>
+                <div class="description">First backup to try if the primary provider fails</div>
+            </div>
+
+            <div class="form-group">
+                <label for="backup-provider-2">Backup Provider 2</label>
+                <select id="backup-provider-2">
+                    <option value="none">None</option>
+                    <option value="copilot">Editor Built-in AI</option>
+                    <option value="gemini">Google Gemini</option>
+                    <option value="openRouter">OpenRouter</option>
+                    <option value="openai">OpenAI</option>
+                    <option value="anthropic">Anthropic</option>
+                </select>
+                <div class="description">Second backup to try if both primary and first backup fail</div>
             </div>
         </div>
 
@@ -682,6 +746,14 @@ export class SettingsPanel {
             document.getElementById('gemini-api-key').value = settings.geminiApiKey || '';
             document.getElementById('openrouter-api-key').value = settings.openRouterApiKey || '';
             document.getElementById('openrouter-model').value = settings.openRouterModel || 'google/gemini-2.0-flash-lite-preview-02-05:free';
+            document.getElementById('openai-api-key').value = settings.openaiApiKey || '';
+            document.getElementById('openai-model').value = settings.openaiModel || 'gpt-4o';
+            document.getElementById('anthropic-api-key').value = settings.anthropicApiKey || '';
+            document.getElementById('anthropic-model').value = settings.anthropicModel || 'claude-3-5-sonnet-20240620';
+            
+            document.getElementById('backup-provider-1').value = settings.backupProvider1 || 'openRouter';
+            document.getElementById('backup-provider-2').value = settings.backupProvider2 || 'copilot';
+            
             updateProviderVisibility(settings.preferredAIProvider);
 
             // Timing
@@ -701,9 +773,13 @@ export class SettingsPanel {
         function updateProviderVisibility(provider) {
             const geminiGroup = document.getElementById('gemini-key-group');
             const openRouterGroup = document.getElementById('openrouter-group');
+            const openaiGroup = document.getElementById('openai-group');
+            const anthropicGroup = document.getElementById('anthropic-group');
             
             geminiGroup.style.display = provider === 'gemini' ? 'block' : 'none';
             openRouterGroup.style.display = provider === 'openRouter' ? 'block' : 'none';
+            openaiGroup.style.display = provider === 'openai' ? 'block' : 'none';
+            anthropicGroup.style.display = provider === 'anthropic' ? 'block' : 'none';
         }
 
         function updateVersionBumpingStatus(enabled) {
@@ -713,7 +789,7 @@ export class SettingsPanel {
         // AI Provider change
         document.querySelectorAll('input[name="aiProvider"]').forEach(radio => {
             radio.addEventListener('change', (e) => {
-                updateGeminiKeyVisibility(e.target.value);
+                updateProviderVisibility(e.target.value);
             });
         });
 
@@ -748,6 +824,14 @@ export class SettingsPanel {
             const settings = {
                 preferredAIProvider: provider,
                 geminiApiKey: document.getElementById('gemini-api-key').value,
+                openRouterApiKey: document.getElementById('openrouter-api-key').value,
+                openRouterModel: document.getElementById('openrouter-model').value,
+                openaiApiKey: document.getElementById('openai-api-key').value,
+                openaiModel: document.getElementById('openai-model').value,
+                anthropicApiKey: document.getElementById('anthropic-api-key').value,
+                anthropicModel: document.getElementById('anthropic-model').value,
+                backupProvider1: document.getElementById('backup-provider-1').value,
+                backupProvider2: document.getElementById('backup-provider-2').value,
                 inactivityDelay: parseInt(document.getElementById('inactivity-delay').value),
                 minCommitDelay: parseInt(document.getElementById('min-commit-delay').value),
                 versionBumpingEnabled: document.getElementById('version-bumping').checked,
