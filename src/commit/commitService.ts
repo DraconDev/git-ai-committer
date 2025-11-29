@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 
+import { generateCommitMessageWithFailover } from "../ai/aiFailover";
 import { AIProvider } from "../ai/aiService";
 import { generateGeminiMessage } from "../ai/geminiService";
 import { git } from "../extension";
@@ -87,6 +88,13 @@ export class CommitService {
             }
 
             // 3. Generate commit message from current changes using failover system
+            const provider = await getPreferredAIProvider();
+
+            if (!provider) {
+                vscode.window.showErrorMessage("No AI provider selected");
+                return;
+            }
+
             const commitMessage = await generateCommitMessageWithFailover(
                 currentDiff,
                 provider as AIProvider
