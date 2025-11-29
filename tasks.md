@@ -6,4 +6,4 @@ currently version bumping does work perfectly it does not cause extra commits bu
 It only stopped in my example because i turned off version bumping
 
 ###
-have backup ais for c
+have backup ais for commits?
