@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-async function generateCopilotMessage(diff: string): Promise<string> {
+async function generateCopilotMessage(diff: string): Promise<string | null> {
     try {
         // Trigger Copilot's commit message generation
         await vscode.commands.executeCommand(
@@ -15,15 +15,11 @@ async function generateCopilotMessage(diff: string): Promise<string> {
             return message;
         }
 
-        return "";
+        return null;
     } catch (error) {
         console.error("Error generating commit message with Copilot:", error);
-        vscode.window.showErrorMessage(
-            `Error generating commit message: ${
-                error instanceof Error ? error.message : "Unknown error"
-            }`
-        );
-        return "";
+        // Suppress error message here, let failover handle it
+        return null;
     }
 }
 
