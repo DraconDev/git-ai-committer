@@ -854,7 +854,7 @@ export class SettingsPanel {
         document.querySelectorAll('.api-provider-header').forEach(header => {
             header.addEventListener('click', () => {
                 const provider = header.getAttribute('data-provider');
-                const content = document.getElementById(`${provider}-content`);
+                const content = document.getElementById(provider + '-content');
                 const chevron = header.querySelector('.chevron');
                 
                 // Toggle the content
