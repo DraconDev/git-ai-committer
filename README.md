@@ -51,8 +51,7 @@ Access these via the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`):
 2.  **`Git AI Committer: Commit Now`**
     -   Forces an immediate check and commit of your current changes.
     -   Useful if you want to trigger a commit without waiting for the auto-timer.
-    -   Also bumps the minor version if version bumping is enabled.
-
+    
 ### Settings Panel Features
 
 The settings panel provides a beautiful, intuitive interface to configure all extension options:
