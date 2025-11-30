@@ -1,273 +1,273 @@
 {
-    "name": "git-ai-committer",
-    "displayName": "Git AI Auto Committer",
-    "description": "Automatically generates commit messages and commits changes using AI",
-    "version": "5.2.0",
-    "publisher": "devdrac",
-    "icon": "media/logo.png",
-    "galleryBanner": {
-        "color": "#1E1E1E",
-        "theme": "dark"
-    },
-    "engines": {
-        "vscode": "^1.96.0"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/DraconDev/git-ai-committer"
-    },
-    "categories": [
-        "Other",
-        "AI"
+  "name": "git-ai-committer",
+  "displayName": "Git AI Auto Committer",
+  "description": "Automatically generates commit messages and commits changes using AI",
+  "version": "5.2.1",
+  "publisher": "devdrac",
+  "icon": "media/logo.png",
+  "galleryBanner": {
+    "color": "#1E1E1E",
+    "theme": "dark"
+  },
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DraconDev/git-ai-committer"
+  },
+  "categories": [
+    "Other",
+    "AI"
+  ],
+  "activationEvents": [
+    "workspaceContains:.git"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "git-ai-committer.commitNow",
+        "title": "Git AI Committer: Commit Now"
+      },
+      {
+        "command": "git-ai-committer.openSettings",
+        "title": "Git AI Committer: Open Settings"
+      },
+      {
+        "command": "git-ai-committer.createFeatureSummary",
+        "title": "Git AI: Summarize Recent Work"
+      }
     ],
-    "activationEvents": [
-        "workspaceContains:.git"
-    ],
-    "main": "./dist/extension.js",
-    "contributes": {
-        "commands": [
-            {
-                "command": "git-ai-committer.commitNow",
-                "title": "Git AI Committer: Commit Now"
-            },
-            {
-                "command": "git-ai-committer.openSettings",
-                "title": "Git AI Committer: Open Settings"
-            },
-            {
-                "command": "git-ai-committer.createFeatureSummary",
-                "title": "Git AI: Summarize Recent Work"
-            }
-        ],
-        "configuration": {
-            "title": "Git AI Committer",
-            "properties": {
-                "gitAiCommitter.preferredAIProvider": {
-                    "type": "string",
-                    "enum": [
-                        "copilot",
-                        "gemini",
-                        "openRouter",
-                        "openai",
-                        "anthropic"
-                    ],
-                    "default": "gemini",
-                    "markdownDescription": "⚠️ **Recommended**: Use the command `Git AI Committer: Open Settings` for a better configuration experience.\n\nPreferred AI provider for generating commit messages",
-                    "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
-                    "enumDescriptions": [
-                        "Use Editor Built-in AI (Copilot) for commit messages",
-                        "Use Google Gemini for commit messages",
-                        "Use OpenRouter for commit messages",
-                        "Use OpenAI for commit messages",
-                        "Use Anthropic for commit messages"
-                    ],
-                    "scope": "application",
-                    "order": 1
-                },
-                "gitAiCommitter.geminiApiKey": {
-                    "type": "string",
-                    "default": "",
-                    "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nAPI Key for Google Gemini",
-                    "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
-                    "scope": "application",
-                    "order": 2
-                },
-                "gitAiCommitter.openRouterApiKey": {
-                    "type": "string",
-                    "default": "",
-                    "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nAPI Key for OpenRouter",
-                    "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
-                    "scope": "application",
-                    "order": 3
-                },
-                "gitAiCommitter.openRouterModel": {
-                    "type": "string",
-                    "default": "google/gemini-2.0-flash-lite-preview-02-05:free",
-                    "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nModel ID to use with OpenRouter",
-                    "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
-                    "scope": "application",
-                    "order": 4
-                },
-                "gitAiCommitter.openaiApiKey": {
-                    "type": "string",
-                    "default": "",
-                    "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nAPI Key for OpenAI",
-                    "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
-                    "scope": "application",
-                    "order": 5
-                },
-                "gitAiCommitter.openaiModel": {
-                    "type": "string",
-                    "default": "gpt-4o",
-                    "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nModel ID to use with OpenAI",
-                    "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
-                    "scope": "application",
-                    "order": 6
-                },
-                "gitAiCommitter.anthropicApiKey": {
-                    "type": "string",
-                    "default": "",
-                    "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nAPI Key for Anthropic",
-                    "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
-                    "scope": "application",
-                    "order": 7
-                },
-                "gitAiCommitter.anthropicModel": {
-                    "type": "string",
-                    "default": "claude-3-5-sonnet-20240620",
-                    "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nModel ID to use with Anthropic",
-                    "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
-                    "scope": "application",
-                    "order": 8
-                },
-                "gitAiCommitter.backupProvider1": {
-                    "type": "string",
-                    "enum": [
-                        "copilot",
-                        "gemini",
-                        "openRouter",
-                        "openai",
-                        "anthropic",
-                        "none"
-                    ],
-                    "default": "openRouter",
-                    "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nFirst backup AI provider if primary fails",
-                    "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
-                    "scope": "application",
-                    "order": 9
-                },
-                "gitAiCommitter.backupProvider2": {
-                    "type": "string",
-                    "enum": [
-                        "copilot",
-                        "gemini",
-                        "openRouter",
-                        "openai",
-                        "anthropic",
-                        "none"
-                    ],
-                    "default": "copilot",
-                    "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nSecond backup AI provider if primary and first backup fail",
-                    "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
-                    "scope": "application",
-                    "order": 10
-                },
-                "gitAiCommitter.inactivityDelay": {
-                    "type": "integer",
-                    "default": 5,
-                    "minimum": 1,
-                    "maximum": 3600,
-                    "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nSeconds to wait after stopping typing before checking for commits",
-                    "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
-                    "scope": "application",
-                    "order": 11
-                },
-                "gitAiCommitter.minCommitDelay": {
-                    "type": "integer",
-                    "default": 15,
-                    "minimum": 5,
-                    "maximum": 3600,
-                    "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nMinimum seconds between actual commits (prevents rapid commits)",
-                    "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
-                    "scope": "application",
-                    "order": 12
-                },
-                "gitAiCommitter.ignoredFilePatterns": {
-                    "type": "array",
-                    "default": [
-                        "*.tmp",
-                        "*.temp",
-                        "*.log",
-                        "*.cache",
-                        "*.dll",
-                        "*.exe",
-                        "*.env",
-                        ".vscode/**",
-                        ".idea/**",
-                        ".vs/**",
-                        "node_modules/**",
-                        ".git/**",
-                        "dist/**",
-                        "build/**",
-                        "*.swp",
-                        "*.swo",
-                        ".DS_Store",
-                        "Thumbs.db"
-                    ],
-                    "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nFile patterns to ignore during auto commits (temp files, logs, etc.)",
-                    "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
-                    "scope": "application",
-                    "order": 13
-                },
-                "gitAiCommitter.versionBumpingEnabled": {
-                    "type": "boolean",
-                    "default": false,
-                    "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nEnable/disable automatic version bumping on commits",
-                    "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
-                    "scope": "application",
-                    "order": 14
-                },
-                "gitAiCommitter.featureSummary.defaultCommitCount": {
-                    "type": "number",
-                    "default": 25,
-                    "minimum": 1,
-                    "maximum": 200,
-                    "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nDefault number of commits to analyze when creating feature summary",
-                    "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
-                    "scope": "application",
-                    "order": 15
-                },
-                "gitAiCommitter.featureSummary.autoVersionBump": {
-                    "type": "boolean",
-                    "default": false,
-                    "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nAutomatically bump version when creating feature summary (based on AI suggestion)",
-                    "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
-                    "scope": "application",
-                    "order": 16
-                },
-                "gitAiCommitter.featureSummary.includeFileList": {
-                    "type": "boolean",
-                    "default": true,
-                    "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nInclude list of modified files in feature summary commit message",
-                    "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
-                    "scope": "application",
-                    "order": 17
-                }
-            }
+    "configuration": {
+      "title": "Git AI Committer",
+      "properties": {
+        "gitAiCommitter.preferredAIProvider": {
+          "type": "string",
+          "enum": [
+            "copilot",
+            "gemini",
+            "openRouter",
+            "openai",
+            "anthropic"
+          ],
+          "default": "gemini",
+          "markdownDescription": "⚠️ **Recommended**: Use the command `Git AI Committer: Open Settings` for a better configuration experience.\n\nPreferred AI provider for generating commit messages",
+          "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+          "enumDescriptions": [
+            "Use Editor Built-in AI (Copilot) for commit messages",
+            "Use Google Gemini for commit messages",
+            "Use OpenRouter for commit messages",
+            "Use OpenAI for commit messages",
+            "Use Anthropic for commit messages"
+          ],
+          "scope": "application",
+          "order": 1
+        },
+        "gitAiCommitter.geminiApiKey": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nAPI Key for Google Gemini",
+          "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+          "scope": "application",
+          "order": 2
+        },
+        "gitAiCommitter.openRouterApiKey": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nAPI Key for OpenRouter",
+          "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+          "scope": "application",
+          "order": 3
+        },
+        "gitAiCommitter.openRouterModel": {
+          "type": "string",
+          "default": "google/gemini-2.0-flash-lite-preview-02-05:free",
+          "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nModel ID to use with OpenRouter",
+          "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+          "scope": "application",
+          "order": 4
+        },
+        "gitAiCommitter.openaiApiKey": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nAPI Key for OpenAI",
+          "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+          "scope": "application",
+          "order": 5
+        },
+        "gitAiCommitter.openaiModel": {
+          "type": "string",
+          "default": "gpt-4o",
+          "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nModel ID to use with OpenAI",
+          "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+          "scope": "application",
+          "order": 6
+        },
+        "gitAiCommitter.anthropicApiKey": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nAPI Key for Anthropic",
+          "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+          "scope": "application",
+          "order": 7
+        },
+        "gitAiCommitter.anthropicModel": {
+          "type": "string",
+          "default": "claude-3-5-sonnet-20240620",
+          "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nModel ID to use with Anthropic",
+          "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+          "scope": "application",
+          "order": 8
+        },
+        "gitAiCommitter.backupProvider1": {
+          "type": "string",
+          "enum": [
+            "copilot",
+            "gemini",
+            "openRouter",
+            "openai",
+            "anthropic",
+            "none"
+          ],
+          "default": "openRouter",
+          "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nFirst backup AI provider if primary fails",
+          "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+          "scope": "application",
+          "order": 9
+        },
+        "gitAiCommitter.backupProvider2": {
+          "type": "string",
+          "enum": [
+            "copilot",
+            "gemini",
+            "openRouter",
+            "openai",
+            "anthropic",
+            "none"
+          ],
+          "default": "copilot",
+          "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nSecond backup AI provider if primary and first backup fail",
+          "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+          "scope": "application",
+          "order": 10
+        },
+        "gitAiCommitter.inactivityDelay": {
+          "type": "integer",
+          "default": 5,
+          "minimum": 1,
+          "maximum": 3600,
+          "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nSeconds to wait after stopping typing before checking for commits",
+          "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+          "scope": "application",
+          "order": 11
+        },
+        "gitAiCommitter.minCommitDelay": {
+          "type": "integer",
+          "default": 15,
+          "minimum": 5,
+          "maximum": 3600,
+          "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nMinimum seconds between actual commits (prevents rapid commits)",
+          "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+          "scope": "application",
+          "order": 12
+        },
+        "gitAiCommitter.ignoredFilePatterns": {
+          "type": "array",
+          "default": [
+            "*.tmp",
+            "*.temp",
+            "*.log",
+            "*.cache",
+            "*.dll",
+            "*.exe",
+            "*.env",
+            ".vscode/**",
+            ".idea/**",
+            ".vs/**",
+            "node_modules/**",
+            ".git/**",
+            "dist/**",
+            "build/**",
+            "*.swp",
+            "*.swo",
+            ".DS_Store",
+            "Thumbs.db"
+          ],
+          "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nFile patterns to ignore during auto commits (temp files, logs, etc.)",
+          "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+          "scope": "application",
+          "order": 13
+        },
+        "gitAiCommitter.versionBumpingEnabled": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nEnable/disable automatic version bumping on commits",
+          "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+          "scope": "application",
+          "order": 14
+        },
+        "gitAiCommitter.featureSummary.defaultCommitCount": {
+          "type": "number",
+          "default": 25,
+          "minimum": 1,
+          "maximum": 200,
+          "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nDefault number of commits to analyze when creating feature summary",
+          "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+          "scope": "application",
+          "order": 15
+        },
+        "gitAiCommitter.featureSummary.autoVersionBump": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nAutomatically bump version when creating feature summary (based on AI suggestion)",
+          "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+          "scope": "application",
+          "order": 16
+        },
+        "gitAiCommitter.featureSummary.includeFileList": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nInclude list of modified files in feature summary commit message",
+          "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+          "scope": "application",
+          "order": 17
         }
-    },
-    "scripts": {
-        "vscode:prepublish": "npm run package",
-        "compile": "npm run check-types && npm run lint && node esbuild.js",
-        "watch": "npm-run-all -p watch:*",
-        "watch:esbuild": "node esbuild.js --watch",
-        "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
-        "package": "npm run check-types && npm run lint && node esbuild.js --production",
-        "compile-tests": "tsc -p . --outDir out",
-        "watch-tests": "tsc -p . -w --outDir out",
-        "pretest": "npm run compile-tests && npm run compile && npm run lint",
-        "check-types": "tsc --noEmit",
-        "lint": "eslint src",
-        "test": "vscode-test"
-    },
-    "dependencies": {
-        "@google/generative-ai": "^0.21.0",
-        "simple-git": "^3.22.0"
-    },
-    "devDependencies": {
-        "@types/mocha": "^10.0.10",
-        "@types/node": "20.x",
-        "@types/vscode": "^1.96.0",
-        "@typescript-eslint/eslint-plugin": "^8.17.0",
-        "@typescript-eslint/parser": "^8.17.0",
-        "@vscode/test-cli": "^0.0.10",
-        "@vscode/test-electron": "^2.4.1",
-        "esbuild": "^0.27.0",
-        "eslint": "^9.16.0",
-        "npm-run-all": "^4.1.5",
-        "typescript": "^5.7.2"
-    },
-    "author": {
-        "name": "DraconDev"
+      }
     }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "npm run check-types && npm run lint && node esbuild.js",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "node esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "package": "npm run check-types && npm run lint && node esbuild.js --production",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "simple-git": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.96.0",
+    "@typescript-eslint/eslint-plugin": "^8.17.0",
+    "@typescript-eslint/parser": "^8.17.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
+    "esbuild": "^0.27.0",
+    "eslint": "^9.16.0",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^5.7.2"
+  },
+  "author": {
+    "name": "DraconDev"
+  }
 }
