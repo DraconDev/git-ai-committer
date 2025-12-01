@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { generateCommitMessageWithFailover } from "../ai/aiFailover";
+import { getPreferredAIProvider } from "../ai/aiService";
 import {
   commitChanges,
   getCommitHistory,
@@ -35,15 +36,14 @@ export async function analyzeCommitsForFeature(
     const prompt = buildAnalysisPrompt(commits);
 
     // Get AI analysis - use primary provider from config
-    const config = vscode.workspace.getConfiguration("gitAiCommitter");
-    const primaryProvider = config.get<string>("preferredAIProvider", "gemini");
+    const primaryProvider = await getPreferredAIProvider();
 
     let aiResponse: string | null = null;
 
     // Try to get AI response using failover
     aiResponse = await generateCommitMessageWithFailover(
       prompt,
-      primaryProvider as any
+      primaryProvider
     );
 
     if (!aiResponse) {

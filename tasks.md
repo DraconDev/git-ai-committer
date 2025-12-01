@@ -1,7 +1,12 @@
 # Tasks
 
+## Do
+
+- Another feature we need that when we select the ai 
+
 ## Done
 
+- The extension was defeaulting to the editor ai, which was pretty good in most cases unless you use github copilot that you used up 
 -   feature evaluation? ok let me explain currently we commit all the time, and the user can sometimes make a commit with version bumper enabled that also bumps the minor version, and this is presumably meant to meant a somewhat of a break point or we did a bigger feature, but what if we look backed the commit history, so suppose i made 100 commits and instead of a new one i make a commit after the 45th one to significy something, and this is not recent but we look back on the older commits like 10 commits ago and see what we added and based on this we can make an extra commit that dones't just have the 30 tiny parts, but instead look at them and realized that we added the X thing, i am not sure we can version bump so retroactively, but imagine we made a page that was 20 commits, and later we look back and see that we seem to be done with the page so we make a bigger commit that version bumps if we can, that shows what we really implemented not just the steps
 
     -   option 1 should be command for sure, if we do this,

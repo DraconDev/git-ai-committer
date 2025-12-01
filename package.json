@@ -2,7 +2,7 @@
   "name": "git-ai-committer",
   "displayName": "Git AI Auto Committer",
   "description": "Automatically generates commit messages and commits changes using AI",
-  "version": "5.2.5",
+  "version": "5.2.6",
   "publisher": "devdrac",
   "icon": "media/logo.png",
   "galleryBanner": {
@@ -51,8 +51,8 @@
             "openai",
             "anthropic"
           ],
-          "default": "gemini",
-          "markdownDescription": "⚠️ **Recommended**: Use the command `Git AI Committer: Open Settings` for a better configuration experience.\n\nPreferred AI provider for generating commit messages",
+          "default": "",
+          "markdownDescription": "⚠️ **Required**: You must explicitly select an AI provider. Use the command `Git AI Committer: Open Settings` for configuration.\n\nPreferred AI provider for generating commit messages",
           "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
           "enumDescriptions": [
             "Use Editor Built-in AI (Copilot) for commit messages",
@@ -130,7 +130,7 @@
             "anthropic",
             "none"
           ],
-          "default": "openRouter",
+          "default": "none",
           "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nFirst backup AI provider if primary fails",
           "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
           "scope": "application",
@@ -146,7 +146,7 @@
             "anthropic",
             "none"
           ],
-          "default": "copilot",
+          "default": "none",
           "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nSecond backup AI provider if primary and first backup fail",
           "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
           "scope": "application",
