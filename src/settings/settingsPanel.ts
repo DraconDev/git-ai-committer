@@ -111,6 +111,9 @@ export class SettingsPanel {
         "featureSummary.includeFileList",
         true
       ),
+      primaryProviderModel: config.get<string>("primaryProviderModel", ""),
+      backupProvider1Model: config.get<string>("backupProvider1Model", ""),
+      backupProvider2Model: config.get<string>("backupProvider2Model", ""),
     };
 
     this._panel.webview.postMessage({
