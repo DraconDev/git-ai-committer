@@ -979,6 +979,7 @@ export class SettingsPanel {
 
         document.getElementById('save-button').addEventListener('click', () => {
             const settings = {
+                geminiModel: document.getElementById('gemini-model').value,
                 preferredAIProvider: document.getElementById('primary-provider').value,
                 geminiApiKey: document.getElementById('gemini-api-key').value,
                 openRouterApiKey: document.getElementById('openrouter-api-key').value,
@@ -1009,6 +1010,7 @@ export class SettingsPanel {
 
         document.getElementById('reset-button').addEventListener('click', () => {
             if (confirm('Are you sure you want to reset all settings to defaults?')) {
+                    geminiModel: '',
                 const defaults = {
                     preferredAIProvider: '',
                     geminiApiKey: '',
