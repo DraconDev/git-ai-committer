@@ -2,7 +2,7 @@
 
 ## Do
 
-- Another feature we need that when we select the ai 
+- Another feature we need that in the provider priority we should also be able to set the model we are using 
 
 ## Done
 
