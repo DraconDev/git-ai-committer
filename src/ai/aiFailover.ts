@@ -8,6 +8,7 @@ import { generateOpenAIMessage } from "./openaiService";
 
 interface FailoverAttempt {
   provider: string;
+  model?: string;
   success: boolean;
   message?: string;
   error?: string;

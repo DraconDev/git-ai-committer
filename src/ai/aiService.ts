@@ -90,16 +90,5 @@ export async function getProviderConfigs(): Promise<ProviderConfig[]> {
 }
 
 export function getDefaultModelForProvider(provider: AIProvider): string {
-  switch (provider) {
-    case AIProvider.OpenRouter:
-      return "google/gemini-2.0-flash-lite-preview-02-05:free";
-    case AIProvider.OpenAI:
-      return "gpt-4o";
-    case AIProvider.Anthropic:
-      return "claude-3-5-sonnet-20240620";
-    case AIProvider.Gemini:
-    case AIProvider.Copilot:
-    default:
-      return ""; // These providers don't need explicit model specification
-  }
+  return ""; // Model selection is handled by user configuration
 }
