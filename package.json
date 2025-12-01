@@ -2,7 +2,7 @@
   "name": "git-ai-committer",
   "displayName": "Git AI Auto Committer",
   "description": "Automatically generates commit messages and commits changes using AI",
-  "version": "5.2.25",
+  "version": "5.2.4",
   "publisher": "devdrac",
   "icon": "media/logo.png",
   "galleryBanner": {
@@ -119,6 +119,116 @@
           "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
           "scope": "application",
           "order": 6
+        },
+        "gitAiCommitter.geminiApiKey": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nGoogle Gemini API key for generating commit messages",
+          "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+          "order": 10
+        },
+        "gitAiCommitter.geminiModel": {
+          "type": "string",
+          "default": "gemini-flash-lite-latest",
+          "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nGemini model to use (optional, defaults to gemini-flash-lite-latest)",
+          "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+          "order": 11
+        },
+        "gitAiCommitter.openRouterApiKey": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nOpenRouter API key for generating commit messages",
+          "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+          "order": 12
+        },
+        "gitAiCommitter.openRouterModel": {
+          "type": "string",
+          "default": "google/gemini-2.0-flash-lite-preview-02-05:free",
+          "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nOpenRouter model to use (optional, defaults to google/gemini-2.0-flash-lite-preview-02-05:free)",
+          "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+          "order": 13
+        },
+        "gitAiCommitter.openaiApiKey": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nOpenAI API key for generating commit messages",
+          "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+          "order": 14
+        },
+        "gitAiCommitter.openaiModel": {
+          "type": "string",
+          "default": "gpt-4o",
+          "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nOpenAI model to use (optional, defaults to gpt-4o)",
+          "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+          "order": 15
+        },
+        "gitAiCommitter.anthropicApiKey": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nAnthropic API key for generating commit messages",
+          "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+          "order": 16
+        },
+        "gitAiCommitter.anthropicModel": {
+          "type": "string",
+          "default": "claude-3-5-sonnet-20240620",
+          "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nAnthropic model to use (optional, defaults to claude-3-5-sonnet-20240620)",
+          "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+          "order": 17
+        },
+        "gitAiCommitter.inactivityDelay": {
+          "type": "number",
+          "default": 5,
+          "minimum": 1,
+          "maximum": 300,
+          "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nSeconds to wait after you stop typing before checking for changes to commit",
+          "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+          "order": 20
+        },
+        "gitAiCommitter.minCommitDelay": {
+          "type": "number",
+          "default": 15,
+          "minimum": 5,
+          "maximum": 300,
+          "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nMinimum seconds between actual commits to prevent rapid consecutive commits",
+          "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+          "order": 21
+        },
+        "gitAiCommitter.versionBumpingEnabled": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nAutomatically increment version numbers in package.json on each commit",
+          "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+          "order": 22
+        },
+        "gitAiCommitter.ignoredFilePatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "*.tmp",
+            "*.temp",
+            "*.log",
+            "*.cache",
+            "*.dll",
+            "*.exe",
+            "*.env",
+            ".vscode/**",
+            ".idea/**",
+            ".vs/**",
+            "node_modules/**",
+            ".git/**",
+            "dist/**",
+            "build/**",
+            "*.swp",
+            "*.swo",
+            ".DS_Store",
+            "Thumbs.db"
+          ],
+          "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nFile patterns to ignore in auto-commits (one pattern per line)",
+          "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+          "order": 23
         }
       }
     }
