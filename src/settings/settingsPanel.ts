@@ -1,299 +1,289 @@
 import * as vscode from "vscode";
 
 export class SettingsPanel {
-    public static currentPanel: SettingsPanel | undefined;
-    private readonly _panel: vscode.WebviewPanel;
-    private _disposables: vscode.Disposable[] = [];
+  public static currentPanel: SettingsPanel | undefined;
+  private readonly _panel: vscode.WebviewPanel;
+  private _disposables: vscode.Disposable[] = [];
 
-    private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
-        this._panel = panel;
+  private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
+    this._panel = panel;
 
-        // Set the webview's initial html content
-        this._panel.webview.html = this._getHtmlForWebview(this._panel.webview);
+    // Set the webview's initial html content
+    this._panel.webview.html = this._getHtmlForWebview(this._panel.webview);
 
-        // Listen for when the panel is disposed
-        this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
+    // Listen for when the panel is disposed
+    this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
 
-        // Handle messages from the webview
-        this._panel.webview.onDidReceiveMessage(
-            async (message) => {
-                switch (message.type) {
-                    case "getSettings":
-                        this._sendSettings();
-                        break;
-                    case "updateSettings":
-                        await this._updateSettings(message.settings);
-                        break;
-                    case "openApiKeyLink":
-                        vscode.env.openExternal(
-                            vscode.Uri.parse(
-                                "https://aistudio.google.com/apikey"
-                            )
-                        );
-                        break;
-                }
-            },
-            null,
-            this._disposables
-        );
-
-        // Send initial settings
-        this._sendSettings();
-    }
-
-    public static createOrShow(extensionUri: vscode.Uri) {
-        // If we already have a panel, show it.
-        if (SettingsPanel.currentPanel) {
-            SettingsPanel.currentPanel._panel.reveal(vscode.ViewColumn.One);
-            return;
-        }
-
-        // Otherwise, create a new panel.
-        const panel = vscode.window.createWebviewPanel(
-            "gitAiCommitterSettings",
-            "Git AI Committer Settings",
-            vscode.ViewColumn.One,
-            {
-                enableScripts: true,
-                retainContextWhenHidden: true,
-            }
-        );
-
-        SettingsPanel.currentPanel = new SettingsPanel(panel, extensionUri);
-    }
-
-    private _sendSettings() {
-        const config = vscode.workspace.getConfiguration("gitAiCommitter");
-        const settings = {
-            preferredAIProvider: config.get<string>(
-                "preferredAIProvider",
-                "gemini"
-            ),
-            geminiApiKey: config.get<string>("geminiApiKey", ""),
-            openRouterApiKey: config.get<string>("openRouterApiKey", ""),
-            openRouterModel: config.get<string>("openRouterModel", ""),
-            openaiApiKey: config.get<string>("openaiApiKey", ""),
-            openaiModel: config.get<string>("openaiModel", ""),
-            anthropicApiKey: config.get<string>("anthropicApiKey", ""),
-            anthropicModel: config.get<string>("anthropicModel", ""),
-            backupProvider1: config.get<string>(
-                "backupProvider1",
-                "openRouter"
-            ),
-            backupProvider2: config.get<string>("backupProvider2", "copilot"),
-            inactivityDelay: config.get<number>("inactivityDelay", 5),
-            minCommitDelay: config.get<number>("minCommitDelay", 15),
-            ignoredFilePatterns: config.get<string[]>("ignoredFilePatterns", [
-                "*.tmp",
-                "*.temp",
-                "*.log",
-                "*.cache",
-                "*.dll",
-                "*.exe",
-                "*.env",
-                ".vscode/**",
-                ".idea/**",
-                ".vs/**",
-                "node_modules/**",
-                ".git/**",
-                "dist/**",
-                "build/**",
-                "*.swp",
-                "*.swo",
-                ".DS_Store",
-                "Thumbs.db",
-            ]),
-            versionBumpingEnabled: config.get<boolean>(
-                "versionBumpingEnabled",
-                false
-            ),
-            featureSummaryDefaultCount: config.get<number>(
-                "featureSummary.defaultCommitCount",
-                25
-            ),
-            featureSummaryAutoVersionBump: config.get<boolean>(
-                "featureSummary.autoVersionBump",
-                false
-            ),
-            featureSummaryIncludeFiles: config.get<boolean>(
-                "featureSummary.includeFileList",
-                true
-            ),
-        };
-
-        this._panel.webview.postMessage({
-            type: "settings",
-            settings,
-        });
-    }
-
-    private async _updateSettings(settings: any) {
-        const config = vscode.workspace.getConfiguration("gitAiCommitter");
-
-        try {
-            if (settings.preferredAIProvider !== undefined) {
-                await config.update(
-                    "preferredAIProvider",
-                    settings.preferredAIProvider,
-                    vscode.ConfigurationTarget.Global
-                );
-            }
-
-            if (settings.geminiApiKey !== undefined) {
-                await config.update(
-                    "geminiApiKey",
-                    settings.geminiApiKey,
-                    vscode.ConfigurationTarget.Global
-                );
-            }
-
-            if (settings.openRouterApiKey !== undefined) {
-                await config.update(
-                    "openRouterApiKey",
-                    settings.openRouterApiKey,
-                    vscode.ConfigurationTarget.Global
-                );
-            }
-
-            if (settings.openRouterModel !== undefined) {
-                await config.update(
-                    "openRouterModel",
-                    settings.openRouterModel,
-                    vscode.ConfigurationTarget.Global
-                );
-            }
-
-            if (settings.openaiApiKey !== undefined) {
-                await config.update(
-                    "openaiApiKey",
-                    settings.openaiApiKey,
-                    vscode.ConfigurationTarget.Global
-                );
-            }
-
-            if (settings.openaiModel !== undefined) {
-                await config.update(
-                    "openaiModel",
-                    settings.openaiModel,
-                    vscode.ConfigurationTarget.Global
-                );
-            }
-
-            if (settings.anthropicApiKey !== undefined) {
-                await config.update(
-                    "anthropicApiKey",
-                    settings.anthropicApiKey,
-                    vscode.ConfigurationTarget.Global
-                );
-            }
-
-            if (settings.anthropicModel !== undefined) {
-                await config.update(
-                    "anthropicModel",
-                    settings.anthropicModel,
-                    vscode.ConfigurationTarget.Global
-                );
-            }
-
-            if (settings.backupProvider1 !== undefined) {
-                await config.update(
-                    "backupProvider1",
-                    settings.backupProvider1,
-                    vscode.ConfigurationTarget.Global
-                );
-            }
-
-            if (settings.backupProvider2 !== undefined) {
-                await config.update(
-                    "backupProvider2",
-                    settings.backupProvider2,
-                    vscode.ConfigurationTarget.Global
-                );
-            }
-
-            if (settings.inactivityDelay !== undefined) {
-                await config.update(
-                    "inactivityDelay",
-                    settings.inactivityDelay,
-                    vscode.ConfigurationTarget.Global
-                );
-            }
-
-            if (settings.minCommitDelay !== undefined) {
-                await config.update(
-                    "minCommitDelay",
-                    settings.minCommitDelay,
-                    vscode.ConfigurationTarget.Global
-                );
-            }
-
-            if (settings.ignoredFilePatterns !== undefined) {
-                await config.update(
-                    "ignoredFilePatterns",
-                    settings.ignoredFilePatterns,
-                    vscode.ConfigurationTarget.Global
-                );
-            }
-
-            if (settings.versionBumpingEnabled !== undefined) {
-                await config.update(
-                    "versionBumpingEnabled",
-                    settings.versionBumpingEnabled,
-                    vscode.ConfigurationTarget.Global
-                );
-            }
-
-            if (settings.featureSummaryDefaultCount !== undefined) {
-                await config.update(
-                    "featureSummary.defaultCommitCount",
-                    settings.featureSummaryDefaultCount,
-                    vscode.ConfigurationTarget.Global
-                );
-            }
-
-            if (settings.featureSummaryAutoVersionBump !== undefined) {
-                await config.update(
-                    "featureSummary.autoVersionBump",
-                    settings.featureSummaryAutoVersionBump,
-                    vscode.ConfigurationTarget.Global
-                );
-            }
-
-            if (settings.featureSummaryIncludeFiles !== undefined) {
-                await config.update(
-                    "featureSummary.includeFileList",
-                    settings.featureSummaryIncludeFiles,
-                    vscode.ConfigurationTarget.Global
-                );
-            }
-
-            vscode.window.showInformationMessage(
-                "Settings saved successfully!"
-            );
+    // Handle messages from the webview
+    this._panel.webview.onDidReceiveMessage(
+      async (message) => {
+        switch (message.type) {
+          case "getSettings":
             this._sendSettings();
-        } catch (error: any) {
-            vscode.window.showErrorMessage(
-                `Failed to save settings: ${error.message}`
+            break;
+          case "updateSettings":
+            await this._updateSettings(message.settings);
+            break;
+          case "openApiKeyLink":
+            vscode.env.openExternal(
+              vscode.Uri.parse("https://aistudio.google.com/apikey")
             );
+            break;
         }
+      },
+      null,
+      this._disposables
+    );
+
+    // Send initial settings
+    this._sendSettings();
+  }
+
+  public static createOrShow(extensionUri: vscode.Uri) {
+    // If we already have a panel, show it.
+    if (SettingsPanel.currentPanel) {
+      SettingsPanel.currentPanel._panel.reveal(vscode.ViewColumn.One);
+      return;
     }
 
-    public dispose() {
-        SettingsPanel.currentPanel = undefined;
+    // Otherwise, create a new panel.
+    const panel = vscode.window.createWebviewPanel(
+      "gitAiCommitterSettings",
+      "Git AI Committer Settings",
+      vscode.ViewColumn.One,
+      {
+        enableScripts: true,
+        retainContextWhenHidden: true,
+      }
+    );
 
-        // Clean up our resources
-        this._panel.dispose();
+    SettingsPanel.currentPanel = new SettingsPanel(panel, extensionUri);
+  }
 
-        while (this._disposables.length) {
-            const x = this._disposables.pop();
-            if (x) {
-                x.dispose();
-            }
-        }
+  private _sendSettings() {
+    const config = vscode.workspace.getConfiguration("gitAiCommitter");
+    const settings = {
+      preferredAIProvider: config.get<string>("preferredAIProvider", ""),
+      geminiApiKey: config.get<string>("geminiApiKey", ""),
+      openRouterApiKey: config.get<string>("openRouterApiKey", ""),
+      openRouterModel: config.get<string>("openRouterModel", ""),
+      openaiApiKey: config.get<string>("openaiApiKey", ""),
+      openaiModel: config.get<string>("openaiModel", ""),
+      anthropicApiKey: config.get<string>("anthropicApiKey", ""),
+      anthropicModel: config.get<string>("anthropicModel", ""),
+      backupProvider1: config.get<string>("backupProvider1", "none"),
+      backupProvider2: config.get<string>("backupProvider2", "none"),
+      inactivityDelay: config.get<number>("inactivityDelay", 5),
+      minCommitDelay: config.get<number>("minCommitDelay", 15),
+      ignoredFilePatterns: config.get<string[]>("ignoredFilePatterns", [
+        "*.tmp",
+        "*.temp",
+        "*.log",
+        "*.cache",
+        "*.dll",
+        "*.exe",
+        "*.env",
+        ".vscode/**",
+        ".idea/**",
+        ".vs/**",
+        "node_modules/**",
+        ".git/**",
+        "dist/**",
+        "build/**",
+        "*.swp",
+        "*.swo",
+        ".DS_Store",
+        "Thumbs.db",
+      ]),
+      versionBumpingEnabled: config.get<boolean>(
+        "versionBumpingEnabled",
+        false
+      ),
+      featureSummaryDefaultCount: config.get<number>(
+        "featureSummary.defaultCommitCount",
+        25
+      ),
+      featureSummaryAutoVersionBump: config.get<boolean>(
+        "featureSummary.autoVersionBump",
+        false
+      ),
+      featureSummaryIncludeFiles: config.get<boolean>(
+        "featureSummary.includeFileList",
+        true
+      ),
+    };
+
+    this._panel.webview.postMessage({
+      type: "settings",
+      settings,
+    });
+  }
+
+  private async _updateSettings(settings: any) {
+    const config = vscode.workspace.getConfiguration("gitAiCommitter");
+
+    try {
+      if (settings.preferredAIProvider !== undefined) {
+        await config.update(
+          "preferredAIProvider",
+          settings.preferredAIProvider,
+          vscode.ConfigurationTarget.Global
+        );
+      }
+
+      if (settings.geminiApiKey !== undefined) {
+        await config.update(
+          "geminiApiKey",
+          settings.geminiApiKey,
+          vscode.ConfigurationTarget.Global
+        );
+      }
+
+      if (settings.openRouterApiKey !== undefined) {
+        await config.update(
+          "openRouterApiKey",
+          settings.openRouterApiKey,
+          vscode.ConfigurationTarget.Global
+        );
+      }
+
+      if (settings.openRouterModel !== undefined) {
+        await config.update(
+          "openRouterModel",
+          settings.openRouterModel,
+          vscode.ConfigurationTarget.Global
+        );
+      }
+
+      if (settings.openaiApiKey !== undefined) {
+        await config.update(
+          "openaiApiKey",
+          settings.openaiApiKey,
+          vscode.ConfigurationTarget.Global
+        );
+      }
+
+      if (settings.openaiModel !== undefined) {
+        await config.update(
+          "openaiModel",
+          settings.openaiModel,
+          vscode.ConfigurationTarget.Global
+        );
+      }
+
+      if (settings.anthropicApiKey !== undefined) {
+        await config.update(
+          "anthropicApiKey",
+          settings.anthropicApiKey,
+          vscode.ConfigurationTarget.Global
+        );
+      }
+
+      if (settings.anthropicModel !== undefined) {
+        await config.update(
+          "anthropicModel",
+          settings.anthropicModel,
+          vscode.ConfigurationTarget.Global
+        );
+      }
+
+      if (settings.backupProvider1 !== undefined) {
+        await config.update(
+          "backupProvider1",
+          settings.backupProvider1,
+          vscode.ConfigurationTarget.Global
+        );
+      }
+
+      if (settings.backupProvider2 !== undefined) {
+        await config.update(
+          "backupProvider2",
+          settings.backupProvider2,
+          vscode.ConfigurationTarget.Global
+        );
+      }
+
+      if (settings.inactivityDelay !== undefined) {
+        await config.update(
+          "inactivityDelay",
+          settings.inactivityDelay,
+          vscode.ConfigurationTarget.Global
+        );
+      }
+
+      if (settings.minCommitDelay !== undefined) {
+        await config.update(
+          "minCommitDelay",
+          settings.minCommitDelay,
+          vscode.ConfigurationTarget.Global
+        );
+      }
+
+      if (settings.ignoredFilePatterns !== undefined) {
+        await config.update(
+          "ignoredFilePatterns",
+          settings.ignoredFilePatterns,
+          vscode.ConfigurationTarget.Global
+        );
+      }
+
+      if (settings.versionBumpingEnabled !== undefined) {
+        await config.update(
+          "versionBumpingEnabled",
+          settings.versionBumpingEnabled,
+          vscode.ConfigurationTarget.Global
+        );
+      }
+
+      if (settings.featureSummaryDefaultCount !== undefined) {
+        await config.update(
+          "featureSummary.defaultCommitCount",
+          settings.featureSummaryDefaultCount,
+          vscode.ConfigurationTarget.Global
+        );
+      }
+
+      if (settings.featureSummaryAutoVersionBump !== undefined) {
+        await config.update(
+          "featureSummary.autoVersionBump",
+          settings.featureSummaryAutoVersionBump,
+          vscode.ConfigurationTarget.Global
+        );
+      }
+
+      if (settings.featureSummaryIncludeFiles !== undefined) {
+        await config.update(
+          "featureSummary.includeFileList",
+          settings.featureSummaryIncludeFiles,
+          vscode.ConfigurationTarget.Global
+        );
+      }
+
+      vscode.window.showInformationMessage("Settings saved successfully!");
+      this._sendSettings();
+    } catch (error: any) {
+      vscode.window.showErrorMessage(
+        `Failed to save settings: ${error.message}`
+      );
     }
+  }
 
-    private _getHtmlForWebview(webview: vscode.Webview) {
-        return `<!DOCTYPE html>
+  public dispose() {
+    SettingsPanel.currentPanel = undefined;
+
+    // Clean up our resources
+    this._panel.dispose();
+
+    while (this._disposables.length) {
+      const x = this._disposables.pop();
+      if (x) {
+        x.dispose();
+      }
+    }
+  }
+
+  private _getHtmlForWebview(webview: vscode.Webview) {
+    return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -726,6 +716,7 @@ export class SettingsPanel {
             <div class="form-group">
                 <label for="primary-provider">Primary Provider</label>
                 <select id="primary-provider">
+                    <option value="">None (Explicit Selection Required)</option>
                     <option value="gemini">Google Gemini</option>
                     <option value="openRouter">OpenRouter</option>
                     <option value="openai">OpenAI</option>
@@ -858,9 +849,9 @@ export class SettingsPanel {
             document.getElementById('anthropic-model').value = settings.anthropicModel || 'claude-3-5-sonnet-20240620';
             
             // Provider Priority
-            document.getElementById('primary-provider').value = settings.preferredAIProvider || 'gemini';
-            document.getElementById('backup-provider-1').value = settings.backupProvider1 || 'openRouter';
-            document.getElementById('backup-provider-2').value = settings.backupProvider2 || 'copilot';
+            document.getElementById('primary-provider').value = settings.preferredAIProvider || '';
+            document.getElementById('backup-provider-1').value = settings.backupProvider1 || 'none';
+            document.getElementById('backup-provider-2').value = settings.backupProvider2 || 'none';
             
             // Timing
             document.getElementById('inactivity-delay').value = settings.inactivityDelay;
@@ -949,7 +940,7 @@ export class SettingsPanel {
         document.getElementById('reset-button').addEventListener('click', () => {
             if (confirm('Are you sure you want to reset all settings to defaults?')) {
                 const defaults = {
-                    preferredAIProvider: 'gemini',
+                    preferredAIProvider: '',
                     geminiApiKey: '',
                     openRouterApiKey: '',
                     openRouterModel: 'google/gemini-2.0-flash-lite-preview-02-05:free',
@@ -957,8 +948,8 @@ export class SettingsPanel {
                     openaiModel: 'gpt-4o',
                     anthropicApiKey: '',
                     anthropicModel: 'claude-3-5-sonnet-20240620',
-                    backupProvider1: 'openRouter',
-                    backupProvider2: 'copilot',
+                    backupProvider1: 'none',
+                    backupProvider2: 'none',
                     inactivityDelay: 5,
                     minCommitDelay: 15,
                     versionBumpingEnabled: false,
@@ -983,5 +974,5 @@ export class SettingsPanel {
     </script>
 </body>
 </html>`;
-    }
+  }
 }

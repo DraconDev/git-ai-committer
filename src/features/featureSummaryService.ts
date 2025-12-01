@@ -1,94 +1,89 @@
 import * as vscode from "vscode";
 import { generateCommitMessageWithFailover } from "../ai/aiFailover";
 import {
-    commitChanges,
-    getCommitHistory,
-    type CommitInfo,
+  commitChanges,
+  getCommitHistory,
+  type CommitInfo,
 } from "../git/gitOperations";
 
 export interface FeatureSummary {
-    type: string;
-    scope?: string;
-    subject: string;
-    body: string;
-    breaking: boolean;
-    breakingDescription?: string;
-    versionBump: "major" | "minor" | "patch" | "none";
-    commitRange: string;
-    includeFiles: boolean;
-    fileList?: string[];
+  type: string;
+  scope?: string;
+  subject: string;
+  body: string;
+  breaking: boolean;
+  breakingDescription?: string;
+  versionBump: "major" | "minor" | "patch" | "none";
+  commitRange: string;
+  includeFiles: boolean;
+  fileList?: string[];
 }
 
 export async function analyzeCommitsForFeature(
-    commitCount: number
+  commitCount: number
 ): Promise<FeatureSummary | null> {
-    try {
-        // Fetch commit history
-        const commits = await getCommitHistory(commitCount);
+  try {
+    // Fetch commit history
+    const commits = await getCommitHistory(commitCount);
 
-        if (commits.length === 0) {
-            vscode.window.showWarningMessage("No commits found to analyze");
-            return null;
-        }
-
-        // Build AI prompt
-        const prompt = buildAnalysisPrompt(commits);
-
-        // Get AI analysis - use primary provider from config
-        const config = vscode.workspace.getConfiguration("gitAiCommitter");
-        const primaryProvider = config.get<string>(
-            "preferredAIProvider",
-            "gemini"
-        );
-
-        let aiResponse: string | null = null;
-
-        // Try to get AI response using failover
-        aiResponse = await generateCommitMessageWithFailover(
-            prompt,
-            primaryProvider as any
-        );
-
-        if (!aiResponse) {
-            vscode.window.showErrorMessage(
-                "Failed to generate feature summary"
-            );
-            return null;
-        }
-
-        // Parse AI response
-        const summary = parseAIResponse(aiResponse, commits);
-
-        return summary;
-    } catch (error) {
-        vscode.window.showErrorMessage(
-            `Feature analysis failed: ${
-                error instanceof Error ? error.message : "Unknown error"
-            }`
-        );
-        return null;
+    if (commits.length === 0) {
+      vscode.window.showWarningMessage("No commits found to analyze");
+      return null;
     }
+
+    // Build AI prompt
+    const prompt = buildAnalysisPrompt(commits);
+
+    // Get AI analysis - use primary provider from config
+    const config = vscode.workspace.getConfiguration("gitAiCommitter");
+    const primaryProvider = config.get<string>("preferredAIProvider", "gemini");
+
+    let aiResponse: string | null = null;
+
+    // Try to get AI response using failover
+    aiResponse = await generateCommitMessageWithFailover(
+      prompt,
+      primaryProvider as any
+    );
+
+    if (!aiResponse) {
+      vscode.window.showErrorMessage("Failed to generate feature summary");
+      return null;
+    }
+
+    // Parse AI response
+    const summary = parseAIResponse(aiResponse, commits);
+
+    return summary;
+  } catch (error) {
+    vscode.window.showErrorMessage(
+      `Feature analysis failed: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`
+    );
+    return null;
+  }
 }
 
 function buildAnalysisPrompt(commits: CommitInfo[]): string {
-    const commitDetails = commits
-        .map((c) => {
-            const shortHash = c.hash.substring(0, 7);
-            const fileCount = c.files.length;
-            const filePreview = c.files.slice(0, 5).join(", ");
-            const filesText =
-                fileCount > 5
-                    ? `${filePreview}... (+${fileCount - 5} more)`
-                    : filePreview;
+  const commitDetails = commits
+    .map((c) => {
+      const shortHash = c.hash.substring(0, 7);
+      const fileCount = c.files.length;
+      const filePreview = c.files.slice(0, 5).join(", ");
+      const filesText =
+        fileCount > 5
+          ? `${filePreview}... (+${fileCount - 5} more)`
+          : filePreview;
 
-            return `${shortHash} - ${c.message}\n  Files (${fileCount}): ${filesText}`;
-        })
-        .join("\n\n");
+      return `${shortHash} - ${c.message}\n  Files (${fileCount}): ${filesText}`;
+    })
+    .join("\n\n");
 
-    const oldestHash = commits[commits.length - 1].hash.substring(0, 7);
-    const newestHash = commits[0].hash.substring(0, 7);
+  const oldestHash = commits[commits.length - 1].hash.substring(0, 7);
+  const newestHash = commits[0].hash.substring(0, 7);
 
-    return `You are analyzing ${commits.length} git commits to create a comprehensive feature summary commit message.
+  return `You are analyzing ${commits.length} git commits to create a comprehensive feature summary commit message.
 
 COMMITS (newest first):
 ${commitDetails}
@@ -122,130 +117,126 @@ Return ONLY a JSON object (no markdown, no code blocks):
 }
 
 function parseAIResponse(
-    aiResponse: string,
-    commits: CommitInfo[]
+  aiResponse: string,
+  commits: CommitInfo[]
 ): FeatureSummary {
-    try {
-        // Clean response - remove markdown code blocks if present
-        let cleaned = aiResponse.trim();
-        if (cleaned.startsWith("```json")) {
-            cleaned = cleaned.replace(/^```json\s*/, "").replace(/```\s*$/, "");
-        } else if (cleaned.startsWith("```")) {
-            cleaned = cleaned.replace(/^```\s*/, "").replace(/```\s*$/, "");
-        }
-
-        const parsed = JSON.parse(cleaned);
-
-        // Collect all unique files from commits
-        const allFiles = Array.from(
-            new Set(commits.flatMap((c) => c.files))
-        ).sort();
-
-        return {
-            type: parsed.type || "feat",
-            scope: parsed.scope || undefined,
-            subject: parsed.subject || "Feature summary",
-            body: parsed.body || "Summary of recent work",
-            breaking: parsed.breaking || false,
-            breakingDescription: parsed.breakingDescription,
-            versionBump: parsed.versionBump || "none",
-            commitRange: parsed.commitRange || "",
-            includeFiles: false, // Set by caller based on settings
-            fileList: allFiles,
-        };
-    } catch (error) {
-        // Fallback if parsing fails
-        console.error("Failed to parse AI response:", error);
-        console.error("AI Response was:", aiResponse);
-
-        const oldestHash = commits[commits.length - 1].hash.substring(0, 7);
-        const newestHash = commits[0].hash.substring(0, 7);
-
-        return {
-            type: "feat",
-            subject: "Recent development work",
-            body: aiResponse, // Use raw AI response as body
-            breaking: false,
-            versionBump: "none",
-            commitRange: `${oldestHash}..${newestHash}`,
-            includeFiles: false,
-            fileList: [],
-        };
+  try {
+    // Clean response - remove markdown code blocks if present
+    let cleaned = aiResponse.trim();
+    if (cleaned.startsWith("```json")) {
+      cleaned = cleaned.replace(/^```json\s*/, "").replace(/```\s*$/, "");
+    } else if (cleaned.startsWith("```")) {
+      cleaned = cleaned.replace(/^```\s*/, "").replace(/```\s*$/, "");
     }
+
+    const parsed = JSON.parse(cleaned);
+
+    // Collect all unique files from commits
+    const allFiles = Array.from(
+      new Set(commits.flatMap((c) => c.files))
+    ).sort();
+
+    return {
+      type: parsed.type || "feat",
+      scope: parsed.scope || undefined,
+      subject: parsed.subject || "Feature summary",
+      body: parsed.body || "Summary of recent work",
+      breaking: parsed.breaking || false,
+      breakingDescription: parsed.breakingDescription,
+      versionBump: parsed.versionBump || "none",
+      commitRange: parsed.commitRange || "",
+      includeFiles: false, // Set by caller based on settings
+      fileList: allFiles,
+    };
+  } catch (error) {
+    // Fallback if parsing fails
+    console.error("Failed to parse AI response:", error);
+    console.error("AI Response was:", aiResponse);
+
+    const oldestHash = commits[commits.length - 1].hash.substring(0, 7);
+    const newestHash = commits[0].hash.substring(0, 7);
+
+    return {
+      type: "feat",
+      subject: "Recent development work",
+      body: aiResponse, // Use raw AI response as body
+      breaking: false,
+      versionBump: "none",
+      commitRange: `${oldestHash}..${newestHash}`,
+      includeFiles: false,
+      fileList: [],
+    };
+  }
 }
 
 export function formatFeatureSummaryMessage(summary: FeatureSummary): string {
-    let message = summary.type;
-    if (summary.scope) {
-        message += `(${summary.scope})`;
-    }
-    message += `: ${summary.subject}\n\n`;
-    message += `${summary.body}\n\n`;
-    message += `📊 Synthesizes commits: ${summary.commitRange}`;
+  let message = summary.type;
+  if (summary.scope) {
+    message += `(${summary.scope})`;
+  }
+  message += `: ${summary.subject}\n\n`;
+  message += `${summary.body}\n\n`;
+  message += `📊 Synthesizes commits: ${summary.commitRange}`;
 
-    if (
-        summary.includeFiles &&
-        summary.fileList &&
-        summary.fileList.length > 0
-    ) {
-        message += `\n\n📁 Files modified (${summary.fileList.length}):\n`;
-        summary.fileList.forEach((file) => {
-            message += `- ${file}\n`;
-        });
-    }
+  if (summary.includeFiles && summary.fileList && summary.fileList.length > 0) {
+    message += `\n\n📁 Files modified (${summary.fileList.length}):\n`;
+    summary.fileList.forEach((file) => {
+      message += `- ${file}\n`;
+    });
+  }
 
-    if (summary.breaking && summary.breakingDescription) {
-        message += `\n\nBREAKING CHANGE: ${summary.breakingDescription}`;
-    }
+  if (summary.breaking && summary.breakingDescription) {
+    message += `\n\nBREAKING CHANGE: ${summary.breakingDescription}`;
+  }
 
-    return message.trim();
+  return message.trim();
 }
 
 export async function createFeatureSummaryCommit(
-    summary: FeatureSummary
+  summary: FeatureSummary
 ): Promise<boolean> {
-    try {
-        const message = formatFeatureSummaryMessage(summary);
+  try {
+    const message = formatFeatureSummaryMessage(summary);
 
-        // Check if there are any staged changes, if so, commit them first
-        const hasChanges = await checkForUnstagedChanges();
-        if (hasChanges) {
-            const response = await vscode.window.showWarningMessage(
-                "You have unstaged changes. Create summary commit anyway?",
-                "Yes",
-                "No"
-            );
-            if (response !== "Yes") {
-                return false;
-            }
-        }
-
-        // Create empty commit (summary only, no file changes)
-        const success = await commitChanges(message);
-
-        if (success) {
-            vscode.window.showInformationMessage(
-                `✅ Feature summary commit created for ${summary.commitRange}`
-            );
-        }
-
-        return success;
-    } catch (error) {
-        vscode.window.showErrorMessage(
-            `Failed to create summary commit: ${
-                error instanceof Error ? error.message : "Unknown error"
-            }`
-        );
+    // Check if there are any staged changes, if so, commit them first
+    const hasChanges = await checkForUnstagedChanges();
+    if (hasChanges) {
+      const response = await vscode.window.showWarningMessage(
+        "You have unstaged changes. Create summary commit anyway?",
+        "Yes",
+        "No"
+      );
+      if (response !== "Yes") {
         return false;
+      }
     }
+
+    // Create empty commit (summary only, no file changes)
+    const success = await commitChanges(message);
+
+    if (success) {
+      vscode.window.showInformationMessage(
+        `✅ Feature summary commit created for ${summary.commitRange}`
+      );
+    }
+
+    return success;
+  } catch (error) {
+    vscode.window.showErrorMessage(
+      `Failed to create summary commit: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`
+    );
+    return false;
+  }
 }
 
 async function checkForUnstagedChanges(): Promise<boolean> {
-    const { getGitStatus } = await import("../git/gitOperations.js");
-    const status = await getGitStatus();
-    return (
-        status.modified.length > 0 ||
-        status.not_added.length > 0 ||
-        status.deleted.length > 0
-    );
+  const { getGitStatus } = await import("../git/gitOperations.js");
+  const status = await getGitStatus();
+  return (
+    status.modified.length > 0 ||
+    status.not_added.length > 0 ||
+    status.deleted.length > 0
+  );
 }
