@@ -73,6 +73,9 @@ export class SettingsPanel {
       anthropicModel: config.get<string>("anthropicModel", ""),
       backupProvider1: config.get<string>("backupProvider1", "none"),
       backupProvider2: config.get<string>("backupProvider2", "none"),
+      primaryProviderModel: config.get<string>("primaryProviderModel", ""),
+      backupProvider1Model: config.get<string>("backupProvider1Model", ""),
+      backupProvider2Model: config.get<string>("backupProvider2Model", ""),
       inactivityDelay: config.get<number>("inactivityDelay", 5),
       minCommitDelay: config.get<number>("minCommitDelay", 15),
       ignoredFilePatterns: config.get<string[]>("ignoredFilePatterns", [
@@ -111,9 +114,6 @@ export class SettingsPanel {
         "featureSummary.includeFileList",
         true
       ),
-      primaryProviderModel: config.get<string>("primaryProviderModel", ""),
-      backupProvider1Model: config.get<string>("backupProvider1Model", ""),
-      backupProvider2Model: config.get<string>("backupProvider2Model", ""),
     };
 
     this._panel.webview.postMessage({
@@ -972,6 +972,9 @@ export class SettingsPanel {
                 anthropicModel: document.getElementById('anthropic-model').value,
                 backupProvider1: document.getElementById('backup-provider-1').value,
                 backupProvider2: document.getElementById('backup-provider-2').value,
+                primaryProviderModel: document.getElementById('primary-provider-model').value,
+                backupProvider1Model: document.getElementById('backup-provider-1-model').value,
+                backupProvider2Model: document.getElementById('backup-provider-2-model').value,
                 inactivityDelay: parseInt(document.getElementById('inactivity-input').value),
                 minCommitDelay: parseInt(document.getElementById('min-commit-input').value),
                 versionBumpingEnabled: document.getElementById('version-bumping').checked,
@@ -1000,6 +1003,9 @@ export class SettingsPanel {
                     anthropicModel: 'claude-3-5-sonnet-20240620',
                     backupProvider1: 'none',
                     backupProvider2: 'none',
+                    primaryProviderModel: '',
+                    backupProvider1Model: '',
+                    backupProvider2Model: '',
                     inactivityDelay: 5,
                     minCommitDelay: 15,
                     versionBumpingEnabled: false,
