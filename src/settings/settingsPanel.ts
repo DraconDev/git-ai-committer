@@ -902,6 +902,7 @@ export class SettingsPanel {
         function populateSettings(settings) {
             // API Keys & Models
             document.getElementById('gemini-api-key').value = settings.geminiApiKey || '';
+            document.getElementById('gemini-model').value = settings.geminiModel || 'gemini-1.5-flash-latest';
             document.getElementById('gemini-model').value = settings.geminiModel || '';
             document.getElementById('openrouter-api-key').value = settings.openRouterApiKey || '';
             document.getElementById('openrouter-model').value = settings.openRouterModel || 'google/gemini-2.0-flash-lite-preview-02-05:free';
