@@ -203,6 +203,30 @@ export class SettingsPanel {
         );
       }
 
+      if (settings.primaryProviderModel !== undefined) {
+        await config.update(
+          "primaryProviderModel",
+          settings.primaryProviderModel,
+          vscode.ConfigurationTarget.Global
+        );
+      }
+
+      if (settings.backupProvider1Model !== undefined) {
+        await config.update(
+          "backupProvider1Model",
+          settings.backupProvider1Model,
+          vscode.ConfigurationTarget.Global
+        );
+      }
+
+      if (settings.backupProvider2Model !== undefined) {
+        await config.update(
+          "backupProvider2Model",
+          settings.backupProvider2Model,
+          vscode.ConfigurationTarget.Global
+        );
+      }
+
       if (settings.inactivityDelay !== undefined) {
         await config.update(
           "inactivityDelay",
