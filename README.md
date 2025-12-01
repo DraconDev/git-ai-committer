@@ -62,11 +62,15 @@ Access these via the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`):
 
 The settings panel provides a beautiful, intuitive interface to configure all extension options:
 
-- **AI Provider Configuration**: Choose your preferred AI and backups.
-- **Real-time Validation**: Get instant feedback on your settings.
-- **Auto-Commit Timing**: Adjust inactivity delay and minimum commit intervals with visual sliders.
-- **Version Bumping**: Toggle automatic version bumping on/off.
-- **Theme Integration**: Automatically matches VS Code's light/dark theme.
+- **Multi-Provider AI Setup**: Configure primary AI provider with up to 2 backup providers for automatic failover
+- **Custom Model Selection**: Specify exact models per provider (gemini-flash-lite-latest, gpt-4o, claude-3-5-sonnet-20240620, etc.)
+- **API Key Management**: Securely store and manage API keys for all supported providers
+- **Real-time Validation**: Get instant feedback on your settings and API key status
+- **Advanced Timing Controls**: Adjust inactivity delay and minimum commit intervals with visual sliders
+- **Smart File Filtering**: Add custom ignore patterns with live preview
+- **Version Bumping**: Toggle automatic version bumping on/off across multiple languages
+- **Theme Integration**: Automatically matches VS Code's light/dark theme
+- **Accordion Interface**: Expandable sections for each AI provider with detailed configuration
 
 ## 🚀 How It Works
 
@@ -128,6 +132,33 @@ Result: Professional commit message describing exactly what you implemented
 
 - Inactivity Delay: 10-15 seconds
 - Min Commit Delay: 20-30 seconds
+
+## 🛡️ Smart Failover System
+
+The extension includes an intelligent failover system that ensures your commits never fail due to AI provider issues:
+
+**How Failover Works:**
+
+1. **Primary Provider First**: Tries your selected primary AI provider
+2. **Automatic Backups**: If primary fails, automatically tries your configured backup providers
+3. **Smart Retry Logic**: Includes automatic retry with exponential backoff for transient failures
+4. **Simplified Prompts**: As a last resort, uses simplified prompts to increase success rates
+5. **Transparent Notifications**: Informs you which provider was used with helpful status messages
+
+**Example Failover Chain:**
+
+```
+Primary: Gemini → Backup 1: OpenRouter → Backup 2: OpenAI → Simplified Retry
+```
+
+**Configuration Options:**
+
+- **Backup Provider 1**: First fallback if primary fails
+- **Backup Provider 2**: Second fallback if both primary and first backup fail
+- **Custom Models**: Specify different models for each provider level
+- **Provider Selection**: Choose from Gemini, OpenRouter, OpenAI, Anthropic, or Editor Built-in AI
+
+This ensures maximum reliability - your commits are generated even if individual AI services are down or experiencing issues.
 
 ## 🧠 AI Providers
 
