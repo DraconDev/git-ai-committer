@@ -663,6 +663,13 @@ export class SettingsPanel {
                             Get your free API key from <a href="#" class="link" id="api-key-link">Google AI Studio</a>
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label for="gemini-model">Model</label>
+                        <input type="text" id="gemini-model" placeholder="gemini-1.5-flash-latest">
+                        <div class="description">
+                            Enter the Gemini model ID (e.g., gemini-1.5-flash-latest, gemini-1.5-pro)
+                        </div>
+                    </div>
                 </div>
             </div>
 
