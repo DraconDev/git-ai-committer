@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { AIProvider } from "./aiService";
+import { AIProvider, getProviderConfigs, ProviderConfig } from "./aiService";
 import { generateAnthropicMessage } from "./anthropicService";
 import { generateWithCopilot } from "./copilotService";
 import { generateGeminiMessage } from "./geminiService";
@@ -33,41 +33,24 @@ export async function generateCommitMessageWithFailover(
     return null;
   }
 
-  // Get backup providers from config
-  const config = vscode.workspace.getConfiguration("gitAiCommitter");
-  const backup1 = config.get<string>("backupProvider1", "none");
-  const backup2 = config.get<string>("backupProvider2", "none");
+  // Get all configured provider configs (with models)
+  const providerConfigs = await getProviderConfigs();
 
-  // Helper to convert string to AIProvider enum
-  const getProviderEnum = (val: string): AIProvider | null => {
-    if (val === "none") {
-      return null;
-    }
-    return Object.values(AIProvider).find((p) => p === val) || null;
-  };
-
-  const backupProvider1 = getProviderEnum(backup1);
-  const backupProvider2 = getProviderEnum(backup2);
-
-  // Build unique provider order
-  const order = [primaryProvider];
-  if (backupProvider1 && !order.includes(backupProvider1)) {
-    order.push(backupProvider1);
-  }
-  if (backupProvider2 && !order.includes(backupProvider2)) {
-    order.push(backupProvider2);
+  if (providerConfigs.length === 0) {
+    vscode.window.showErrorMessage(
+      "No AI provider selected. Please configure an AI provider in settings to generate commit messages."
+    );
+    return null;
   }
 
-  const providerOrder = order;
-
-  // Attempt 1-3: Try each provider in order
-  for (const provider of providerOrder) {
-    const message = await tryProvider(provider, diff, attempts);
+  // Attempt 1-3: Try each provider in order with their configured models
+  for (const config of providerConfigs) {
+    const message = await tryProvider(config, diff, attempts);
     if (message) {
-      logSuccess(provider, attempts, startTime);
-      if (provider !== primaryProvider) {
+      logSuccess(config.provider, attempts, startTime);
+      if (config.provider !== primaryProvider) {
         vscode.window.showInformationMessage(
-          `Primary AI failed, switched to ${getProviderName(provider)}`
+          `Primary AI failed, switched to ${getProviderName(config.provider)}`
         );
       }
       return message;
@@ -75,17 +58,22 @@ export async function generateCommitMessageWithFailover(
   }
 
   // Attempt 4: Primary again with simplified prompt (last resort)
-  vscode.window.showInformationMessage(
-    `All providers failed, trying simplified prompt with primary AI...`
+  const primaryConfig = providerConfigs.find(
+    (c) => c.provider === primaryProvider
   );
-
-  const message = await tryProviderSimplified(primaryProvider, diff, attempts);
-  if (message) {
-    logSuccess(primaryProvider, attempts, startTime);
+  if (primaryConfig) {
     vscode.window.showInformationMessage(
-      `Simplified AI prompt generated commit message successfully`
+      `All providers failed, trying simplified prompt with primary AI...`
     );
-    return message;
+
+    const message = await tryProviderSimplified(primaryConfig, diff, attempts);
+    if (message) {
+      logSuccess(primaryProvider, attempts, startTime);
+      vscode.window.showInformationMessage(
+        `Simplified AI prompt generated commit message successfully`
+      );
+      return message;
+    }
   }
 
   // All attempts failed
@@ -122,23 +110,24 @@ function getProviderName(provider: AIProvider): string {
 }
 
 async function tryProvider(
-  provider: AIProvider,
+  config: ProviderConfig,
   diff: string,
   attempts: FailoverAttempt[]
 ): Promise<string | null> {
-  const providerName = getProviderName(provider);
+  const providerName = getProviderName(config.provider);
+  const modelInfo = config.model ? ` (${config.model})` : "";
 
   try {
     let message: string | null = null;
 
-    if (provider === AIProvider.Gemini) {
+    if (config.provider === AIProvider.Gemini) {
       message = await generateGeminiMessage(diff);
-    } else if (provider === AIProvider.OpenRouter) {
-      message = await generateOpenRouterMessage(diff);
-    } else if (provider === AIProvider.OpenAI) {
-      message = await generateOpenAIMessage(diff);
-    } else if (provider === AIProvider.Anthropic) {
-      message = await generateAnthropicMessage(diff);
+    } else if (config.provider === AIProvider.OpenRouter) {
+      message = await generateOpenRouterMessage(diff, config.model);
+    } else if (config.provider === AIProvider.OpenAI) {
+      message = await generateOpenAIMessage(diff, config.model);
+    } else if (config.provider === AIProvider.Anthropic) {
+      message = await generateAnthropicMessage(diff, config.model);
     } else {
       message = await generateWithCopilot(diff);
     }
@@ -146,6 +135,7 @@ async function tryProvider(
     if (message && validateCommitMessage(message)) {
       attempts.push({
         provider: providerName,
+        model: config.model,
         success: true,
         message: message.substring(0, 100),
       });
@@ -154,6 +144,7 @@ async function tryProvider(
 
     attempts.push({
       provider: providerName,
+      model: config.model,
       success: false,
       error: "Invalid message format or empty response",
     });
@@ -161,6 +152,7 @@ async function tryProvider(
   } catch (error: any) {
     attempts.push({
       provider: providerName,
+      model: config.model,
       success: false,
       error: error.message || "Unknown error",
     });
@@ -169,11 +161,12 @@ async function tryProvider(
 }
 
 async function tryProviderSimplified(
-  provider: AIProvider,
+  config: ProviderConfig,
   diff: string,
   attempts: FailoverAttempt[]
 ): Promise<string | null> {
-  const providerName = `${getProviderName(provider)} (Simplified)`;
+  const providerName = `${getProviderName(config.provider)} (Simplified)`;
+  const modelInfo = config.model ? ` (${config.model})` : "";
 
   try {
     // Create a much simpler prompt
@@ -181,14 +174,14 @@ async function tryProviderSimplified(
 
     let message: string | null = null;
 
-    if (provider === AIProvider.Gemini) {
+    if (config.provider === AIProvider.Gemini) {
       message = await generateGeminiMessage(simplifiedDiff);
-    } else if (provider === AIProvider.OpenRouter) {
-      message = await generateOpenRouterMessage(simplifiedDiff);
-    } else if (provider === AIProvider.OpenAI) {
-      message = await generateOpenAIMessage(simplifiedDiff);
-    } else if (provider === AIProvider.Anthropic) {
-      message = await generateAnthropicMessage(simplifiedDiff);
+    } else if (config.provider === AIProvider.OpenRouter) {
+      message = await generateOpenRouterMessage(simplifiedDiff, config.model);
+    } else if (config.provider === AIProvider.OpenAI) {
+      message = await generateOpenAIMessage(simplifiedDiff, config.model);
+    } else if (config.provider === AIProvider.Anthropic) {
+      message = await generateAnthropicMessage(simplifiedDiff, config.model);
     } else {
       message = await generateWithCopilot(simplifiedDiff);
     }
@@ -196,6 +189,7 @@ async function tryProviderSimplified(
     if (message && validateCommitMessage(message)) {
       attempts.push({
         provider: providerName,
+        model: config.model,
         success: true,
         message: message.substring(0, 100),
       });
@@ -204,6 +198,7 @@ async function tryProviderSimplified(
 
     attempts.push({
       provider: providerName,
+      model: config.model,
       success: false,
       error: "Invalid message format",
     });
@@ -211,6 +206,7 @@ async function tryProviderSimplified(
   } catch (error: any) {
     attempts.push({
       provider: providerName,
+      model: config.model,
       success: false,
       error: error.message || "Unknown error",
     });
@@ -262,6 +258,7 @@ function logAllFailures(attempts: FailoverAttempt[], startTime: number) {
     timestamp: new Date().toISOString(),
     attempts: attempts.map((a) => ({
       provider: a.provider,
+      model: a.model,
       success: a.success,
       error: a.error,
     })),
@@ -271,8 +268,9 @@ function logAllFailures(attempts: FailoverAttempt[], startTime: number) {
 function showFailureDetails(attempts: FailoverAttempt[]) {
   const details = attempts
     .map((attempt, index) => {
+      const modelInfo = attempt.model ? ` [${attempt.model}]` : "";
       return (
-        `Attempt ${index + 1}: ${attempt.provider}\n` +
+        `Attempt ${index + 1}: ${attempt.provider}${modelInfo}\n` +
         `  Status: ${attempt.success ? "✓ Success" : "✗ Failed"}\n` +
         `  ${
           attempt.error
