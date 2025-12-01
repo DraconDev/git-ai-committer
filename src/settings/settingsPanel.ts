@@ -728,7 +728,27 @@ export class SettingsPanel {
 
             <div class="form-group">
                 <label for="primary-provider-model">Primary Provider Model (Optional)</label>
-                <input type="text" id="primary-provider-model" placeholder="e.g., gpt-4o, claude-3-5-sonnet-20240620">
+                <select id="primary-provider-model">
+                    <option value="">Use Provider Default</option>
+                    <optgroup label="OpenRouter Models">
+                        <option value="google/gemini-2.0-flash-lite-preview-02-05:free">Gemini 2.0 Flash Lite (Free)</option>
+                        <option value="anthropic/claude-3-5-sonnet-20241022">Claude 3.5 Sonnet</option>
+                        <option value="anthropic/claude-3-5-haiku-20241022">Claude 3.5 Haiku</option>
+                        <option value="openai/gpt-4o">GPT-4o</option>
+                        <option value="openai/gpt-4o-mini">GPT-4o Mini</option>
+                        <option value="meta-llama/llama-3.3-70b-instruct:free">Llama 3.3 70B (Free)</option>
+                    </optgroup>
+                    <optgroup label="OpenAI Models">
+                        <option value="gpt-4o">GPT-4o</option>
+                        <option value="gpt-4o-mini">GPT-4o Mini</option>
+                        <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                    </optgroup>
+                    <optgroup label="Anthropic Models">
+                        <option value="claude-3-5-sonnet-20240620">Claude 3.5 Sonnet</option>
+                        <option value="claude-3-5-haiku-20240620">Claude 3.5 Haiku</option>
+                        <option value="claude-3-opus-20240229">Claude 3 Opus</option>
+                    </optgroup>
+                </select>
                 <div class="description">Specific model to use with primary provider (optional)</div>
             </div>
 
