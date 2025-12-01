@@ -727,6 +727,12 @@ export class SettingsPanel {
             </div>
 
             <div class="form-group">
+                <label for="primary-provider-model">Primary Provider Model (Optional)</label>
+                <input type="text" id="primary-provider-model" placeholder="e.g., gpt-4o, claude-3-5-sonnet-20240620">
+                <div class="description">Specific model to use with primary provider (optional)</div>
+            </div>
+
+            <div class="form-group">
                 <label for="backup-provider-1">Backup Provider 1</label>
                 <select id="backup-provider-1">
                     <option value="none">None</option>
