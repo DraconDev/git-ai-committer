@@ -152,6 +152,31 @@
           "scope": "application",
           "order": 10
         },
+        "gitAiCommitter.primaryProviderModel": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nModel to use with the primary AI provider (optional, defaults to provider's default)",
+          "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+          "scope": "application",
+          "order": 10
+        },
+        "gitAiCommitter.backupProvider1Model": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nModel to use with the first backup AI provider (optional, defaults to provider's default)",
+          "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+          "scope": "application",
+          "order": 11
+        },
+        "gitAiCommitter.backupProvider2Model": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nModel to use with the second backup AI provider (optional, defaults to provider's default)",
+          "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+          "scope": "application",
+          "order": 12
+        },
+        },
         "gitAiCommitter.inactivityDelay": {
           "type": "integer",
           "default": 5,
