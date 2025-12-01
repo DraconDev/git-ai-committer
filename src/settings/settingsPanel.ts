@@ -64,6 +64,7 @@ export class SettingsPanel {
     const config = vscode.workspace.getConfiguration("gitAiCommitter");
     const settings = {
       preferredAIProvider: config.get<string>("preferredAIProvider", ""),
+      geminiModel: config.get<string>("geminiModel", ""),
       geminiApiKey: config.get<string>("geminiApiKey", ""),
       openRouterApiKey: config.get<string>("openRouterApiKey", ""),
       openRouterModel: config.get<string>("openRouterModel", ""),
