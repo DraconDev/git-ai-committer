@@ -143,6 +143,14 @@ export class SettingsPanel {
         );
       }
 
+      if (settings.geminiModel !== undefined) {
+        await config.update(
+          "geminiModel",
+          settings.geminiModel,
+          vscode.ConfigurationTarget.Global
+        );
+      }
+
       if (settings.openRouterApiKey !== undefined) {
         await config.update(
           "openRouterApiKey",
