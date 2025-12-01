@@ -901,8 +901,8 @@ export class SettingsPanel {
 
         function populateSettings(settings) {
             // API Keys & Models
-            document.getElementById('gemini-model').value = settings.geminiModel || '';
             document.getElementById('gemini-api-key').value = settings.geminiApiKey || '';
+            document.getElementById('gemini-model').value = settings.geminiModel || '';
             document.getElementById('openrouter-api-key').value = settings.openRouterApiKey || '';
             document.getElementById('openrouter-model').value = settings.openRouterModel || 'google/gemini-2.0-flash-lite-preview-02-05:free';
             document.getElementById('openai-api-key').value = settings.openaiApiKey || '';
@@ -979,9 +979,9 @@ export class SettingsPanel {
 
         document.getElementById('save-button').addEventListener('click', () => {
             const settings = {
-                geminiModel: document.getElementById('gemini-model').value,
                 preferredAIProvider: document.getElementById('primary-provider').value,
                 geminiApiKey: document.getElementById('gemini-api-key').value,
+                geminiModel: document.getElementById('gemini-model').value,
                 openRouterApiKey: document.getElementById('openrouter-api-key').value,
                 openRouterModel: document.getElementById('openrouter-model').value,
                 openaiApiKey: document.getElementById('openai-api-key').value,
@@ -1010,10 +1010,10 @@ export class SettingsPanel {
 
         document.getElementById('reset-button').addEventListener('click', () => {
             if (confirm('Are you sure you want to reset all settings to defaults?')) {
-                    geminiModel: '',
                 const defaults = {
                     preferredAIProvider: '',
                     geminiApiKey: '',
+                    geminiModel: '',
                     openRouterApiKey: '',
                     openRouterModel: 'google/gemini-2.0-flash-lite-preview-02-05:free',
                     openaiApiKey: '',
