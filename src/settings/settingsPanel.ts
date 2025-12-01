@@ -1013,7 +1013,7 @@ export class SettingsPanel {
             if (confirm('Are you sure you want to reset all settings to defaults?')) {
                 const defaults = {
                     preferredAIProvider: '',
-                    geminiModel: 'gemini-1.5-flash-latest',
+                    geminiModel: 'gemini-flash-lite-latest',
                     geminiApiKey: '',
                     geminiModel: '',
                     openRouterApiKey: '',
