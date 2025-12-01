@@ -955,6 +955,11 @@ export class SettingsPanel {
             document.getElementById('backup-provider-1').value = settings.backupProvider1 || 'none';
             document.getElementById('backup-provider-2').value = settings.backupProvider2 || 'none';
             
+            // Provider Models
+            document.getElementById('primary-provider-model').value = settings.primaryProviderModel || '';
+            document.getElementById('backup-provider-1-model').value = settings.backupProvider1Model || '';
+            document.getElementById('backup-provider-2-model').value = settings.backupProvider2Model || '';
+            
             // Timing
             document.getElementById('inactivity-delay').value = settings.inactivityDelay;
             document.getElementById('inactivity-input').value = settings.inactivityDelay;
