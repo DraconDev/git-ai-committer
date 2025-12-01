@@ -64,7 +64,10 @@ export class SettingsPanel {
     const config = vscode.workspace.getConfiguration("gitAiCommitter");
     const settings = {
       preferredAIProvider: config.get<string>("preferredAIProvider", ""),
-      geminiModel: config.get<string>("geminiModel", ""),
+      geminiModel: config.get<string>(
+        "geminiModel",
+        "gemini-flash-lite-latest"
+      ),
       geminiApiKey: config.get<string>("geminiApiKey", ""),
       openRouterApiKey: config.get<string>("openRouterApiKey", ""),
       openRouterModel: config.get<string>("openRouterModel", ""),
@@ -1015,6 +1018,7 @@ export class SettingsPanel {
                 const defaults = {
                     preferredAIProvider: '',
                     geminiModel: 'gemini-flash-lite-latest',
+
                     geminiApiKey: '',
                     geminiModel: '',
                     openRouterApiKey: '',
