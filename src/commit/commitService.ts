@@ -146,11 +146,13 @@ export class CommitService {
       }
     } catch (error: any) {
       if (error.message === "No changes to commit") {
+        this.versionBumpInProgress = false; // Reset flag on error
         return;
       }
       vscode.window.showErrorMessage(
         `Failed to commit changes: ${error.message}`
       );
+      this.versionBumpInProgress = false; // Reset flag on error
     }
   }
 
