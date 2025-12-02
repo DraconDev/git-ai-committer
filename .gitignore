@@ -32,3 +32,6 @@ build/**
 Thumbs.db
 .wxt
 reference/**
+
+# Auto-committer ignored files
+.vscode

@@ -17,6 +17,7 @@ export class CommitService {
   private isGeneratingMessage = false;
   private lastCommitAttemptTime = 0;
   private readonly retryDelay = 60000; // 1 minute
+  private versionBumpInProgress = false;
 
   async checkIfGenerating() {
     if (this.isGeneratingMessage) {
@@ -116,18 +117,23 @@ export class CommitService {
           return;
         }
 
-        // Bump version (this creates new changes)
-        const versionUpdateResult = await updateVersion();
-        if (versionUpdateResult === false) {
-          vscode.window.showErrorMessage("Failed to update version");
-          return;
-        }
+        // Bump version (this creates new changes) - only if not already bumped
+        if (!this.versionBumpInProgress) {
+          this.versionBumpInProgress = true;
+          const versionUpdateResult = await updateVersion();
+          if (versionUpdateResult === false) {
+            vscode.window.showErrorMessage("Failed to update version");
+            this.versionBumpInProgress = false;
+            return;
+          }
 
-        // Stage version changes too
-        const stagedVersion = await stageAllChanges();
-        if (!stagedVersion) {
-          vscode.window.showErrorMessage("Failed to stage version changes");
-          return;
+          // Stage version changes too
+          const stagedVersion = await stageAllChanges();
+          if (!stagedVersion) {
+            vscode.window.showErrorMessage("Failed to stage version changes");
+            this.versionBumpInProgress = false;
+            return;
+          }
         }
 
         // Commit all and push
@@ -135,6 +141,7 @@ export class CommitService {
         if (commitSuccess) {
           await pushChanges();
           this.lastCommitAttemptTime = 0; // Reset failure state
+          this.versionBumpInProgress = false; // Reset version bump flag after successful commit
         }
       }
     } catch (error: any) {
