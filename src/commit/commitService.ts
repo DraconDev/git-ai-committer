@@ -17,17 +17,9 @@ export class CommitService {
   private isGeneratingMessage = false;
   private lastCommitAttemptTime = 0;
   private readonly retryDelay = 60000; // 1 minute
-  private _versionBumpInProgress = false;
-  private _versionBumpCompleted = false;
-
-  // Public getters for auto-commit service to check version bump state
-  get versionBumpInProgress(): boolean {
-    return this._versionBumpInProgress;
-  }
-
-  get versionBumpCompleted(): boolean {
-    return this._versionBumpCompleted;
-  }
+  // Public flags for version bump state - accessible by auto-commit service
+  public versionBumpInProgress = false;
+  public versionBumpCompleted = false;
 
   async checkIfGenerating() {
     if (this.isGeneratingMessage) {
@@ -128,8 +120,8 @@ export class CommitService {
         }
 
         // Bump version (this creates new changes) - only if not already bumped
-        if (!this._versionBumpInProgress && !this._versionBumpCompleted) {
-          this._versionBumpInProgress = true;
+        if (!this.versionBumpInProgress && !this.versionBumpCompleted) {
+          this.versionBumpInProgress = true;
           const versionUpdateResult = await updateVersion();
           if (versionUpdateResult === false) {
             vscode.window.showErrorMessage("Failed to update version");
@@ -152,21 +144,21 @@ export class CommitService {
         if (commitSuccess) {
           await pushChanges();
           this.lastCommitAttemptTime = 0; // Reset failure state
-          this._versionBumpInProgress = false; // Reset version bump flag after successful commit
-          this._versionBumpCompleted = false; // Reset completion flag after successful commit
+          this.versionBumpInProgress = false; // Reset version bump flag after successful commit
+          this.versionBumpCompleted = false; // Reset completion flag after successful commit
         }
       }
     } catch (error: any) {
       if (error.message === "No changes to commit") {
-        this._versionBumpInProgress = false; // Reset flag on error
-        this._versionBumpCompleted = false; // Reset completion flag on error
+        this.versionBumpInProgress = false; // Reset flag on error
+        this.versionBumpCompleted = false; // Reset completion flag on error
         return;
       }
       vscode.window.showErrorMessage(
         `Failed to commit changes: ${error.message}`
       );
-      this._versionBumpInProgress = false; // Reset flag on error
-      this._versionBumpCompleted = false; // Reset completion flag on error
+      this.versionBumpInProgress = false; // Reset flag on error
+      this.versionBumpCompleted = false; // Reset completion flag on error
     }
   }
 
