@@ -95,6 +95,14 @@ export async function autoCommitChanges(): Promise<void> {
 
   generatingMessage = true;
   try {
+    // Check if we're in a version bump cycle to prevent infinite loops
+    if (
+      commitService.versionBumpInProgress ||
+      commitService.versionBumpCompleted
+    ) {
+      console.log("Skipping auto-commit during version bump cycle");
+      return;
+    }
     await commitService.performCommit();
   } catch (error: any) {
     // Error committing changes
