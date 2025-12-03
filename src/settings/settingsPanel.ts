@@ -302,6 +302,14 @@ export class SettingsPanel {
         );
       }
 
+      if (settings.gitattributesFilePatterns !== undefined) {
+        await config.update(
+          "gitattributesFilePatterns",
+          settings.gitattributesFilePatterns,
+          vscode.ConfigurationTarget.Global
+        );
+      }
+
       vscode.window.showInformationMessage("Settings saved successfully!");
       this._sendSettings();
     } catch (error: any) {
@@ -956,6 +964,10 @@ export class SettingsPanel {
             // Ignored Patterns
             const patterns = settings.ignoredFilePatterns || [];
             document.getElementById('ignored-patterns').value = patterns.join('\\n');
+
+            // Git Attributes Patterns
+            const gitattributesPatterns = settings.gitattributesFilePatterns || [];
+            document.getElementById('gitattributes-patterns').value = gitattributesPatterns.join('\\n');
         }
 
         function updateVersionBumpingStatus(enabled) {
