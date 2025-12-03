@@ -225,6 +225,69 @@ export class CommitService {
       // Don't fail the commit if .gitignore update fails
     }
   }
+
+  private async updateGitattributes(): Promise<void> {
+    try {
+      const config = vscode.workspace.getConfiguration("gitAiCommitter");
+      const gitattributesPatterns = config.get<string[]>(
+        "gitattributesFilePatterns",
+        []
+      );
+
+      if (gitattributesPatterns.length === 0) {
+        return; // No patterns to add, skip gitattributes generation
+      }
+
+      const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+      if (!workspaceFolder) {
+        return;
+      }
+
+      const gitattributesPath = workspaceFolder.uri.fsPath + "/.gitattributes";
+      const fs = require("fs").promises;
+
+      let currentContent = "";
+      try {
+        currentContent = await fs.readFile(gitattributesPath, "utf8");
+      } catch (error) {
+        // .gitattributes doesn't exist, start with empty content
+        currentContent = "";
+      }
+
+      // Check which patterns are already in .gitattributes
+      const existingLines = currentContent
+        .split("\n")
+        .map((line) => line.trim());
+      const patternsToAdd = gitattributesPatterns.filter((pattern) => {
+        const cleanPattern = pattern.trim();
+        return cleanPattern && !existingLines.includes(cleanPattern);
+      });
+
+      if (patternsToAdd.length === 0) {
+        return; // All patterns already in .gitattributes
+      }
+
+      // Add auto-committer section
+      const newContent =
+        currentContent +
+        (currentContent.endsWith("\n") ? "" : "\n") +
+        "\n# Auto-committer gitattributes\n" +
+        patternsToAdd.map((pattern) => pattern).join("\n") +
+        "\n";
+
+      await fs.writeFile(gitattributesPath, newContent);
+
+      // Add .gitattributes to git if not already tracked
+      try {
+        await git.add(".gitattributes");
+      } catch (error) {
+        // .gitattributes might not be in the repo yet, that's OK
+      }
+    } catch (error) {
+      console.error("Failed to update .gitattributes:", error);
+      // Don't fail the commit if .gitattributes update fails
+    }
+  }
 }
 
 export const commitService = new CommitService();
