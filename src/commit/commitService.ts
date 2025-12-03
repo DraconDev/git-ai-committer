@@ -98,7 +98,7 @@ export class CommitService {
         return;
       }
 
-      const commitMessage = await generateCommitMessageWithFailover(
+      let commitMessage = await generateCommitMessageWithFailover(
         currentDiff,
         provider
       );
@@ -120,9 +120,10 @@ export class CommitService {
         }
 
         // Bump version (this creates new changes) - only if not already bumped
+        let versionUpdateResult: string | false | null = null;
         if (!this.versionBumpInProgress && !this.versionBumpCompleted) {
           this.versionBumpInProgress = true;
-          const versionUpdateResult = await updateVersion();
+          versionUpdateResult = await updateVersion();
           if (versionUpdateResult === false) {
             vscode.window.showErrorMessage("Failed to update version");
             this.versionBumpInProgress = false;
@@ -137,6 +138,13 @@ export class CommitService {
             return;
           }
           this.versionBumpCompleted = true;
+        }
+
+        // If version was updated, append version info to commit message
+        if (versionUpdateResult && typeof versionUpdateResult === "string") {
+          // Append version bump info to the end of the commit message
+          commitMessage =
+            commitMessage + `\n\nchore: bump version to ${versionUpdateResult}`;
         }
 
         // Commit all and push
