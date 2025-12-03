@@ -1033,6 +1033,10 @@ export class SettingsPanel {
                 ignoredFilePatterns: document.getElementById('ignored-patterns').value
                     .split('\\n')
                     .map(line => line.trim())
+                    .filter(line => line.length > 0),
+                gitattributesFilePatterns: document.getElementById('gitattributes-patterns').value
+                    .split('\\n')
+                    .map(line => line.trim())
                     .filter(line => line.length > 0)
             };
 
