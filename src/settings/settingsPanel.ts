@@ -118,6 +118,10 @@ export class SettingsPanel {
         "featureSummary.includeFileList",
         true
       ),
+      gitattributesFilePatterns: config.get<string[]>(
+        "gitattributesFilePatterns",
+        []
+      ),
     };
 
     this._panel.webview.postMessage({
