@@ -140,13 +140,6 @@ export class CommitService {
           this.versionBumpCompleted = true;
         }
 
-        // If version was updated, append version info to commit message
-        if (versionUpdateResult && typeof versionUpdateResult === "string") {
-          // Append version bump info to the end of the commit message
-          commitMessage =
-            commitMessage + `\n\nchore: bump version to ${versionUpdateResult}`;
-        }
-
         // Commit all and push
         const commitSuccess = await commitChanges(commitMessage);
         if (commitSuccess) {
