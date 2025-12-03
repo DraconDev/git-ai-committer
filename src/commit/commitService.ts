@@ -84,9 +84,6 @@ export class CommitService {
       // 1. Auto-manage .gitignore first
       await this.updateGitignore();
 
-      // 2. Auto-manage .gitattributes if configured
-      await this.updateGitattributes();
-
       // 2. Get current diff for AI message generation
       const currentDiff = await getGitDiff();
       if (!currentDiff) {
@@ -223,68 +220,8 @@ export class CommitService {
     } catch (error) {
       console.error("Failed to update .gitignore:", error);
       // Don't fail the commit if .gitignore update fails
-      }
     }
   }
+}
 
-  private async updateGitattributes(): Promise<void> {
-    try {
-      const config = vscode.workspace.getConfiguration("gitAiCommitter");
-      const gitattributesContent = config.get<string[]>("gitattributesContent", []);
-
-      if (gitattributesContent.length === 0) {
-        return; // No gitattributes content to add - this is different from gitignore which always runs
-      }
-
-      const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-      if (!workspaceFolder) {
-        return;
-      }
-
-      const gitattributesPath = workspaceFolder.uri.fsPath + "/.gitattributes";
-      const fs = require("fs").promises;
-
-      let currentContent = "";
-      try {
-        currentContent = await fs.readFile(gitattributesPath, "utf8");
-      } catch (error) {
-        // .gitattributes doesn't exist, start with empty content
-        currentContent = "";
-      }
-
-      // Check which attributes are already in .gitattributes
-      const existingLines = currentContent
-        .split("\n")
-        .map((line) => line.trim());
-      const attributesToAdd = gitattributesContent.filter((attribute) => {
-        const cleanAttribute = attribute.trim();
-        return cleanAttribute && !existingLines.includes(cleanAttribute);
-      });
-
-      if (attributesToAdd.length === 0) {
-        return; // All attributes already in .gitattributes
-      }
-
-      // Add auto-committer section
-      const newContent =
-        currentContent +
-        (currentContent.endsWith("\n") ? "" : "\n") +
-        "\n# Auto-committer gitattributes\n" +
-        attributesToAdd.map((attribute) => attribute).join("\n") +
-        "\n";
-
-      await fs.writeFile(gitattributesPath, newContent);
-
-      // Add .gitattributes to git if not already tracked
-      try {
-        await git.add(".gitattributes");
-      } catch (error) {
-        // .gitattributes might not be in the repo yet, that's OK
-      }
-    } catch (error) {
-      console.error("Failed to update .gitattributes:", error);
-      // Don't fail the commit if .gitattributes update fails
-    }
-  }
-
-  export const commitService = new CommitService();
+export const commitService = new CommitService();
