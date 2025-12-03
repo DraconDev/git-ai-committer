@@ -119,31 +119,41 @@ export class CommitService {
           return;
         }
 
-        // Bump version (this creates new changes) - only if not already bumped
-        if (!this.versionBumpInProgress && !this.versionBumpCompleted) {
-          this.versionBumpInProgress = true;
-          const versionUpdateResult = await updateVersion();
-          if (versionUpdateResult === false) {
-            vscode.window.showErrorMessage("Failed to update version");
-            this.versionBumpInProgress = false;
-            return;
-          }
-
-          // Stage version changes too
-          const stagedVersion = await stageAllChanges();
-          if (!stagedVersion) {
-            vscode.window.showErrorMessage("Failed to stage version changes");
-            this.versionBumpInProgress = false;
-            return;
-          }
-          this.versionBumpCompleted = true;
-        }
-
         // Commit all and push
         const commitSuccess = await commitChanges(commitMessage);
         if (commitSuccess) {
           await pushChanges();
           this.lastCommitAttemptTime = 0; // Reset failure state
+
+          // Bump version AFTER successful commit (not before) to prevent infinite loops
+          // This ensures version changes don't trigger another auto-commit cycle
+          if (!this.versionBumpInProgress && !this.versionBumpCompleted) {
+            this.versionBumpInProgress = true;
+            const versionUpdateResult = await updateVersion();
+            if (versionUpdateResult === false) {
+              vscode.window.showErrorMessage("Failed to update version");
+              this.versionBumpInProgress = false;
+              return;
+            }
+
+            // Stage and commit version changes in a separate commit
+            const stagedVersion = await stageAllChanges();
+            if (!stagedVersion) {
+              vscode.window.showErrorMessage("Failed to stage version changes");
+              this.versionBumpInProgress = false;
+              return;
+            }
+
+            const versionCommitMessage = `chore: bump version to ${versionUpdateResult}`;
+            const versionCommitSuccess = await commitChanges(
+              versionCommitMessage
+            );
+            if (versionCommitSuccess) {
+              await pushChanges();
+            }
+            this.versionBumpCompleted = true;
+          }
+
           this.versionBumpInProgress = false; // Reset version bump flag after successful commit
           this.versionBumpCompleted = false; // Reset completion flag after successful commit
         }

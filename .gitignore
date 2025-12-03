@@ -35,3 +35,6 @@ reference/**
 
 # Auto-committer ignored files
 .vscode
+
+# Auto-committer ignored files
+.env.keys
