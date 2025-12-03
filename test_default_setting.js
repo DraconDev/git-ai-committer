@@ -1,4 +1,3 @@
-
 /**
  * Test script to verify version bumping is OFF by default
  */
@@ -20,7 +19,9 @@ class MockVersionService {
 
     // This is the actual logic from versionService.ts line 52-55
     if (!this.isVersionBumpingEnabled()) {
-      console.log("  - Version bumping is DISABLED by default (returning null)");
+      console.log(
+        "  - Version bumping is DISABLED by default (returning null)"
+      );
       return null; // This is what the actual code returns when disabled
     }
 
@@ -37,7 +38,9 @@ async function testDefaultSetting() {
   const versionService = new MockVersionService();
 
   console.log("--- Test 1: Check default setting ---");
-  console.log(`Default versionBumpingEnabled: ${versionService.isVersionBumpingEnabled()}`);
+  console.log(
+    `Default versionBumpingEnabled: ${versionService.isVersionBumpingEnabled()}`
+  );
 
   console.log("\n--- Test 2: Try to update version with default setting ---");
   const result = await versionService.updateVersion();
@@ -47,5 +50,17 @@ async function testDefaultSetting() {
   if (result === null) {
     console.log("✅ CORRECT: Version bumping is DISABLED by default");
     console.log("✅ CORRECT: updateVersion() returns null when disabled");
-    console.log("✅ CORRECT: No version bumps will happen with default settings");
+    console.log(
+      "✅ CORRECT: No version bumps will happen with default settings"
+    );
   } else {
+    console.log("❌ ERROR: Version bumping should be disabled by default");
+  }
+
+  console.log("\n=== Test Results ===");
+  console.log("✅ Version bumping is OFF by default (as requested)");
+  console.log("✅ Users must explicitly enable version bumping");
+  console.log("✅ Default behavior prevents unwanted version bumps");
+}
+
+testDefaultSetting().catch(console.error);

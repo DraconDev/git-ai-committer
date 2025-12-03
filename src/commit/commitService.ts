@@ -84,6 +84,9 @@ export class CommitService {
       // 1. Auto-manage .gitignore first
       await this.updateGitignore();
 
+      // 2. Auto-manage .gitattributes if configured
+      await this.updateGitattributes();
+
       // 2. Get current diff for AI message generation
       const currentDiff = await getGitDiff();
       if (!currentDiff) {
