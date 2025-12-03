@@ -883,6 +883,19 @@ export class SettingsPanel {
             </div>
         </div>
 
+        <!-- Git Attributes -->
+        <div class="section">
+            <div class="section-header">Git Attributes</div>
+            
+            <div class="form-group">
+                <label for="gitattributes-patterns">Git Attributes File Patterns</label>
+                <textarea id="gitattributes-patterns" placeholder="*.js text eol=lf&#10;*.css text eol=lf"></textarea>
+                <div class="description">
+                    One pattern per line. These patterns will be added to .gitattributes file. Leave empty to skip gitattributes generation.
+                </div>
+            </div>
+        </div>
+
         <!-- Action Buttons -->
         <div class="button-group">
             <button id="save-button">Save Settings</button>
