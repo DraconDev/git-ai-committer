@@ -2,7 +2,7 @@
   "name": "git-ai-committer",
   "displayName": "Git AI Auto Committer",
   "description": "Automatically generates commit messages and commits changes using AI",
-  "version": "5.4.3",
+  "version": "5.4.4",
   "publisher": "devdrac",
   "icon": "media/logo.png",
   "galleryBanner": {
@@ -229,6 +229,16 @@
           "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nFile patterns to ignore in auto-commits (one pattern per line)",
           "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
           "order": 23
+        },
+        "gitAiCommitter.gitattributesFilePatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "markdownDescription": "⚠️ **Use Settings Panel**: Run `Git AI Committer: Open Settings` command instead.\n\nGit attributes file patterns to add to .gitattributes file (one pattern per line)",
+          "deprecationMessage": "Please use 'Git AI Committer: Open Settings' command for easier configuration",
+          "order": 24
         }
       }
     }
