@@ -118,7 +118,7 @@ async function tryProvider(
             message = await generateWithCopilot(diff);
         }
 
-        if (message && validateCommitMessage(message)) {
+        if (message && message.trim().length > 0) {
             attempts.push({
                 provider: providerName,
                 model: config.model,
@@ -132,7 +132,7 @@ async function tryProvider(
             provider: providerName,
             model: config.model,
             success: false,
-            error: "Invalid message format or empty response",
+            error: "Empty response from AI",
         });
         return null;
     } catch (error: any) {
@@ -144,25 +144,6 @@ async function tryProvider(
         });
         return null;
     }
-}
-
-/**
- * Validates commit message follows conventional commit format
- * Format: type(scope): description
- * - type: feat, fix, docs, style, refactor, test, chore, build, ci, perf, revert
- * - scope: optional, alphanumeric with dashes/underscores
- * - description: at least 10 characters
- */
-function validateCommitMessage(message: string): boolean {
-    if (!message || message.trim().length === 0) {
-        return false;
-    }
-
-    // Improved regex for conventional commits
-    const conventionalCommitRegex =
-        /^(feat|fix|docs|style|refactor|test|chore|build|ci|perf|revert)(\([a-z0-9_-]+\))?: .{10,}/i;
-
-    return conventionalCommitRegex.test(message.trim());
 }
 
 function logSuccess(
