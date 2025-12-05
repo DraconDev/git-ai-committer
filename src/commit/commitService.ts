@@ -87,13 +87,49 @@ export class CommitService {
       // 2. Auto-manage .gitattributes if patterns are configured
       await this.updateGitattributes();
 
-      // 3. Get current diff for AI message generation
+      // 3. Get status again to see what files have changed after gitignore/gitattributes updates
+      const updatedStatus = await git.status();
+      const allChangedFiles = [
+        ...updatedStatus.modified,
+        ...updatedStatus.not_added,
+        ...updatedStatus.deleted
+      ];
+
+      // Check if there are substantive changes (not just .gitignore/.gitattributes)
+      const hasSubstantiveChanges = allChangedFiles.some(file => 
+        !file.includes('.gitignore') && 
+        !file.includes('.gitattributes')
+      );
+
+      // 4. Bump version ONLY if there are substantive changes
+      let versionUpdateResult: string | false | null = null;
+      if (hasSubstantiveChanges && !this.versionBumpInProgress && !this.versionBumpCompleted) {
+        this.versionBumpInProgress = true;
+        versionUpdateResult = await updateVersion();
+        if (versionUpdateResult === false) {
+          vscode.window.showErrorMessage("Failed to update version");
+          this.versionBumpInProgress = false;
+          return;
+        }
+        this.versionBumpCompleted = true;
+      }
+
+      // 5. Stage ALL changes (including version files if bumped)
+      const stagedAll = await stageAllChanges();
+      if (!stagedAll) {
+        vscode.window.showErrorMessage("Failed to stage changes");
+        this.versionBumpInProgress = false;
+        this.versionBumpCompleted = false;
+        return;
+      }
+
+      // 6. Get diff AFTER staging (includes version changes if any)
       const currentDiff = await getGitDiff();
       if (!currentDiff) {
         return;
       }
 
-      // 3. Generate commit message from current changes using failover system
+      // 7. Generate commit message from staged changes using failover system
       const provider = await getPreferredAIProvider();
 
       if (!provider) {
@@ -111,46 +147,11 @@ export class CommitService {
         return;
       }
 
-      const messageGenerated = true;
-
-      // 4. If we got a message, now commit everything
-      if (messageGenerated) {
-        // Stage ALL changes
-        const stagedAll = await stageAllChanges();
-        if (!stagedAll) {
-          vscode.window.showErrorMessage("Failed to stage changes");
-          return;
-        }
-
-        // Bump version (this creates new changes) - only if not already bumped
-        let versionUpdateResult: string | false | null = null;
-        if (!this.versionBumpInProgress && !this.versionBumpCompleted) {
-          this.versionBumpInProgress = true;
-          versionUpdateResult = await updateVersion();
-          if (versionUpdateResult === false) {
-            vscode.window.showErrorMessage("Failed to update version");
-            this.versionBumpInProgress = false;
-            return;
-          }
-
-          // Stage version changes too
-          const stagedVersion = await stageAllChanges();
-          if (!stagedVersion) {
-            vscode.window.showErrorMessage("Failed to stage version changes");
-            this.versionBumpInProgress = false;
-            return;
-          }
-          this.versionBumpCompleted = true;
-        }
-
-        // Commit all and push
-        const commitSuccess = await commitChanges(commitMessage);
-        if (commitSuccess) {
-          await pushChanges();
-          this.lastCommitAttemptTime = 0; // Reset failure state
-          this.versionBumpInProgress = false; // Reset version bump flag after successful commit
-          this.versionBumpCompleted = false; // Reset completion flag after successful commit
-        }
+      // 8. Commit all and push
+      const commitSuccess = await commitChanges(commitMessage);
+      if (commitSuccess) {
+        await pushChanges();
+        this.lastCommitAttemptTime = 0; // Reset failure state
       }
     } catch (error: any) {
       if (error.message === "No changes to commit") {
@@ -161,8 +162,10 @@ export class CommitService {
       vscode.window.showErrorMessage(
         `Failed to commit changes: ${error.message}`
       );
-      this.versionBumpInProgress = false; // Reset flag on error
-      this.versionBumpCompleted = false; // Reset completion flag on error
+    } finally {
+      // Always reset version bump flags after commit attempt
+      this.versionBumpInProgress = false;
+      this.versionBumpCompleted = false;
     }
   }
 
