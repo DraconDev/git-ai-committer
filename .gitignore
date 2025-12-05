@@ -11,7 +11,6 @@ node_modules
 *.cache
 *.dll
 *.exe
-*.env
 *.kilocode
 node_modules/
 
@@ -37,7 +36,30 @@ reference/**
 .vscode
 
 # Auto-committer ignored files
-.env.keys
 
 # Auto-committer ignored files
-.env
+
+# Auto-committer ignored files
+
+# Auto-committer ignored files
+
+# Auto-committer ignored files
+
+# Auto-committer ignored files
+
+# Auto-committer ignored files
+
+# Auto-committer ignored files
+
+# Auto-committer ignored files
+
+# Auto-committer ignored files
+
+# Auto-committer ignored files
+
+# Auto-committer ignored files
+
+# Auto-committer ignored files
+
+# Auto-committer ignored files
+*.env

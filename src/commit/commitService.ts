@@ -187,7 +187,7 @@ export class CommitService {
 
             // Step 1: Remove patterns from .gitignore that are explicitly allowed in .gitattributes
             const config = vscode.workspace.getConfiguration("gitAiCommitter");
-            const smartGitignore = config.get<boolean>("smartGitignore", true);
+            const smartGitignore = config.get<boolean>("smartGitignore", false);
 
             let patternsToRemoveFromGitignore: string[] = [];
 
@@ -297,11 +297,9 @@ export class CommitService {
                         return null;
                     }
                     // Extract the first column (file pattern) before any attributes
-                    const firstSpace = trimmed.indexOf(" ");
-                    if (firstSpace === -1) {
-                        return trimmed; // No attributes, whole line is the pattern
-                    }
-                    return trimmed.substring(0, firstSpace);
+                    // Split by any whitespace (space or tab)
+                    const parts = trimmed.split(/\s+/);
+                    return parts[0];
                 })
                 .filter(
                     (pattern): pattern is string =>
