@@ -87,23 +87,9 @@ export class CommitService {
       // 2. Auto-manage .gitattributes if patterns are configured
       await this.updateGitattributes();
 
-      // 3. Get status again to see what files have changed after gitignore/gitattributes updates
-      const updatedStatus = await git.status();
-      const allChangedFiles = [
-        ...updatedStatus.modified,
-        ...updatedStatus.not_added,
-        ...updatedStatus.deleted
-      ];
-
-      // Check if there are substantive changes (not just .gitignore/.gitattributes)
-      const hasSubstantiveChanges = allChangedFiles.some(file => 
-        !file.includes('.gitignore') && 
-        !file.includes('.gitattributes')
-      );
-
-      // 4. Bump version ONLY if there are substantive changes
+      // 3. Bump version BEFORE getting diff (version bump happens on ALL commits)
       let versionUpdateResult: string | false | null = null;
-      if (hasSubstantiveChanges && !this.versionBumpInProgress && !this.versionBumpCompleted) {
+      if (!this.versionBumpInProgress && !this.versionBumpCompleted) {
         this.versionBumpInProgress = true;
         versionUpdateResult = await updateVersion();
         if (versionUpdateResult === false) {
@@ -114,7 +100,7 @@ export class CommitService {
         this.versionBumpCompleted = true;
       }
 
-      // 5. Stage ALL changes (including version files if bumped)
+      // 4. Stage ALL changes (including version files if bumped)
       const stagedAll = await stageAllChanges();
       if (!stagedAll) {
         vscode.window.showErrorMessage("Failed to stage changes");
@@ -123,13 +109,13 @@ export class CommitService {
         return;
       }
 
-      // 6. Get diff AFTER staging (includes version changes if any)
+      // 5. Get diff AFTER staging (includes version changes if any)
       const currentDiff = await getGitDiff();
       if (!currentDiff) {
         return;
       }
 
-      // 7. Generate commit message from staged changes using failover system
+      // 6. Generate commit message from staged changes using failover system
       const provider = await getPreferredAIProvider();
 
       if (!provider) {
@@ -147,7 +133,7 @@ export class CommitService {
         return;
       }
 
-      // 8. Commit all and push
+      // 7. Commit all and push
       const commitSuccess = await commitChanges(commitMessage);
       if (commitSuccess) {
         await pushChanges();
