@@ -231,10 +231,13 @@ export class CommitService {
 
                 if (patternsToAdd.length > 0) {
                     // Add auto-committer section
+                    const header = "# Auto-committer ignored files";
+                    const headerExists = updatedContent.includes(header);
+
                     updatedContent =
                         updatedContent +
                         (updatedContent.endsWith("\n") ? "" : "\n") +
-                        "\n# Auto-committer ignored files\n" +
+                        (headerExists ? "" : `\n${header}\n`) +
                         patternsToAdd.map((pattern) => pattern).join("\n") +
                         "\n";
                 }

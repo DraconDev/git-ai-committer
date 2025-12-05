@@ -63,15 +63,36 @@ export async function commitReset(): Promise<void> {
 }
 
 export async function pushChanges() {
-    // TODO: Consider adding pull logic back with configuration options
-    await git.push();
+    try {
+        await git.push();
+    } catch (error: any) {
+        if (error.message && error.message.includes("no upstream branch")) {
+            try {
+                // Try to get current branch
+                const branchSummary = await git.branchLocal();
+                const currentBranch = branchSummary.current;
 
-    // Attempt to push
+                if (currentBranch) {
+                    vscode.window.showInformationMessage(
+                        `Setting upstream for branch '${currentBranch}' and pushing...`
+                    );
+                    await git.push(["--set-upstream", "origin", currentBranch]);
+                    return;
+                }
+            } catch (innerError) {
+                console.error("Failed to set upstream:", innerError);
+            }
+        }
+        // Re-throw if it wasn't the upstream issue or if recovery failed
+        console.error("Failed to push:", error);
+        throw error;
+    }
 }
 
 export async function getGitDiff(): Promise<string> {
     try {
-        return await git.diff();
+        // We want the diff of staged changes because we stage everything before generating the message
+        return await git.diff(["--cached"]);
     } catch (error) {
         vscode.window.showErrorMessage(
             `Failed to get diff: ${
