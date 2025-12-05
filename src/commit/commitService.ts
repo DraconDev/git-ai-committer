@@ -94,7 +94,10 @@ export class CommitService {
             if (
                 !reCheckStatus.modified.length &&
                 !reCheckStatus.not_added.length &&
-                !reCheckStatus.deleted.length
+                !reCheckStatus.deleted.length &&
+                !reCheckStatus.staged.length &&
+                !reCheckStatus.created.length &&
+                !reCheckStatus.renamed.length
             ) {
                 return;
             }
@@ -189,11 +192,13 @@ export class CommitService {
             const config = vscode.workspace.getConfiguration("gitAiCommitter");
             const smartGitignore = config.get<boolean>("smartGitignore", false);
 
-            let patternsToRemoveFromGitignore: string[] = [];
+            // ALWAYS get patterns from gitattributes to prevent them from being added back
+            const patternsInGitattributes =
+                await this.getPatternsFromGitattributes();
 
+            let patternsToRemoveFromGitignore: string[] = [];
             if (smartGitignore) {
-                patternsToRemoveFromGitignore =
-                    await this.getPatternsFromGitattributes();
+                patternsToRemoveFromGitignore = patternsInGitattributes;
             }
 
             let updatedContent = this.removePatternsFromGitignore(
@@ -214,12 +219,8 @@ export class CommitService {
                     .map((line) => line.trim());
                 const patternsToAdd = ignoredPatterns.filter((pattern) => {
                     const cleanPattern = pattern.trim();
-
-                    // If smart gitignore is enabled, do not add back patterns that are in gitattributes
-                    if (
-                        smartGitignore &&
-                        patternsToRemoveFromGitignore.includes(cleanPattern)
-                    ) {
+                    // ALWAYS block adding back patterns that are in gitattributes, regardless of smartGitignore setting
+                    if (patternsInGitattributes.includes(cleanPattern)) {
                         return false;
                     }
 
@@ -362,7 +363,6 @@ export class CommitService {
             }
             return true;
         });
-
         return filteredLines.join("\n");
     }
 

@@ -61,13 +61,25 @@ export async function updateVersion(
             throw new Error("No version files found");
         }
 
-        // Get current version from first detected file
-        const currentVersion = await versionService.getCurrentVersion(
-            versionFiles[0]
-        );
-        if (!currentVersion) {
-            throw new Error("Could not determine current version");
+        // Get current versions from all detected files to find the highest one
+        // This ensures we don't accidentally downgrade if one file (like package-lock) is ahead
+        let maxVersion: string | null = null;
+
+        for (const file of versionFiles) {
+            const v = await versionService.getCurrentVersion(file);
+            if (v) {
+                if (!maxVersion || compareVersions(v, maxVersion) > 0) {
+                    maxVersion = v;
+                }
+            }
         }
+
+        if (!maxVersion) {
+            throw new Error(
+                "Could not determine current version from any file"
+            );
+        }
+        const currentVersion = maxVersion;
 
         // Increment version based on type
         const newVersion = incrementVersion(currentVersion, incrementType);
@@ -142,4 +154,22 @@ async function stageUpdatedFiles(updatedFiles: string[]): Promise<boolean> {
         console.error("Error staging files with simple-git:", err);
         return false; // Staging failed
     }
+}
+
+function compareVersions(v1: string, v2: string): number {
+    const p1 = v1.split(".").map((p) => parseInt(p, 10));
+    const p2 = v2.split(".").map((p) => parseInt(p, 10));
+
+    for (let i = 0; i < 3; i++) {
+        const num1 = isNaN(p1[i]) ? 0 : p1[i];
+        const num2 = isNaN(p2[i]) ? 0 : p2[i];
+
+        if (num1 > num2) {
+            return 1;
+        }
+        if (num1 < num2) {
+            return -1;
+        }
+    }
+    return 0;
 }
