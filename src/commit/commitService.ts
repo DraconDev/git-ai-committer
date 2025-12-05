@@ -168,13 +168,6 @@ export class CommitService {
 
   private async updateGitignore(): Promise<void> {
     try {
-      const config = vscode.workspace.getConfiguration("gitAiCommitter");
-      const ignoredPatterns = config.get<string[]>("ignoredFilePatterns", []);
-
-      if (ignoredPatterns.length === 0) {
-        return; // No patterns to add
-      }
-
       const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
       if (!workspaceFolder) {
         return;
@@ -191,39 +184,144 @@ export class CommitService {
         currentContent = "";
       }
 
-      // Check which patterns are already in .gitignore
-      const existingLines = currentContent
-        .split("\n")
-        .map((line) => line.trim());
-      const patternsToAdd = ignoredPatterns.filter((pattern) => {
-        const cleanPattern = pattern.trim();
-        return cleanPattern && !existingLines.includes(cleanPattern);
-      });
+      // Step 1: Remove patterns from .gitignore that are explicitly allowed in .gitattributes
+      const patternsToRemoveFromGitignore = await this.getPatternsFromGitattributes();
+      let updatedContent = this.removePatternsFromGitignore(currentContent, patternsToRemoveFromGitignore);
 
-      if (patternsToAdd.length === 0) {
-        return; // All patterns already in .gitignore
+      // Step 2: Add new patterns from configuration if any
+      const config = vscode.workspace.getConfiguration("gitAiCommitter");
+      const ignoredPatterns = config.get<string[]>("ignoredFilePatterns", []);
+
+      if (ignoredPatterns.length > 0) {
+        // Check which patterns are already in .gitignore
+        const existingLines = updatedContent
+          .split("\n")
+          .map((line) => line.trim());
+        const patternsToAdd = ignoredPatterns.filter((pattern) => {
+          const cleanPattern = pattern.trim();
+          return cleanPattern && !existingLines.includes(cleanPattern);
+        });
+
+        if (patternsToAdd.length > 0) {
+          // Add auto-committer section
+          updatedContent =
+            updatedContent +
+            (updatedContent.endsWith("\n") ? "" : "\n") +
+            "\n# Auto-committer ignored files\n" +
+            patternsToAdd.map((pattern) => pattern).join("\n") +
+            "\n";
+        }
       }
 
-      // Add auto-committer section
-      const newContent =
-        currentContent +
-        (currentContent.endsWith("\n") ? "" : "\n") +
-        "\n# Auto-committer ignored files\n" +
-        patternsToAdd.map((pattern) => pattern).join("\n") +
-        "\n";
+      // Only write if content has changed
+      if (updatedContent !== currentContent) {
+        await fs.writeFile(gitignorePath, updatedContent);
 
-      await fs.writeFile(gitignorePath, newContent);
-
-      // Add .gitignore to git if not already tracked
-      try {
-        await git.add(".gitignore");
-      } catch (error) {
-        // .gitignore might not be in the repo yet, that's OK
+        // Add .gitignore to git if not already tracked
+        try {
+          await git.add(".gitignore");
+        } catch (error) {
+          // .gitignore might not be in the repo yet, that's OK
+        }
       }
     } catch (error) {
       console.error("Failed to update .gitignore:", error);
       // Don't fail the commit if .gitignore update fails
     }
+  }
+
+  private async getPatternsFromGitattributes(): Promise<string[]> {
+    try {
+      // Read patterns from the VSCode settings that Git AI Committer manages
+      const config = vscode.workspace.getConfiguration("gitAiCommitter");
+      const gitattributesPatterns = config.get<string[]>(
+        "gitattributesFilePatterns",
+        []
+      );
+
+      // Also check the existing .gitattributes file on disk for any manually added patterns
+      const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+      if (!workspaceFolder) {
+        return gitattributesPatterns;
+      }
+
+      const gitattributesPath = workspaceFolder.uri.fsPath + "/.gitattributes";
+      const fs = require("fs").promises;
+
+      let gitattributesContent = "";
+      try {
+        gitattributesContent = await fs.readFile(gitattributesPath, "utf8");
+      } catch (error) {
+        // .gitattributes doesn't exist, return just the configured patterns
+        return gitattributesPatterns;
+      }
+
+      // Extract file patterns from the .gitattributes file on disk
+      // Each line format is: pattern attribute1 attribute2 ...
+      // We want just the pattern part (first column)
+      const diskPatterns = gitattributesContent
+        .split("\n")
+        .map(line => {
+          const trimmed = line.trim();
+          if (!trimmed || trimmed.startsWith('#')) {
+            return null;
+          }
+          // Extract the first column (file pattern) before any attributes
+          const firstSpace = trimmed.indexOf(' ');
+          if (firstSpace === -1) {
+            return trimmed; // No attributes, whole line is the pattern
+          }
+          return trimmed.substring(0, firstSpace);
+        })
+        .filter(pattern => pattern !== null && pattern.length > 0);
+
+      // Combine configured patterns with patterns from disk
+      // Remove duplicates
+      const allPatterns = [...new Set([...gitattributesPatterns, ...diskPatterns])];
+
+      return allPatterns;
+    } catch (error) {
+      console.error("Failed to read .gitattributes settings:", error);
+      return [];
+    }
+  }
+
+  private removePatternsFromGitignore(gitignoreContent: string, patternsToRemove: string[]): string {
+    if (patternsToRemove.length === 0) {
+      return gitignoreContent;
+    }
+
+    const lines = gitignoreContent.split("\n");
+    const filteredLines = lines.filter(line => {
+      const trimmedLine = line.trim();
+      
+      // Skip empty lines and comments
+      if (!trimmedLine || trimmedLine.startsWith('#')) {
+        return true;
+      }
+
+      // Check if this line matches any pattern we should remove
+      for (const pattern of patternsToRemove) {
+        const cleanPattern = pattern.trim();
+        if (cleanPattern) {
+          // Remove exact matches
+          if (trimmedLine === cleanPattern) {
+            return false;
+          }
+          // Remove lines that start with the pattern (for patterns like "*.env")
+          if (cleanPattern.includes('*') && trimmedLine.startsWith(cleanPattern)) {
+            return false;
+          }
+          // For non-wildcard patterns, also check if line contains the pattern
+          if (!cleanPattern.includes('*') && trimmedLine.includes(cleanPattern)) {
+            return false;
+          }
+        }
+      }
+      return true;
+    });
+
+    return filteredLines.join("\n");
   }
 
   public async updateGitattributes(): Promise<void> {
