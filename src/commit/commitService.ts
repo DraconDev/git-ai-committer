@@ -273,7 +273,7 @@ export class CommitService {
           }
           return trimmed.substring(0, firstSpace);
         })
-        .filter(pattern => pattern !== null && pattern.length > 0);
+        .filter((pattern): pattern is string => pattern !== null && pattern.length > 0);
 
       // Combine configured patterns with patterns from disk
       // Remove duplicates
