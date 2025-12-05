@@ -97,6 +97,22 @@ export async function activate(context: vscode.ExtensionContext) {
           disableAutoCommit();
         }
       }
+
+      // Handle gitattributes patterns changes
+      if (e.affectsConfiguration("gitAiCommitter.gitattributesFilePatterns")) {
+        try {
+          // Update gitattributes immediately when patterns change
+          await commitService.updateGitattributes();
+          vscode.window.showInformationMessage(
+            "Git attributes patterns updated successfully!"
+          );
+        } catch (error) {
+          console.error("Failed to update gitattributes on setting change:", error);
+          vscode.window.showWarningMessage(
+            "Failed to update gitattributes file. It will be updated on the next commit."
+          );
+        }
+      }
     })
   );
 

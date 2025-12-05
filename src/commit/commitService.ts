@@ -226,7 +226,7 @@ export class CommitService {
     }
   }
 
-  private async updateGitattributes(): Promise<void> {
+  public async updateGitattributes(): Promise<void> {
     try {
       const config = vscode.workspace.getConfiguration("gitAiCommitter");
       const gitattributesPatterns = config.get<string[]>(
