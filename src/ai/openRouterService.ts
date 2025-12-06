@@ -35,7 +35,7 @@ export async function generateOpenRouterMessage(
             throw new Error("No changes to commit");
         }
 
-        const prompt = `Generate a concise commit message for the following git diff. Use conventional commit format (type(scope): description). Keep it short and descriptive. Focus on the code changes. Do not mention version bumps. Here's the diff:\n\n${diff}`;
+        const prompt = `Generate a concise commit message for the following git diff. Use conventional commit format (type(scope): description). Keep it short and descriptive. Focus on the code changes. Do not mention version bumps or lockfile updates unless they are the ONLY changes. If you must mention them, put them at the very end. Here's the diff:\n\n${diff}`;
 
         const response = await fetch(
             "https://openrouter.ai/api/v1/chat/completions",
