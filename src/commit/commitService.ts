@@ -149,10 +149,6 @@ export class CommitService {
                 }
             }
 
-                    this.versionBumpCompleted = true;
-                }
-            }
-
             // 4. Stage ALL changes (including version files if bumped)
             const stagedAll = await stageAllChanges();
             if (!stagedAll) {
@@ -165,18 +161,21 @@ export class CommitService {
             // 4b. Force add files present in .gitattributes
             // This ensures files like .env are staged even if they are in .gitignore (e.g. for git-seal)
             try {
-                const attributedPatterns = await this.getPatternsFromGitattributes();
+                const attributedPatterns =
+                    await this.getPatternsFromGitattributes();
                 if (attributedPatterns.length > 0) {
-                     // We use force: true to override .gitignore
-                     // We need to handle cases where the pattern might not match any file, which git add might complain about
-                     // But simple-git usually handles it or we catch the error
-                     // We use git.raw to ensure we can pass --force and ignore-errors if needed
-                     // But simpler: just try adding them.
-                     await git.add(attributedPatterns, { '--force': null });
+                    // We use force: true to override .gitignore
+                    // We need to handle cases where the pattern might not match any file, which git add might complain about
+                    // But simple-git usually handles it or we catch the error
+                    // We use git.raw to ensure we can pass --force and ignore-errors if needed
+                    // But simpler: just try adding them.
+                    await git.add(attributedPatterns, { "--force": null });
                 }
             } catch (error) {
                 // It's possible some patterns don't exist as files, which is fine
-                console.log("Note: Force adding attributed files dealt with strict pathspec or missing files.");
+                console.log(
+                    "Note: Force adding attributed files dealt with strict pathspec or missing files."
+                );
             }
 
             // 5. Get diff AFTER staging (includes version changes if any)
@@ -426,17 +425,6 @@ export class CommitService {
 
     public async updateGitattributes(): Promise<void> {
         try {
-            const config = vscode.workspace.getConfiguration("gitAiCommitter");
-            const gitattributesPatterns = config.get<string[]>(
-                "gitattributesFilePatterns",
-                []
-            );
-
-            if (gitattributesPatterns.length === 0) {
-                return; // No patterns to add, skip gitattributes generation
-            }
-
-            const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
             if (!workspaceFolder) {
                 return;
             }
