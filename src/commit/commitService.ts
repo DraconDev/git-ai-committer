@@ -465,10 +465,14 @@ export class CommitService {
             const existingLines = currentContent
                 .split("\n")
                 .map((line) => line.trim());
-            const patternsToAdd = gitattributesPatterns.filter((pattern) => {
-                const cleanPattern = pattern.trim();
-                return cleanPattern && !existingLines.includes(cleanPattern);
-            });
+            const patternsToAdd = gitattributesPatterns.filter(
+                (pattern: string) => {
+                    const cleanPattern = pattern.trim();
+                    return (
+                        cleanPattern && !existingLines.includes(cleanPattern)
+                    );
+                }
+            );
 
             if (patternsToAdd.length === 0) {
                 return; // All patterns already in .gitattributes
@@ -479,7 +483,7 @@ export class CommitService {
                 currentContent +
                 (currentContent.endsWith("\n") ? "" : "\n") +
                 "\n# Auto-committer gitattributes\n" +
-                patternsToAdd.map((pattern) => pattern).join("\n") +
+                patternsToAdd.map((pattern: string) => pattern).join("\n") +
                 "\n";
 
             await fs.writeFile(gitattributesPath, newContent);
