@@ -116,8 +116,11 @@ export class CommitService {
 
             const onlyVersionFiles =
                 allChangedFiles.length > 0 &&
-                allChangedFiles.every((file) =>
-                    versionService.isVersionFile(file)
+                allChangedFiles.every(
+                    (file) =>
+                        versionService.isVersionFile(file) ||
+                        file.endsWith(".gitignore") ||
+                        file.endsWith(".gitattributes")
                 );
 
             let versionUpdateResult: string | false | null = null;
@@ -129,6 +132,7 @@ export class CommitService {
                 } else {
                     this.versionBumpInProgress = true;
                     versionUpdateResult = await updateVersion();
+
                     if (versionUpdateResult === false) {
                         vscode.window.showErrorMessage(
                             "Failed to update version"
@@ -136,6 +140,11 @@ export class CommitService {
                         this.versionBumpInProgress = false;
                         return;
                     }
+
+                    // Stabilization Delay: Wait for build tools (like rust-analyzer) to update lockfiles
+                    // This prevents "Echo" commits where lockfiles change immediately after we commit
+                    await new Promise((resolve) => setTimeout(resolve, 2000));
+
                     this.versionBumpCompleted = true;
                 }
             }
