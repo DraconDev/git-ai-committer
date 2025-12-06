@@ -103,16 +103,40 @@ export class CommitService {
             }
 
             // 3. Bump version BEFORE getting diff (version bump happens on ALL commits)
+            // Safety check: Don't bump version if the ONLY changes are to version files/lock files
+            // This prevents infinite loops where a lockfile update triggers another bump
+            const allChangedFiles = [
+                ...reCheckStatus.modified,
+                ...reCheckStatus.staged,
+                ...reCheckStatus.created,
+                ...reCheckStatus.renamed,
+                ...reCheckStatus.not_added,
+            ];
+
+            const onlyVersionFiles =
+                allChangedFiles.length > 0 &&
+                allChangedFiles.every((file) =>
+                    versionService.isVersionFile(file)
+                );
+
             let versionUpdateResult: string | false | null = null;
             if (!this.versionBumpInProgress && !this.versionBumpCompleted) {
-                this.versionBumpInProgress = true;
-                versionUpdateResult = await updateVersion();
-                if (versionUpdateResult === false) {
-                    vscode.window.showErrorMessage("Failed to update version");
-                    this.versionBumpInProgress = false;
-                    return;
+                if (onlyVersionFiles) {
+                    console.log(
+                        "Skipping version bump: only different version files detected"
+                    );
+                } else {
+                    this.versionBumpInProgress = true;
+                    versionUpdateResult = await updateVersion();
+                    if (versionUpdateResult === false) {
+                        vscode.window.showErrorMessage(
+                            "Failed to update version"
+                        );
+                        this.versionBumpInProgress = false;
+                        return;
+                    }
+                    this.versionBumpCompleted = true;
                 }
-                this.versionBumpCompleted = true;
             }
 
             // 4. Stage ALL changes (including version files if bumped)
