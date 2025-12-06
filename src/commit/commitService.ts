@@ -10,6 +10,7 @@ import {
     pushChanges,
     stageAllChanges,
 } from "../git/gitOperations";
+import { versionService } from "../version/versionCoreService";
 import { updateVersion } from "../version/versionService";
 
 export class CommitService {
