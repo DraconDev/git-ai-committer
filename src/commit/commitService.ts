@@ -252,9 +252,11 @@ export class CommitService {
                 await this.getPatternsFromGitattributes();
 
             let patternsToRemoveFromGitignore: string[] = [];
-            if (smartGitignore) {
-                patternsToRemoveFromGitignore = patternsInGitattributes;
-            }
+            // We NO LONGER remove patterns from .gitignore even if smartGitignore used to do that.
+            // Instead, we keep them in .gitignore for safety, and use 'force add' in performCommit if smartGitignore is enabled.
+            // if (smartGitignore) {
+            //    patternsToRemoveFromGitignore = patternsInGitattributes;
+            // }
 
             let updatedContent = this.removePatternsFromGitignore(
                 currentContent,
