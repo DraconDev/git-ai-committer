@@ -158,24 +158,25 @@ export class CommitService {
                 return;
             }
 
-            // 4b. Force add files present in .gitattributes
+            // 4b. Force add files present in .gitattributes IF smartGitignore is enabled
             // This ensures files like .env are staged even if they are in .gitignore (e.g. for git-seal)
-            try {
-                const attributedPatterns =
-                    await this.getPatternsFromGitattributes();
-                if (attributedPatterns.length > 0) {
-                    // We use force: true to override .gitignore
-                    // We need to handle cases where the pattern might not match any file, which git add might complain about
-                    // But simple-git usually handles it or we catch the error
-                    // We use git.raw to ensure we can pass --force and ignore-errors if needed
-                    // But simpler: just try adding them.
-                    await git.add(attributedPatterns, { "--force": null });
+            const config = vscode.workspace.getConfiguration("gitAiCommitter");
+            const smartGitignore = config.get<boolean>("smartGitignore", false);
+
+            // Only perform force-add if the user has enabled smart handling
+            if (smartGitignore) {
+                try {
+                    const attributedPatterns =
+                        await this.getPatternsFromGitattributes();
+                    if (attributedPatterns.length > 0) {
+                        // We use force: true to override .gitignore
+                        await git.add(attributedPatterns, { "--force": null });
+                    }
+                } catch (error) {
+                    console.log(
+                        "Note: Force adding attributed files dealt with strict pathspec or missing files."
+                    );
                 }
-            } catch (error) {
-                // It's possible some patterns don't exist as files, which is fine
-                console.log(
-                    "Note: Force adding attributed files dealt with strict pathspec or missing files."
-                );
             }
 
             // 5. Get diff AFTER staging (includes version changes if any)
