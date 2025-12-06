@@ -110,7 +110,7 @@ export class CommitService {
                 ...reCheckStatus.modified,
                 ...reCheckStatus.staged,
                 ...reCheckStatus.created,
-                ...reCheckStatus.renamed,
+                ...reCheckStatus.renamed.map((f) => f.to),
                 ...reCheckStatus.not_added,
             ];
 
