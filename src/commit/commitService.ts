@@ -170,7 +170,13 @@ export class CommitService {
                         await this.getPatternsFromGitattributes();
                     if (attributedPatterns.length > 0) {
                         // We use force: true to override .gitignore
-                        await git.add(attributedPatterns, { "--force": null });
+                        // simple-git add() might not accept options object in all versions, so we use raw()
+                        await git.raw([
+                            "add",
+                            "--force",
+                            "--",
+                            ...attributedPatterns,
+                        ]);
                     }
                 } catch (error) {
                     console.log(
