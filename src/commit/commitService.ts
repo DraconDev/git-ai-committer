@@ -434,7 +434,18 @@ export class CommitService {
 
     public async updateGitattributes(): Promise<void> {
         try {
+            const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
             if (!workspaceFolder) {
+                return;
+            }
+
+            const config = vscode.workspace.getConfiguration("gitAiCommitter");
+            const gitattributesPatterns = config.get<string[]>(
+                "gitattributesFilePatterns",
+                []
+            );
+
+            if (gitattributesPatterns.length === 0) {
                 return;
             }
 
