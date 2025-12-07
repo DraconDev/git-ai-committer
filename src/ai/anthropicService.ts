@@ -68,13 +68,8 @@ export async function generateAnthropicMessage(
         }
 
         const message = data.content[0].text.trim();
-        const cleanMessage = message.replace(/["'\n\r]+/g, " ").trim();
-
-        if (!cleanMessage.match(/^[a-z]+(\([a-z-]+\))?: .+/)) {
-            return null;
-        }
-
-        return cleanMessage;
+        // Clean up the message - remove quotes and newlines
+        return message.replace(/["'\n\r]+/g, " ").trim();
     } catch (error: any) {
         console.error("Error generating commit message with Anthropic:", error);
         return null;
