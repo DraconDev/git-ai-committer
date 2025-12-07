@@ -13,17 +13,18 @@ Git AI Auto Committer is a VS Code extension that automatically commits your cod
 ## ✨ Features
 
 -   **Automatic Code Commits**: Detects when you stop coding and automatically commits your changes
--   **Multi-Provider AI**: Choose from Gemini, OpenRouter, OpenAI, Anthropic, or Editor Built-in AI
+-   **Multi-Provider AI**: Choose from Gemini, OpenRouter, OpenAI, Anthropic, or GitHub Copilot
 -   **Smart Failover System**: Automatically tries backup providers if your primary AI fails
 -   **AI-Generated Messages**: Creates meaningful, professional commit messages using AI
 -   **Custom Model Selection**: Specify exact models per provider (e.g., gemini-flash-lite-latest, gpt-4o)
+-   **Model Override per Slot**: Use the same provider with different models for primary and backups
 -   **Version Control Integration**: Automatically updates version numbers across 10+ file types
 -   **Smart File Management**: Ignores temporary files, logs, and build artifacts automatically
--   **Visual Settings Panel**: Beautiful, theme-aware configuration interface with real-time validation
+-   **Native Settings Menu**: Quick-access configuration that works in all environments
 -   **Manual Control**: Override automatic commits with instant manual commits when needed
--   **Advanced Timing Controls**: Fine-tune inactivity detection and minimum commit intervals
+-   **Multi-Workspace Support**: Works with VS Code workspaces containing multiple Git repositories
 -   **Multi-Language Version Bumping**: Works with Node.js, Python, Java, Rust, PHP, and more
--   **Zero Configuration Required**: Works out of the box with sensible defaults, no JSON editing needed
+-   **Zero Configuration Required**: Works out of the box with sensible defaults
 
 ## 📦 Requirements
 
