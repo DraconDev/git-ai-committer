@@ -14,15 +14,24 @@ export function getApiKey(): string | undefined {
         .get<string>("geminiApiKey");
 }
 
-export function initializeModel(apiKey: string) {
+export function getGeminiModel(): string {
+    return (
+        vscode.workspace
+            .getConfiguration("gitAiCommitter")
+            .get<string>("geminiModel") || GEMINI_MODEL_NAME
+    );
+}
+
+export function initializeModel(apiKey: string, modelName?: string) {
     genAI = new GoogleGenerativeAI(apiKey);
     model = genAI.getGenerativeModel({
-        model: GEMINI_MODEL_NAME,
+        model: modelName || getGeminiModel(),
     });
 }
 
 export async function generateGeminiMessage(
-    diff: string
+    diff: string,
+    modelOverride?: string
 ): Promise<string | null> {
     try {
         // Validate input
@@ -44,13 +53,13 @@ export async function generateGeminiMessage(
             throw new Error("No changes to commit");
         }
 
-        if (!model) {
+        if (!model || modelOverride) {
             const apiKey = getApiKey();
             if (!apiKey) {
                 vscode.window.showErrorMessage("Gemini API key not configured");
                 return null;
             }
-            initializeModel(apiKey);
+            initializeModel(apiKey, modelOverride);
         }
 
         // Validate diff content
