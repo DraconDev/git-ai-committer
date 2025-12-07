@@ -2,7 +2,6 @@ import * as vscode from "vscode";
 
 import { generateCommitMessageWithFailover } from "../ai/aiFailover";
 import { getPreferredAIProvider } from "../ai/aiService";
-import { generateGeminiMessage } from "../ai/geminiService";
 import { git } from "../extension";
 import {
     amendCommit, // Added
@@ -15,62 +14,11 @@ import { versionService } from "../version/versionCoreService";
 import { updateVersion } from "../version/versionService";
 
 export class CommitService {
-    private lastProcessedDiff = "";
-    private isGeneratingMessage = false;
-    private lastCommitAttemptTime = 0;
-    private readonly retryDelay = 60000; // 1 minute
     // Public flags for version bump state - accessible by auto-commit service
     public versionBumpInProgress = false;
     public versionBumpCompleted = false;
 
-    async checkIfGenerating() {
-        if (this.isGeneratingMessage) {
-            vscode.window.showInformationMessage(
-                "Commit message generation already in progress"
-            );
-            return true;
-        }
-    }
-
-    async handleCommitMessageGeneration(diff: string): Promise<string | null> {
-        try {
-            this.isGeneratingMessage = true;
-
-            // Check if we need to wait (backoff)
-            const now = Date.now();
-            if (now - this.lastCommitAttemptTime < this.retryDelay) {
-                return null; // Skip during backoff period
-            }
-
-            try {
-                const commitMessage = await generateGeminiMessage(diff);
-                if (commitMessage) {
-                    this.lastProcessedDiff = diff;
-                    this.lastCommitAttemptTime = 0; // Reset on success
-                    return commitMessage;
-                }
-            } catch (error) {
-                this.lastCommitAttemptTime = now; // Record failure time
-                vscode.window.showErrorMessage(
-                    `Failed to generate commit message: ${
-                        error instanceof Error ? error.message : "Unknown error"
-                    }`
-                );
-                return null;
-            }
-
-            return null;
-        } finally {
-            this.isGeneratingMessage = false;
-        }
-    }
-
     async performCommit() {
-        // Check if commit message generation is already in progress
-        if (await this.checkIfGenerating()) {
-            return;
-        }
-
         const status = await git.status();
 
         // Check if there are any changes to commit
@@ -205,7 +153,6 @@ export class CommitService {
 
             // Push immediate commit
             await pushChanges(); // Normal push
-            this.lastCommitAttemptTime = 0; // Reset failure state on successful push
 
             // 7. BACKGROUND ACTION: Generate AI message and amend
             // We don't await this part so the main flow returns quickly
