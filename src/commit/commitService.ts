@@ -1,14 +1,9 @@
+import * as path from "path";
+import simpleGit from "simple-git";
 import * as vscode from "vscode";
 
 import { generateCommitMessageWithFailover } from "../ai/aiFailover";
 import { getPreferredAIProvider } from "../ai/aiService";
-import { git } from "../extension";
-import {
-    commitChanges,
-    getGitDiff,
-    pushChanges,
-    stageAllChanges,
-} from "../git/gitOperations";
 import { versionService } from "../version/versionCoreService";
 import { updateVersion } from "../version/versionService";
 
@@ -17,7 +12,10 @@ export class CommitService {
     public versionBumpInProgress = false;
     public versionBumpCompleted = false;
 
-    async performCommit() {
+    async performCommit(repoPath: string) {
+        // Create a local git instance for this specific repo
+        const git = simpleGit(repoPath);
+
         const status = await git.status();
 
         // Check if there are any changes to commit
@@ -31,10 +29,10 @@ export class CommitService {
 
         try {
             // 1. Auto-manage .gitignore first
-            await this.updateGitignore();
+            await this.updateGitignore(repoPath, git);
 
             // 2. Auto-manage .gitattributes if patterns are configured
-            await this.updateGitattributes();
+            await this.updateGitattributes(repoPath, git);
 
             // Re-verify that we still have changes to commit.
             const reCheckStatus = await git.status();
@@ -67,14 +65,8 @@ export class CommitService {
                         file.endsWith(".gitattributes")
                 );
 
-            // 3. Stage ALL changes (including version files if bumped)
-            const stagedAll = await stageAllChanges();
-            if (!stagedAll) {
-                vscode.window.showErrorMessage("Failed to stage changes");
-                this.versionBumpInProgress = false;
-                this.versionBumpCompleted = false;
-                return;
-            }
+            // 3. Stage ALL changes
+            await git.add(".");
 
             // 4. Force add files present in .gitattributes IF smartGitignore is enabled
             const config = vscode.workspace.getConfiguration("gitAiCommitter");
@@ -83,7 +75,7 @@ export class CommitService {
             if (smartGitignore) {
                 try {
                     const attributedPatterns =
-                        await this.getPatternsFromGitattributes();
+                        await this.getPatternsFromGitattributes(repoPath);
                     if (attributedPatterns.length > 0) {
                         await git.raw([
                             "add",
@@ -100,7 +92,7 @@ export class CommitService {
             }
 
             // 5. Get diff AFTER staging
-            const currentDiff = await getGitDiff();
+            const currentDiff = await git.diff(["--cached"]);
             if (!currentDiff) {
                 return;
             }
@@ -152,23 +144,13 @@ export class CommitService {
             }
 
             // 8. Stage ALL changes AGAIN (to include the new version bump)
-            const stageAgain = await stageAllChanges();
-            if (!stageAgain) {
-                vscode.window.showErrorMessage(
-                    "Failed to stage changes after version bump"
-                );
-                return;
-            }
+            await git.add(".");
 
             // 9. Commit & Push
-            const commitSuccess = await commitChanges(commitMessage);
-            if (!commitSuccess) {
-                return;
-            }
-
-            await pushChanges();
+            await git.commit(commitMessage);
+            await git.push();
             vscode.window.setStatusBarMessage(
-                "Changes committed and pushed.",
+                `Committed in ${path.basename(repoPath)}`,
                 5000
             );
         } catch (error: any) {
@@ -187,69 +169,53 @@ export class CommitService {
         }
     }
 
-    private async updateGitignore(): Promise<void> {
+    private async updateGitignore(
+        repoPath: string,
+        git: ReturnType<typeof simpleGit>
+    ): Promise<void> {
         try {
-            const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-            if (!workspaceFolder) {
-                return;
-            }
-
-            const gitignorePath = workspaceFolder.uri.fsPath + "/.gitignore";
+            const gitignorePath = path.join(repoPath, ".gitignore");
             const fs = require("fs").promises;
 
             let currentContent = "";
             try {
                 currentContent = await fs.readFile(gitignorePath, "utf8");
             } catch (error) {
-                // .gitignore doesn't exist, start with empty content
                 currentContent = "";
             }
 
-            // Step 1: Remove patterns from .gitignore that are explicitly allowed in .gitattributes
             const config = vscode.workspace.getConfiguration("gitAiCommitter");
-            const smartGitignore = config.get<boolean>("smartGitignore", false);
 
-            // ALWAYS get patterns from gitattributes to prevent them from being added back
             const patternsInGitattributes =
-                await this.getPatternsFromGitattributes();
+                await this.getPatternsFromGitattributes(repoPath);
 
             let patternsToRemoveFromGitignore: string[] = [];
-            // We NO LONGER remove patterns from .gitignore even if smartGitignore used to do that.
-            // Instead, we keep them in .gitignore for safety, and use 'force add' in performCommit if smartGitignore is enabled.
-            // if (smartGitignore) {
-            //    patternsToRemoveFromGitignore = patternsInGitattributes;
-            // }
 
             let updatedContent = this.removePatternsFromGitignore(
                 currentContent,
                 patternsToRemoveFromGitignore
             );
 
-            // Step 2: Add new patterns from configuration if any
             const ignoredPatterns = config.get<string[]>(
                 "ignoredFilePatterns",
                 []
             );
 
             if (ignoredPatterns.length > 0) {
-                // Check which patterns are already in .gitignore
                 const existingLines = updatedContent
                     .split("\n")
                     .map((line) => line.trim());
                 const patternsToAdd = ignoredPatterns.filter((pattern) => {
                     const cleanPattern = pattern.trim();
-                    // ALWAYS block adding back patterns that are in gitattributes, regardless of smartGitignore setting
                     if (patternsInGitattributes.includes(cleanPattern)) {
                         return false;
                     }
-
                     return (
                         cleanPattern && !existingLines.includes(cleanPattern)
                     );
                 });
 
                 if (patternsToAdd.length > 0) {
-                    // Add auto-committer section
                     const header = "# Auto-committer ignored files";
                     const headerExists = updatedContent.includes(header);
 
@@ -262,40 +228,30 @@ export class CommitService {
                 }
             }
 
-            // Only write if content has changed
             if (updatedContent !== currentContent) {
                 await fs.writeFile(gitignorePath, updatedContent);
-
-                // Add .gitignore to git if not already tracked
                 try {
                     await git.add(".gitignore");
                 } catch (error) {
-                    // .gitignore might not be in the repo yet, that's OK
+                    // OK if not tracked
                 }
             }
         } catch (error) {
             console.error("Failed to update .gitignore:", error);
-            // Don't fail the commit if .gitignore update fails
         }
     }
 
-    private async getPatternsFromGitattributes(): Promise<string[]> {
+    private async getPatternsFromGitattributes(
+        repoPath: string
+    ): Promise<string[]> {
         try {
-            // Read patterns from the VSCode settings that Git AI Committer manages
             const config = vscode.workspace.getConfiguration("gitAiCommitter");
             const gitattributesPatterns = config.get<string[]>(
                 "gitattributesFilePatterns",
                 []
             );
 
-            // Also check the existing .gitattributes file on disk for any manually added patterns
-            const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-            if (!workspaceFolder) {
-                return gitattributesPatterns;
-            }
-
-            const gitattributesPath =
-                workspaceFolder.uri.fsPath + "/.gitattributes";
+            const gitattributesPath = path.join(repoPath, ".gitattributes");
             const fs = require("fs").promises;
 
             let gitattributesContent = "";
@@ -305,32 +261,24 @@ export class CommitService {
                     "utf8"
                 );
             } catch (error) {
-                // .gitattributes doesn't exist, return just the configured patterns
                 return gitattributesPatterns;
             }
 
-            // Extract file patterns from the .gitattributes file on disk
-            // Each line format is: pattern attribute1 attribute2 ...
-            // We want just the pattern part (first column)
             const diskPatterns = gitattributesContent
                 .split("\n")
-                .map((line) => {
+                .map((line: string) => {
                     const trimmed = line.trim();
                     if (!trimmed || trimmed.startsWith("#")) {
                         return null;
                     }
-                    // Extract the first column (file pattern) before any attributes
-                    // Split by any whitespace (space or tab)
                     const parts = trimmed.split(/\s+/);
                     return parts[0];
                 })
                 .filter(
-                    (pattern): pattern is string =>
+                    (pattern: string | null): pattern is string =>
                         pattern !== null && pattern.length > 0
                 );
 
-            // Combine configured patterns with patterns from disk
-            // Remove duplicates
             const allPatterns = [
                 ...new Set([...gitattributesPatterns, ...diskPatterns]),
             ];
@@ -388,10 +336,15 @@ export class CommitService {
         return filteredLines.join("\n");
     }
 
-    public async updateGitattributes(): Promise<void> {
+    public async updateGitattributes(
+        repoPath?: string,
+        git?: ReturnType<typeof simpleGit>
+    ): Promise<void> {
         try {
-            const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-            if (!workspaceFolder) {
+            // Use provided repoPath or fallback to first workspace folder
+            const targetPath =
+                repoPath || vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+            if (!targetPath) {
                 return;
             }
 
@@ -405,22 +358,25 @@ export class CommitService {
                 return;
             }
 
-            const gitattributesPath =
-                workspaceFolder.uri.fsPath + "/.gitattributes";
+            const gitattributesFilePath = path.join(
+                targetPath,
+                ".gitattributes"
+            );
             const fs = require("fs").promises;
 
             let currentContent = "";
             try {
-                currentContent = await fs.readFile(gitattributesPath, "utf8");
+                currentContent = await fs.readFile(
+                    gitattributesFilePath,
+                    "utf8"
+                );
             } catch (error) {
-                // .gitattributes doesn't exist, start with empty content
                 currentContent = "";
             }
 
-            // Check which patterns are already in .gitattributes
             const existingLines = currentContent
                 .split("\n")
-                .map((line) => line.trim());
+                .map((line: string) => line.trim());
             const patternsToAdd = gitattributesPatterns.filter(
                 (pattern: string) => {
                     const cleanPattern = pattern.trim();
@@ -431,10 +387,9 @@ export class CommitService {
             );
 
             if (patternsToAdd.length === 0) {
-                return; // All patterns already in .gitattributes
+                return;
             }
 
-            // Add auto-committer section
             const newContent =
                 currentContent +
                 (currentContent.endsWith("\n") ? "" : "\n") +
@@ -442,17 +397,17 @@ export class CommitService {
                 patternsToAdd.map((pattern: string) => pattern).join("\n") +
                 "\n";
 
-            await fs.writeFile(gitattributesPath, newContent);
+            await fs.writeFile(gitattributesFilePath, newContent);
 
-            // Add .gitattributes to git if not already tracked
-            try {
-                await git.add(".gitattributes");
-            } catch (error) {
-                // .gitattributes might not be in the repo yet, that's OK
+            if (git) {
+                try {
+                    await git.add(".gitattributes");
+                } catch (error) {
+                    // OK if not tracked
+                }
             }
         } catch (error) {
             console.error("Failed to update .gitattributes:", error);
-            // Don't fail the commit if .gitattributes update fails
         }
     }
 }
