@@ -5,9 +5,11 @@ import { getPreferredAIProvider } from "../ai/aiService";
 import { git } from "../extension";
 import {
     commitChanges,
+    getGitDiff,
     pushChanges,
     stageAllChanges,
 } from "../git/gitOperations";
+import { versionService } from "../version/versionCoreService";
 import { updateVersion } from "../version/versionService";
 
 export class CommitService {
@@ -35,8 +37,6 @@ export class CommitService {
             await this.updateGitattributes();
 
             // Re-verify that we still have changes to commit.
-            // This prevents "empty version bumps" where the only change would be the version bump itself,
-            // if the initial changes were resolved or ignored by the steps above.
             const reCheckStatus = await git.status();
             if (
                 !reCheckStatus.modified.length &&
@@ -46,6 +46,62 @@ export class CommitService {
                 !reCheckStatus.created.length &&
                 !reCheckStatus.renamed.length
             ) {
+                return;
+            }
+
+            // Define variables needed later
+            const allChangedFiles = [
+                ...reCheckStatus.modified,
+                ...reCheckStatus.staged,
+                ...reCheckStatus.created,
+                ...reCheckStatus.renamed.map((f) => f.to),
+                ...reCheckStatus.not_added,
+            ];
+
+            const onlyVersionFiles =
+                allChangedFiles.length > 0 &&
+                allChangedFiles.every(
+                    (file) =>
+                        versionService.isVersionFile(file) ||
+                        file.endsWith(".gitignore") ||
+                        file.endsWith(".gitattributes")
+                );
+
+            // 3. Stage ALL changes (including version files if bumped)
+            const stagedAll = await stageAllChanges();
+            if (!stagedAll) {
+                vscode.window.showErrorMessage("Failed to stage changes");
+                this.versionBumpInProgress = false;
+                this.versionBumpCompleted = false;
+                return;
+            }
+
+            // 4. Force add files present in .gitattributes IF smartGitignore is enabled
+            const config = vscode.workspace.getConfiguration("gitAiCommitter");
+            const smartGitignore = config.get<boolean>("smartGitignore", false);
+
+            if (smartGitignore) {
+                try {
+                    const attributedPatterns =
+                        await this.getPatternsFromGitattributes();
+                    if (attributedPatterns.length > 0) {
+                        await git.raw([
+                            "add",
+                            "--force",
+                            "--",
+                            ...attributedPatterns,
+                        ]);
+                    }
+                } catch (error) {
+                    console.log(
+                        "Note: Force adding attributed files dealt with strict pathspec or missing files."
+                    );
+                }
+            }
+
+            // 5. Get diff AFTER staging
+            const currentDiff = await getGitDiff();
+            if (!currentDiff) {
                 return;
             }
 
