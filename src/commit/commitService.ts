@@ -16,6 +16,30 @@ export class CommitService {
         // Create a local git instance for this specific repo
         const git = simpleGit(repoPath);
 
+        // 0. Force add files present in .gitattributes IF smartGitignore is enabled
+        // We do this BEFORE detecting status so ignored files are staged and detected
+        const config = vscode.workspace.getConfiguration("gitAiCommitter");
+        const smartGitignore = config.get<boolean>("smartGitignore", false);
+
+        if (smartGitignore) {
+            try {
+                const attributedPatterns =
+                    await this.getPatternsFromGitattributes(repoPath);
+                if (attributedPatterns.length > 0) {
+                    await git.raw([
+                        "add",
+                        "--force",
+                        "--",
+                        ...attributedPatterns,
+                    ]);
+                }
+            } catch (error) {
+                console.log(
+                    "Note: Force adding attributed files dealt with strict pathspec or missing files."
+                );
+            }
+        }
+
         const status = await git.status();
 
         // Check if there are any changes to commit
@@ -76,28 +100,7 @@ export class CommitService {
             // 3. Stage ALL changes
             await git.add(".");
 
-            // 4. Force add files present in .gitattributes IF smartGitignore is enabled
-            const config = vscode.workspace.getConfiguration("gitAiCommitter");
-            const smartGitignore = config.get<boolean>("smartGitignore", false);
-
-            if (smartGitignore) {
-                try {
-                    const attributedPatterns =
-                        await this.getPatternsFromGitattributes(repoPath);
-                    if (attributedPatterns.length > 0) {
-                        await git.raw([
-                            "add",
-                            "--force",
-                            "--",
-                            ...attributedPatterns,
-                        ]);
-                    }
-                } catch (error) {
-                    console.log(
-                        "Note: Force adding attributed files dealt with strict pathspec or missing files."
-                    );
-                }
-            }
+            // 5. Get diff AFTER staging (moved logic from here)
 
             // 5. Get diff AFTER staging
             const currentDiff = await git.diff(["--cached"]);
