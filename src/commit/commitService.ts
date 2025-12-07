@@ -16,28 +16,14 @@ export class CommitService {
         // Create a local git instance for this specific repo
         const git = simpleGit(repoPath);
 
-        // 0. Force add files present in .gitattributes IF smartGitignore is enabled
-        // We do this BEFORE detecting status so ignored files are staged and detected
-        const config = vscode.workspace.getConfiguration("gitAiCommitter");
-        const smartGitignore = config.get<boolean>("smartGitignore", false);
+        try {
+            // 1. Auto-manage .gitignore first (remove patterns that are in .gitattributes)
+            await this.updateGitignore(repoPath, git);
 
-        if (smartGitignore) {
-            try {
-                const attributedPatterns =
-                    await this.getPatternsFromGitattributes(repoPath);
-                if (attributedPatterns.length > 0) {
-                    await git.raw([
-                        "add",
-                        "--force",
-                        "--",
-                        ...attributedPatterns,
-                    ]);
-                }
-            } catch (error) {
-                console.log(
-                    "Note: Force adding attributed files dealt with strict pathspec or missing files."
-                );
-            }
+            // 2. Auto-manage .gitattributes if patterns are configured
+            await this.updateGitattributes(repoPath, git);
+        } catch (error) {
+            console.error("Failed to update git config files:", error);
         }
 
         const status = await git.status();
@@ -52,12 +38,6 @@ export class CommitService {
         }
 
         try {
-            // 1. Auto-manage .gitignore first
-            await this.updateGitignore(repoPath, git);
-
-            // 2. Auto-manage .gitattributes if patterns are configured
-            await this.updateGitattributes(repoPath, git);
-
             // Re-verify that we still have changes to commit.
             const reCheckStatus = await git.status();
             if (
@@ -192,6 +172,13 @@ export class CommitService {
                 await this.getPatternsFromGitattributes(repoPath);
 
             let patternsToRemoveFromGitignore: string[] = [];
+
+            // If smartGitignore is enabled, we remove patterns from .gitignore that are present in .gitattributes
+            // This ensures they are tracked by git
+            const smartGitignore = config.get<boolean>("smartGitignore", false);
+            if (smartGitignore) {
+                patternsToRemoveFromGitignore = [...patternsInGitattributes];
+            }
 
             let updatedContent = this.removePatternsFromGitignore(
                 currentContent,
