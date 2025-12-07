@@ -1,4 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import * as fs from "fs";
+import * as path from "path";
 import simpleGit from "simple-git";
 import * as vscode from "vscode";
 import { GEMINI_MODEL_NAME, getApiKey } from "./ai/geminiService";
@@ -18,6 +20,49 @@ let genAI: GoogleGenerativeAI;
 let model: any;
 export let git: ReturnType<typeof simpleGit>;
 
+// Detected git repositories (one level deep)
+let detectedRepoPaths: string[] = [];
+
+/**
+ * Returns all detected git repository paths in the workspace.
+ * Scans one level deep from each workspace folder.
+ */
+export function getRepositories(): string[] {
+    return detectedRepoPaths;
+}
+
+/**
+ * Detects git repositories in the given root folder.
+ * Checks the root itself and immediate subdirectories (one level deep).
+ */
+async function detectGitRepos(rootPath: string): Promise<string[]> {
+    const repos: string[] = [];
+
+    // Check if root itself is a git repo
+    const rootGitPath = path.join(rootPath, ".git");
+    if (fs.existsSync(rootGitPath)) {
+        repos.push(rootPath);
+    }
+
+    // Check one level deep
+    try {
+        const entries = fs.readdirSync(rootPath, { withFileTypes: true });
+        for (const entry of entries) {
+            if (entry.isDirectory() && !entry.name.startsWith(".")) {
+                const subPath = path.join(rootPath, entry.name);
+                const subGitPath = path.join(subPath, ".git");
+                if (fs.existsSync(subGitPath)) {
+                    repos.push(subPath);
+                }
+            }
+        }
+    } catch (error) {
+        console.error("Error scanning for git repos:", error);
+    }
+
+    return repos;
+}
+
 export async function activate(context: vscode.ExtensionContext) {
     // Register commands and settings view FIRST so users can access settings even if initialization fails
     registerCommands(context);
@@ -36,11 +81,22 @@ export async function activate(context: vscode.ExtensionContext) {
 
     git = simpleGit(workspaceFolders[0].uri.fsPath);
 
-    // Check if repository exists
-    try {
-        await git.checkIsRepo();
+    // Detect all git repos (root + one level deep)
+    for (const folder of workspaceFolders) {
+        const repos = await detectGitRepos(folder.uri.fsPath);
+        detectedRepoPaths.push(...repos);
+    }
+    // Remove duplicates
+    detectedRepoPaths = [...new Set(detectedRepoPaths)];
+    console.log(
+        `Detected ${detectedRepoPaths.length} git repositories:`,
+        detectedRepoPaths
+    );
+
+    // Check if at least one repository exists
+    if (detectedRepoPaths.length > 0) {
         gitInitialized = true;
-    } catch (error) {
+    } else {
         vscode.window.showWarningMessage(
             "No Git repository found in the current workspace. Auto-commit will be enabled but won't work until a Git repository is initialized."
         );
