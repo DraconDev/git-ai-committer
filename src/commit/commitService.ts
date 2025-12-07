@@ -127,28 +127,19 @@ export class CommitService {
             }
 
             // 7. Bump version AFTER generating message (so it's not in the diff for AI)
-            let versionUpdateResult: string | false | null = null;
             if (!this.versionBumpInProgress && !this.versionBumpCompleted) {
-                if (onlyVersionFiles) {
-                    console.log(
-                        "Skipping version bump: only different version files detected"
-                    );
-                } else {
-                    this.versionBumpInProgress = true;
-                    versionUpdateResult = await updateVersion();
+                this.versionBumpInProgress = true;
+                const versionUpdateResult = await updateVersion();
 
-                    if (versionUpdateResult === false) {
-                        vscode.window.showErrorMessage(
-                            "Failed to update version"
-                        );
-                        this.versionBumpInProgress = false;
-                        return;
-                    }
-
-                    // Stabilization Delay
-                    await new Promise((resolve) => setTimeout(resolve, 2000));
-                    this.versionBumpCompleted = true;
+                if (versionUpdateResult === false) {
+                    vscode.window.showErrorMessage("Failed to update version");
+                    this.versionBumpInProgress = false;
+                    return;
                 }
+
+                // Stabilization Delay
+                await new Promise((resolve) => setTimeout(resolve, 2000));
+                this.versionBumpCompleted = true;
             }
 
             // 8. Stage ALL changes AGAIN (to include the new version bump)
