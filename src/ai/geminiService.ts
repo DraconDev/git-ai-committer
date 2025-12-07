@@ -68,7 +68,7 @@ export async function generateGeminiMessage(
         }
 
         // Generate prompt
-        const prompt = `Generate a concise commit message for the following git diff. Use conventional commit format (type(scope): description). Keep it short and descriptive. Focus on the code changes. Do not mention version bumps or lockfile updates unless they are the ONLY changes. If you must mention them, put them at the very end. Here's the diff:\n\n${diff}`;
+        const prompt = `Generate a concise commit message for the following git diff. Use conventional commit format (type(scope): description). Keep it short and descriptive. Focus on the code changes. Do not mention version bumps or lockfile updates unless they are the ONLY changes. If you must mention them, put them at the very end. Do not include any other text, explanation, or prefixes like 'commit:' or 'text:'. Output ONLY the commit message itself. Here's the diff:\n\n${diff}`;
 
         // Get API response
         const result = await model.generateContent(prompt);
@@ -91,8 +91,11 @@ export async function generateGeminiMessage(
 
         const response = result.response.candidates[0].content.parts[0].text;
 
-        // Clean up the message - remove quotes and newlines
-        return response.replace(/["'\n\r]+/g, " ").trim();
+        // Clean up the message - remove quotes and newlines, and strip common hallucinations
+        return response
+            .replace(/["'\n\r]+/g, " ")
+            .replace(/^(text|commit|git|output)\s*[:]?\s*/i, "")
+            .trim();
     } catch (error: any) {
         console.error("Error generating commit message:", {
             timestamp: new Date().toISOString(),
