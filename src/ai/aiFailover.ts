@@ -107,7 +107,7 @@ async function tryProvider(
         let message: string | null = null;
 
         if (config.provider === AIProvider.Gemini) {
-            message = await generateGeminiMessage(diff);
+            message = await generateGeminiMessage(diff, config.model);
         } else if (config.provider === AIProvider.OpenRouter) {
             message = await generateOpenRouterMessage(diff, config.model);
         } else if (config.provider === AIProvider.OpenAI) {
