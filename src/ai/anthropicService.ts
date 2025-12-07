@@ -23,7 +23,7 @@ export async function generateAnthropicMessage(
     try {
         const apiKey = getAnthropicApiKey();
         if (!apiKey) {
-            vscode.window.showErrorMessage("Anthropic API key not configured");
+            // Don't show error - let failover handle it
             return null;
         }
 

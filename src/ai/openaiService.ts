@@ -23,7 +23,7 @@ export async function generateOpenAIMessage(
     try {
         const apiKey = getOpenAIApiKey();
         if (!apiKey) {
-            vscode.window.showErrorMessage("OpenAI API key not configured");
+            // Don't show error - let failover handle it
             return null;
         }
 

@@ -24,7 +24,7 @@ export async function generateOpenRouterMessage(
     try {
         const apiKey = getOpenRouterApiKey();
         if (!apiKey) {
-            vscode.window.showErrorMessage("OpenRouter API key not configured");
+            // Don't show error - let failover handle it
             return null;
         }
 
