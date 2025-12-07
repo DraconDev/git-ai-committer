@@ -51,13 +51,7 @@ export async function generateCommitMessageWithFailover(
         const message = await tryProvider(config, simplifiedDiff, attempts);
         if (message) {
             logSuccess(config.provider, attempts, startTime);
-            if (config.provider !== primaryProvider) {
-                vscode.window.showInformationMessage(
-                    `Primary AI failed, switched to ${getProviderName(
-                        config.provider
-                    )}`
-                );
-            }
+            // Silent failover - user doesn't need to know which provider was used
             return message;
         }
     }
