@@ -65,6 +65,14 @@ export class CommitService {
                         file.endsWith(".gitattributes")
                 );
 
+            // Skip if only version/config files are staged (likely leftover from previous bump)
+            if (onlyVersionFiles) {
+                console.log(
+                    "Skipping commit: only version/config files detected"
+                );
+                return;
+            }
+
             // 3. Stage ALL changes
             await git.add(".");
 
