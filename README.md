@@ -12,33 +12,33 @@ Git AI Auto Committer is a VS Code extension that automatically commits your cod
 
 ## ✨ Features
 
-- **Automatic Code Commits**: Detects when you stop coding and automatically commits your changes
-- **Multi-Provider AI**: Choose from Gemini, OpenRouter, OpenAI, Anthropic, or Editor Built-in AI
-- **Smart Failover System**: Automatically tries backup providers if your primary AI fails
-- **AI-Generated Messages**: Creates meaningful, professional commit messages using AI
-- **Custom Model Selection**: Specify exact models per provider (e.g., gemini-flash-lite-latest, gpt-4o)
-- **Version Control Integration**: Automatically updates version numbers across 10+ file types
-- **Smart File Management**: Ignores temporary files, logs, and build artifacts automatically
-- **Visual Settings Panel**: Beautiful, theme-aware configuration interface with real-time validation
-- **Manual Control**: Override automatic commits with instant manual commits when needed
-- **Advanced Timing Controls**: Fine-tune inactivity detection and minimum commit intervals
-- **Multi-Language Version Bumping**: Works with Node.js, Python, Java, Rust, PHP, and more
-- **Zero Configuration Required**: Works out of the box with sensible defaults, no JSON editing needed
+-   **Automatic Code Commits**: Detects when you stop coding and automatically commits your changes
+-   **Multi-Provider AI**: Choose from Gemini, OpenRouter, OpenAI, Anthropic, or Editor Built-in AI
+-   **Smart Failover System**: Automatically tries backup providers if your primary AI fails
+-   **AI-Generated Messages**: Creates meaningful, professional commit messages using AI
+-   **Custom Model Selection**: Specify exact models per provider (e.g., gemini-flash-lite-latest, gpt-4o)
+-   **Version Control Integration**: Automatically updates version numbers across 10+ file types
+-   **Smart File Management**: Ignores temporary files, logs, and build artifacts automatically
+-   **Visual Settings Panel**: Beautiful, theme-aware configuration interface with real-time validation
+-   **Manual Control**: Override automatic commits with instant manual commits when needed
+-   **Advanced Timing Controls**: Fine-tune inactivity detection and minimum commit intervals
+-   **Multi-Language Version Bumping**: Works with Node.js, Python, Java, Rust, PHP, and more
+-   **Zero Configuration Required**: Works out of the box with sensible defaults, no JSON editing needed
 
 ## 📦 Requirements
 
-- VS Code 1.96.0 or higher
-- Node.js 20.x or higher
-- **For Gemini AI**: Google Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey)
-- **For Editor Built-in AI**: GitHub Copilot extension installed and authenticated
-- **For OpenRouter**: API key from [OpenRouter](https://openrouter.ai/keys)
-- **For OpenAI**: API key from [OpenAI Platform](https://platform.openai.com/api-keys)
-- **For Anthropic**: API key from [Anthropic Console](https://console.anthropic.com/settings/keys)
-- Git repository with proper configuration
+-   VS Code 1.96.0 or higher
+-   Node.js 20.x or higher
+-   **For Gemini AI**: Google Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey)
+-   **For Editor Built-in AI**: GitHub Copilot extension installed and authenticated
+-   **For OpenRouter**: API key from [OpenRouter](https://openrouter.ai/keys)
+-   **For OpenAI**: API key from [OpenAI Platform](https://platform.openai.com/api-keys)
+-   **For Anthropic**: API key from [Anthropic Console](https://console.anthropic.com/settings/keys)
+-   Git repository with proper configuration
 
 ## ⚙️ Configuration & Usage
 
-The extension is designed to be configured entirely through its custom Settings Panel. You do not need to edit JSON files manually.
+The extension is configured through a native settings menu or VS Code's standard settings.
 
 ### Primary Commands
 
@@ -46,31 +46,29 @@ Access these via the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`):
 
 1.  **`Git AI Committer: Open Settings`**
 
-    - Opens the visual configuration dashboard.
-    - **Use this to configure:**
-      - **AI Provider**: Select between Gemini, OpenRouter, OpenAI, Anthropic, or Editor Built-in AI.
-      - **API Keys**: Securely enter your API keys for the selected provider.
-      - **Failover**: Configure backup providers (e.g., if Gemini fails, try OpenAI).
-      - **Timing**: Adjust how long to wait after typing before committing.
-      - **Ignored Files**: Manage patterns for files that should be skipped.
+    -   Opens a quick-access settings menu with all configuration options.
+    -   **Configure:**
+        -   **AI Provider**: Select between Gemini, OpenRouter, OpenAI, Anthropic, or Copilot
+        -   **API Keys**: Enter your API keys for each provider
+        -   **Model Overrides**: Specify different models for primary and backup providers
+        -   **Failover**: Configure backup providers (e.g., if Gemini fails, try OpenAI)
+        -   **Timing**: Adjust how long to wait after typing before committing
+        -   **Ignored Files**: Manage patterns for files that should be skipped
 
 2.  **`Git AI Committer: Commit Now`**
-    - Forces an immediate check and commit of your current changes.
-    - Useful if you want to trigger a commit without waiting for the auto-timer.
+    -   Forces an immediate check and commit of your current changes.
+    -   Useful if you want to trigger a commit without waiting for the auto-timer.
 
-### Settings Panel Features
+### Settings Features
 
-The settings panel provides a beautiful, intuitive interface to configure all extension options:
-
-- **Multi-Provider AI Setup**: Configure primary AI provider with up to 2 backup providers for automatic failover
-- **Custom Model Selection**: Specify exact models per provider (gemini-flash-lite-latest, gpt-4o, claude-3-5-sonnet-20240620, etc.)
-- **API Key Management**: Securely store and manage API keys for all supported providers
-- **Real-time Validation**: Get instant feedback on your settings and API key status
-- **Advanced Timing Controls**: Adjust inactivity delay and minimum commit intervals with visual sliders
-- **Smart File Filtering**: Add custom ignore patterns with live preview
-- **Version Bumping**: Toggle automatic version bumping on/off across multiple languages
-- **Theme Integration**: Automatically matches VS Code's light/dark theme
-- **Accordion Interface**: Expandable sections for each AI provider with detailed configuration
+-   **Multi-Provider AI Setup**: Configure primary AI provider with up to 2 backup providers for automatic failover
+-   **Custom Model Selection**: Specify exact models per provider (gemini-flash-lite-latest, gpt-4o, claude-3-5-sonnet-20240620, etc.)
+-   **Model Override per Slot**: Use the same provider with different models (e.g., Gemini Pro for primary, Gemini Flash for backup)
+-   **API Key Management**: Store and manage API keys for all supported providers
+-   **Timing Controls**: Adjust inactivity delay and minimum commit intervals
+-   **Smart File Filtering**: Add custom ignore patterns
+-   **Version Bumping**: Toggle automatic version bumping on/off
+-   **VS Code Settings Integration**: All settings also available in VS Code's native settings UI
 
 ## 🚀 How It Works
 
@@ -78,9 +76,9 @@ The settings panel provides a beautiful, intuitive interface to configure all ex
 
 **Smart Activity Monitoring:**
 
-- Monitors your typing patterns and editor activity
-- Detects when you naturally pause your coding work
-- Waits for a configurable delay to ensure you're actually finished
+-   Monitors your typing patterns and editor activity
+-   Detects when you naturally pause your coding work
+-   Waits for a configurable delay to ensure you're actually finished
 
 **Intelligent Commit Process:**
 
@@ -102,16 +100,16 @@ Result: Professional commit message describing exactly what you implemented
 
 **Automatic .gitignore Management:**
 
-- Automatically adds common ignore patterns to your `.gitignore` file
-- Keeps your repository clean by ignoring temp files, logs, and build artifacts
-- Customizable ignore patterns through extension settings
+-   Automatically adds common ignore patterns to your `.gitignore` file
+-   Keeps your repository clean by ignoring temp files, logs, and build artifacts
+-   Customizable ignore patterns through extension settings
 
 **What Gets Ignored:**
 
-- Temporary and cache files (`.tmp`, `.temp`, `.cache`)
-- Log files and debug outputs
-- Build artifacts and compiled files
-- Sensitive configuration files
+-   Temporary and cache files (`.tmp`, `.temp`, `.cache`)
+-   Log files and debug outputs
+-   Build artifacts and compiled files
+-   Sensitive configuration files
 
 ## 💡 Usage Tips
 
@@ -125,13 +123,13 @@ Result: Professional commit message describing exactly what you implemented
 
 **For Active Development:**
 
-- Inactivity Delay: 3-5 seconds
-- Min Commit Delay: 10-15 seconds
+-   Inactivity Delay: 3-5 seconds
+-   Min Commit Delay: 10-15 seconds
 
 **For Thinking-Heavy Work:**
 
-- Inactivity Delay: 10-15 seconds
-- Min Commit Delay: 20-30 seconds
+-   Inactivity Delay: 10-15 seconds
+-   Min Commit Delay: 20-30 seconds
 
 ## 🛡️ Smart Failover System
 
@@ -153,10 +151,10 @@ Primary: Gemini → Backup 1: OpenRouter → Backup 2: OpenAI → Simplified Ret
 
 **Configuration Options:**
 
-- **Backup Provider 1**: First fallback if primary fails
-- **Backup Provider 2**: Second fallback if both primary and first backup fail
-- **Custom Models**: Specify different models for each provider level
-- **Provider Selection**: Choose from Gemini, OpenRouter, OpenAI, Anthropic, or Editor Built-in AI
+-   **Backup Provider 1**: First fallback if primary fails
+-   **Backup Provider 2**: Second fallback if both primary and first backup fail
+-   **Custom Models**: Specify different models for each provider level
+-   **Provider Selection**: Choose from Gemini, OpenRouter, OpenAI, Anthropic, or Editor Built-in AI
 
 This ensures maximum reliability - your commits are generated even if individual AI services are down or experiencing issues.
 
@@ -164,36 +162,36 @@ This ensures maximum reliability - your commits are generated even if individual
 
 ### Google Gemini (Recommended)
 
-- **Cost**: Free for our use case (API key required, generous free tier)
-- **Quality**: Excellent commit message generation
-- **Setup**: Get free API key from [Google AI Studio](https://aistudio.google.com/apikey)
-- **Reliability**: Consistent performance with good error handling
+-   **Cost**: Free for our use case (API key required, generous free tier)
+-   **Quality**: Excellent commit message generation
+-   **Setup**: Get free API key from [Google AI Studio](https://aistudio.google.com/apikey)
+-   **Reliability**: Consistent performance with good error handling
 
 ### OpenRouter
 
-- **Cost**: Varies by model (many free options available)
-- **Quality**: Access to top models like Claude 3, GPT-4, Llama 3, etc.
-- **Setup**: Get API key from [OpenRouter](https://openrouter.ai/keys)
-- **Flexibility**: Choose any model supported by OpenRouter
+-   **Cost**: Varies by model (many free options available)
+-   **Quality**: Access to top models like Claude 3, GPT-4, Llama 3, etc.
+-   **Setup**: Get API key from [OpenRouter](https://openrouter.ai/keys)
+-   **Flexibility**: Choose any model supported by OpenRouter
 
 ### OpenAI
 
-- **Cost**: Paid (per token)
-- **Quality**: Industry leading models (GPT-4o)
-- **Setup**: Get API key from [OpenAI Platform](https://platform.openai.com/api-keys)
+-   **Cost**: Paid (per token)
+-   **Quality**: Industry leading models (GPT-4o)
+-   **Setup**: Get API key from [OpenAI Platform](https://platform.openai.com/api-keys)
 
 ### Anthropic
 
-- **Cost**: Paid (per token)
-- **Quality**: High reasoning capabilities (Claude 3.5 Sonnet)
-- **Setup**: Get API key from [Anthropic Console](https://console.anthropic.com/settings/keys)
+-   **Cost**: Paid (per token)
+-   **Quality**: High reasoning capabilities (Claude 3.5 Sonnet)
+-   **Setup**: Get API key from [Anthropic Console](https://console.anthropic.com/settings/keys)
 
 ### Editor Built-in AI (GitHub Copilot)
 
-- **Cost**: Included with Copilot subscription
-- **Quality**: Good commit messages, uses existing code context
-- **Setup**: Requires Copilot extension and authentication
-- **Integration**: Seamlessly works with VS Code
+-   **Cost**: Included with Copilot subscription
+-   **Quality**: Good commit messages, uses existing code context
+-   **Setup**: Requires Copilot extension and authentication
+-   **Integration**: Seamlessly works with VS Code
 
 ## 🔢 Multi-Language Version Bumping
 
@@ -203,33 +201,33 @@ The extension **automatically detects and updates version numbers across multipl
 
 **Node.js/JavaScript:**
 
-- `package.json` - Main package manifest
-- `package-lock.json` - npm lock file
-- `pnpm-lock.yaml` - pnpm lock file
-- `yarn.lock` - Yarn lock file
-- `wxt.config.ts` / `wxt.config.js` - WXT configuration
+-   `package.json` - Main package manifest
+-   `package-lock.json` - npm lock file
+-   `pnpm-lock.yaml` - pnpm lock file
+-   `yarn.lock` - Yarn lock file
+-   `wxt.config.ts` / `wxt.config.js` - WXT configuration
 
 **Python:**
 
-- `pyproject.toml` - Modern Python projects
-- `setup.py` - Traditional Python setup
+-   `pyproject.toml` - Modern Python projects
+-   `setup.py` - Traditional Python setup
 
 **Java:**
 
-- `build.gradle` - Gradle projects
-- `pom.xml` - Maven projects
+-   `build.gradle` - Gradle projects
+-   `pom.xml` - Maven projects
 
 **Other Languages:**
 
-- `Cargo.toml` - Rust projects
-- `composer.json` - PHP projects
-- `project.clj` - Clojure projects
-- `*.csproj` - .NET projects
+-   `Cargo.toml` - Rust projects
+-   `composer.json` - PHP projects
+-   `project.clj` - Clojure projects
+-   `*.csproj` - .NET projects
 
 **Generic:**
 
-- `version.txt` - Plain text version files
-- `VERSION` - Standard version file
+-   `version.txt` - Plain text version files
+-   `VERSION` - Standard version file
 
 ### How It Works
 
@@ -244,21 +242,21 @@ The extension **automatically detects and updates version numbers across multipl
 
 **No Commits Happening:**
 
-- Check that you have actual code changes (not just config files)
-- Verify your AI provider is configured correctly
-- Ensure the minimum commit delay hasn't just reset
+-   Check that you have actual code changes (not just config files)
+-   Verify your AI provider is configured correctly
+-   Ensure the minimum commit delay hasn't just reset
 
 **Too Many/Few Commits:**
 
-- Adjust `inactivityDelay` for responsiveness vs. interruptions
-- Adjust `minCommitDelay` for commit frequency
-- Add more patterns to `ignoredFilePatterns` if needed
+-   Adjust `inactivityDelay` for responsiveness vs. interruptions
+-   Adjust `minCommitDelay` for commit frequency
+-   Add more patterns to `ignoredFilePatterns` if needed
 
 **AI Generation Issues:**
 
-- For Gemini: Verify your API key is valid and has quota
-- For Copilot: Ensure you're authenticated and have an active subscription
-- The system includes automatic retry with backoff for transient failures
+-   For Gemini: Verify your API key is valid and has quota
+-   For Copilot: Ensure you're authenticated and have an active subscription
+-   The system includes automatic retry with backoff for transient failures
 
 ## 🤝 Contributing
 

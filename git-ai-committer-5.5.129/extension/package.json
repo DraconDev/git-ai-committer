@@ -1,0 +1,243 @@
+{
+    "name": "git-ai-committer",
+    "displayName": "Git AI Auto Committer",
+    "description": "Automatically generates commit messages and commits changes using AI",
+    "version": "5.5.129",
+    "publisher": "devdrac",
+    "icon": "media/logo.png",
+    "galleryBanner": {
+        "color": "#1E1E1E",
+        "theme": "dark"
+    },
+    "engines": {
+        "vscode": "^1.96.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DraconDev/git-ai-committer"
+    },
+    "categories": [
+        "Other",
+        "AI"
+    ],
+    "activationEvents": [
+        "workspaceContains:.git"
+    ],
+    "main": "./dist/extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "git-ai-committer.commitNow",
+                "title": "Git AI Committer: Commit Now"
+            },
+            {
+                "command": "git-ai-committer.openSettings",
+                "title": "Git AI Committer: Open Settings"
+            },
+            {
+                "command": "git-ai-committer.createFeatureSummary",
+                "title": "Git AI: Summarize Recent Work"
+            }
+        ],
+        "configuration": {
+            "title": "Git AI Committer",
+            "properties": {
+                "gitAiCommitter.preferredAIProvider": {
+                    "type": "string",
+                    "enum": [
+                        "copilot",
+                        "gemini",
+                        "openRouter",
+                        "openai",
+                        "anthropic"
+                    ],
+                    "default": "",
+                    "markdownDescription": "🤖 **Primary AI Provider**\\n\\nSelect which AI to use for generating commit messages. Configure API keys below.",
+                    "enumDescriptions": [
+                        "GitHub Copilot (built-in, no API key needed)",
+                        "Google Gemini (free tier available)",
+                        "OpenRouter (access to many models)",
+                        "OpenAI GPT-4 (paid)",
+                        "Anthropic Claude (paid)"
+                    ],
+                    "order": 1
+                },
+                "gitAiCommitter.backupProvider1": {
+                    "type": "string",
+                    "enum": [
+                        "copilot",
+                        "gemini",
+                        "openRouter",
+                        "openai",
+                        "anthropic",
+                        "none"
+                    ],
+                    "default": "none",
+                    "markdownDescription": "🔄 **Backup Provider #1**\\n\\nUsed if the primary provider fails.",
+                    "order": 2
+                },
+                "gitAiCommitter.backupProvider2": {
+                    "type": "string",
+                    "enum": [
+                        "copilot",
+                        "gemini",
+                        "openRouter",
+                        "openai",
+                        "anthropic",
+                        "none"
+                    ],
+                    "default": "none",
+                    "markdownDescription": "🔄 **Backup Provider #2**\\n\\nUsed if both primary and backup #1 fail.",
+                    "order": 3
+                },
+                "gitAiCommitter.geminiApiKey": {
+                    "type": "string",
+                    "default": "",
+                    "markdownDescription": "🔑 **Gemini API Key**\\n\\nGet your free key at [Google AI Studio](https://aistudio.google.com/apikey)",
+                    "order": 10
+                },
+                "gitAiCommitter.geminiModel": {
+                    "type": "string",
+                    "default": "gemini-flash-lite-latest",
+                    "markdownDescription": "📦 **Gemini Model**\\n\\nDefault: `gemini-flash-lite-latest`",
+                    "order": 11
+                },
+                "gitAiCommitter.openRouterApiKey": {
+                    "type": "string",
+                    "default": "",
+                    "markdownDescription": "🔑 **OpenRouter API Key**\\n\\nGet your key at [OpenRouter](https://openrouter.ai/keys)",
+                    "order": 12
+                },
+                "gitAiCommitter.openRouterModel": {
+                    "type": "string",
+                    "default": "google/gemini-2.0-flash-lite-preview-02-05:free",
+                    "markdownDescription": "📦 **OpenRouter Model**\\n\\nDefault: `google/gemini-2.0-flash-lite-preview-02-05:free` (free)",
+                    "order": 13
+                },
+                "gitAiCommitter.openaiApiKey": {
+                    "type": "string",
+                    "default": "",
+                    "markdownDescription": "🔑 **OpenAI API Key**\\n\\nGet your key at [OpenAI Platform](https://platform.openai.com/api-keys)",
+                    "order": 14
+                },
+                "gitAiCommitter.openaiModel": {
+                    "type": "string",
+                    "default": "gpt-4o",
+                    "markdownDescription": "📦 **OpenAI Model**\\n\\nDefault: `gpt-4o`",
+                    "order": 15
+                },
+                "gitAiCommitter.anthropicApiKey": {
+                    "type": "string",
+                    "default": "",
+                    "markdownDescription": "🔑 **Anthropic API Key**\\n\\nGet your key at [Anthropic Console](https://console.anthropic.com/settings/keys)",
+                    "order": 16
+                },
+                "gitAiCommitter.anthropicModel": {
+                    "type": "string",
+                    "default": "claude-3-5-sonnet-20240620",
+                    "markdownDescription": "📦 **Anthropic Model**\\n\\nDefault: `claude-3-5-sonnet-20240620`",
+                    "order": 17
+                },
+                "gitAiCommitter.inactivityDelay": {
+                    "type": "number",
+                    "default": 5,
+                    "minimum": 1,
+                    "maximum": 300,
+                    "markdownDescription": "⏱️ **Inactivity Delay** (seconds)\\n\\nHow long to wait after you stop typing before triggering an auto-commit check.",
+                    "order": 20
+                },
+                "gitAiCommitter.minCommitDelay": {
+                    "type": "number",
+                    "default": 15,
+                    "minimum": 5,
+                    "maximum": 300,
+                    "markdownDescription": "⏱️ **Minimum Commit Interval** (seconds)\\n\\nMinimum time between commits to prevent spamming.",
+                    "order": 21
+                },
+                "gitAiCommitter.versionBumpingEnabled": {
+                    "type": "boolean",
+                    "default": false,
+                    "markdownDescription": "📈 **Auto Version Bump**\\n\\nAutomatically increment the patch version in `package.json` on each commit.",
+                    "order": 30
+                },
+                "gitAiCommitter.ignoredFilePatterns": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": [
+                        "*.tmp",
+                        "*.temp",
+                        "*.log",
+                        "*.cache",
+                        "*.dll",
+                        "*.exe",
+                        "*.env",
+                        ".vscode/**",
+                        ".idea/**",
+                        ".vs/**",
+                        "node_modules/**",
+                        ".git/**",
+                        "dist/**",
+                        "build/**",
+                        "*.swp",
+                        "*.swo",
+                        ".DS_Store",
+                        "Thumbs.db"
+                    ],
+                    "markdownDescription": "🚫 **Ignored File Patterns**\\n\\nGlob patterns for files to exclude from auto-commits. These are automatically added to `.gitignore`.",
+                    "order": 40
+                },
+                "gitAiCommitter.gitattributesFilePatterns": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": [],
+                    "markdownDescription": "📄 **Gitattributes Patterns**\\n\\nPatterns to add to `.gitattributes` for special handling (e.g., encrypted files with git-crypt).",
+                    "order": 41
+                },
+                "gitAiCommitter.smartGitignore": {
+                    "type": "boolean",
+                    "default": false,
+                    "markdownDescription": "🧠 **Smart Gitignore**\\n\\nForce-add files in `.gitattributes` even if they're in `.gitignore` (useful for encrypted secrets).",
+                    "order": 42
+                }
+            }
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run package",
+        "compile": "npm run check-types && npm run lint && node esbuild.js",
+        "watch": "npm-run-all -p watch:*",
+        "watch:esbuild": "node esbuild.js --watch",
+        "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+        "package": "npm run check-types && npm run lint && node esbuild.js --production",
+        "compile-tests": "tsc -p . --outDir out",
+        "watch-tests": "tsc -p . -w --outDir out",
+        "pretest": "npm run compile-tests && npm run compile && npm run lint",
+        "check-types": "tsc --noEmit",
+        "lint": "eslint src",
+        "test": "vscode-test"
+    },
+    "dependencies": {
+        "@google/generative-ai": "^0.21.0",
+        "simple-git": "^3.22.0"
+    },
+    "devDependencies": {
+        "@types/mocha": "^10.0.10",
+        "@types/node": "20.x",
+        "@types/vscode": "^1.96.0",
+        "@typescript-eslint/eslint-plugin": "^8.17.0",
+        "@typescript-eslint/parser": "^8.17.0",
+        "@vscode/test-cli": "^0.0.10",
+        "@vscode/test-electron": "^2.4.1",
+        "esbuild": "^0.27.0",
+        "eslint": "^9.16.0",
+        "npm-run-all": "^4.1.5",
+        "typescript": "^5.7.2"
+    },
+    "author": {
+        "name": "DraconDev"
+    }
+}

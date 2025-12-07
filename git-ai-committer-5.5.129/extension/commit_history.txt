@@ -1,0 +1,176 @@
+Commits on Nov 28, 2025
+docs: Update recommended starting task and progress notes
+DraconDev
+DraconDev
+committed
+13 hours ago
+docs(tasks): Update status reflecting audio integration completion
+DraconDev
+DraconDev
+committed
+13 hours ago
+feat: Remove generated code counter report files Removes .vscode/code-counter/code-counter.db and the HTML report file from the project, as they are generated artifacts.
+DraconDev
+DraconDev
+committed
+18 hours ago
+feat: update 2 files (.vscode/code-counter/reports/code-counter-report.html, src/systems/weapon_system.rs) at 05:49
+DraconDev
+DraconDev
+committed
+yesterday
+feat: update 2 files (.vscode/code-counter/reports/code-counter-report.html, src/systems/weapon_system.rs) at 05:49
+DraconDev
+DraconDev
+committed
+yesterday
+fix(deps): Update Tabulator dependencies and adjust weapon system imports The HTML report file was updated with new dependencies/versions for Tabulator tables, suggesting a general update or cleanu…
+DraconDev
+DraconDev
+committed
+yesterday
+feat: update 2 files (.vscode/code-counter/reports/code-counter-report.html, src/systems/enemy_ai.rs) at 05:47
+DraconDev
+DraconDev
+committed
+yesterday
+feat: update 2 files (.vscode/code-counter/reports/code-counter-report.html, src/systems/enemy_ai.rs) at 05:46
+DraconDev
+DraconDev
+committed
+yesterday
+feat(menu): Implement full game menu system
+DraconDev
+DraconDev
+committed
+yesterday
+fix(core): Add AppState read to menu_input system The menu_input system in src/plugins/core.rs was missing the Res<State<AppState>> resource, which is needed to check the current application …
+DraconDev
+DraconDev
+committed
+yesterday
+fix(menu): Add Back to Menu action and escape handling in settings
+DraconDev
+DraconDev
+committed
+yesterday
+fix(core): Pass commands by value in state_transition The spawn_settings_menu function in src/plugins/core.rs was being called with &mut commands, but it expects commands by value. This com…
+DraconDev
+DraconDev
+committed
+yesterday
+feat(core): Implement settings menu spawning in core plugin Adds logic to src/plugins/core.rs to spawn the settings menu UI elements when transitioning to AppState::Settings.
+DraconDev
+DraconDev
+committed
+yesterday
+fix(core): Improve formatting and add settings transition in menu system This commit cleans up formatting (removing unnecessary blank lines/trailing whitespace) and implements the logic to transiti…
+DraconDev
+DraconDev
+committed
+yesterday
+refactor(tasks): Improve readability and mark audio tasks complete This commit adds newlines for better spacing in task lists, updates the estimated timeline table for cleaner formatting, and marks…
+DraconDev
+DraconDev
+committed
+yesterday
+fix(report): Update report generation date/time The generated HTML report file (code-counter-report.html) shows updated timestamps, indicating a regeneration or update of the embedded data, thoug…
+DraconDev
+DraconDev
+committed
+yesterday
+fix(report): Update code counter report HTML structure The commit updates the generated HTML report file (code-counter-report.html) to reflect changes made in the underlying tooling, likely invol…
+DraconDev
+DraconDev
+committed
+yesterday
+feat: update 2 files (.vscode/code-counter/reports/code-counter-report.html, src/systems/weapon_system.rs) at 05:00
+DraconDev
+DraconDev
+committed
+yesterday
+feat(audio): Add placeholder calls for weapon and overdrive sound effects This commit adds commented-out function calls in kinetic_system.rs and weapon_system.rs to pre-emptively reserve spots …
+DraconDev
+DraconDev
+committed
+yesterday
+feat: update 2 files (.vscode/code-counter/reports/code-counter-report.html, src/systems/kinetic_system.rs) at 04:59
+DraconDev
+DraconDev
+committed
+yesterday
+fix(deps): Bump synth-reaper version to 0.2.16 and update kinetic system imports This commit bumps the crate version in Cargo.lock to 0.2.16 and cleans up imports in kinetic_system.rs by movi…
+DraconDev
+DraconDev
+committed
+yesterday
+feat(deps): Upgrade synth-reaper to v0.2.15 and adjust audio volume handling The version of synth-reaper in Cargo.lock was updated to 0.2.15. In audio_system.rs, the volume setting for one-…
+DraconDev
+DraconDev
+committed
+yesterday
+feat(deps): Update synth-reaper version and add sound effect playback functions Updated Cargo.lock version for synth-reaper and introduced new public functions in src/systems/audio_system.rs …
+DraconDev
+DraconDev
+committed
+yesterday
+feat(version): Bump to 0.2.13 and add AudioPool resource This commit bumps the package version in Cargo.lock to 0.2.13 and introduces the AudioPool resource by adding it to the AudioSystem …
+DraconDev
+DraconDev
+committed
+yesterday
+feat(audio): Implement AudioPool for sound effect variation and dynamic music Introduces AudioPool resource to manage and cycle through variations of sound effects (weapon fire, enemy death, UI c…
+DraconDev
+DraconDev
+committed
+yesterday
+feat(audio): Refactor music track management in AudioSystem Removed MusicTrackManager::tracks_by_level and hardcoded track filenames, centralizing aggression level determination and track loading…
+DraconDev
+DraconDev
+committed
+yesterday
+feat(audio): Add dynamic music system with aggression levels Implements the core logic for dynamic music changes based on in-game intensity, introducing AggressionLevel and MusicTrackManager. A…
+DraconDev
+DraconDev
+committed
+yesterday
+feat(audio): Introduce dynamic music management and audio transition fading Added MusicTrackManager resource and systems (manage_dynamic_music, fade_audio_transitions) to handle dynamic music…
+DraconDev
+DraconDev
+committed
+yesterday
+chore(deps): Update synth-reaper to v0.2.8
+DraconDev
+DraconDev
+committed
+yesterday
+fix(deps): Upgrade synth-reaper to 0.2.7 Upgraded synth-reaper dependency version in Cargo.lock and updated instructions markdown.
+DraconDev
+DraconDev
+committed
+yesterday
+feat(deps): bump synth-reaper to 0.2.6 and clarify instructions or simply: feat(deps): update synth-reaper and clarify game loop instructions
+DraconDev
+DraconDev
+committed
+yesterday
+feat(deps): Update synth-reaper to 0.2.5 and clarify game mechanics
+DraconDev
+DraconDev
+committed
+yesterday
+chore(deps): Update synth-reaper to v0.2.4
+DraconDev
+DraconDev
+committed
+yesterday
+feat(deps): Update synth-reaper to 0.2.3 and add game flow mechanics or, focusing on the dependency update as the main structural change: chore(deps): Bump synth-reaper to 0.2.3 Given the dual natu…
+DraconDev
+DraconDev
+committed
+yesterday
+feat: update 2 files (Cargo.lock, instructions.md) at 00:33
+DraconDev
+DraconDev
+committed
+yesterday
