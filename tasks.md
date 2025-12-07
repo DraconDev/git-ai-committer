@@ -1,1 +1,2 @@
 - support workspaces
+- update ai logic, we gen a message based on the diff then we update the version, 
