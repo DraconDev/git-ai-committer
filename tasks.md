@@ -1,2 +1,2 @@
+- update ai logic, we gen a message based on the diff then we update the version, and finally we commit once we have the message
 - support workspaces
-- update ai logic, we gen a message based on the diff then we update the version, 
