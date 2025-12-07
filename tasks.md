@@ -1,1 +1,1 @@
-- support works spaces
+- support workspaces
