@@ -4,13 +4,10 @@ import { generateCommitMessageWithFailover } from "../ai/aiFailover";
 import { getPreferredAIProvider } from "../ai/aiService";
 import { git } from "../extension";
 import {
-    amendCommit, // Added
     commitChanges,
-    getGitDiff,
     pushChanges,
     stageAllChanges,
 } from "../git/gitOperations";
-import { versionService } from "../version/versionCoreService";
 import { updateVersion } from "../version/versionService";
 
 export class CommitService {
@@ -52,26 +49,28 @@ export class CommitService {
                 return;
             }
 
-            // 3. Bump version BEFORE getting diff (version bump happens on ALL commits)
-            // Safety check: Don't bump version if the ONLY changes are to version files/lock files
-            // This prevents infinite loops where a lockfile update triggers another bump
-            const allChangedFiles = [
-                ...reCheckStatus.modified,
-                ...reCheckStatus.staged,
-                ...reCheckStatus.created,
-                ...reCheckStatus.renamed.map((f) => f.to),
-                ...reCheckStatus.not_added,
-            ];
-
-            const onlyVersionFiles =
-                allChangedFiles.length > 0 &&
-                allChangedFiles.every(
-                    (file) =>
-                        versionService.isVersionFile(file) ||
-                        file.endsWith(".gitignore") ||
-                        file.endsWith(".gitattributes")
+            // 6. Generate AI message synchronously
+            // We get the provider first
+            const provider = await getPreferredAIProvider();
+            let commitMessage: string | null = null;
+            if (provider) {
+                commitMessage = await generateCommitMessageWithFailover(
+                    currentDiff,
+                    provider
                 );
+            }
 
+            if (!commitMessage) {
+                // If generation fails (or no provider), we can fall back to a default message
+                // or abort? The user requested "no empty version bump commits".
+                // If we abort here, the user needs to know why.
+                commitMessage = `Updates: ${new Date().toISOString()}`; // Fallback
+                vscode.window.showWarningMessage(
+                    "AI generation failed, using timestamp as commit message."
+                );
+            }
+
+            // 7. Bump version AFTER generating message (so it's not in the diff for AI)
             let versionUpdateResult: string | false | null = null;
             if (!this.versionBumpInProgress && !this.versionBumpCompleted) {
                 if (onlyVersionFiles) {
@@ -90,79 +89,32 @@ export class CommitService {
                         return;
                     }
 
-                    // Stabilization Delay: Wait for build tools (like rust-analyzer) to update lockfiles
-                    // This prevents "Echo" commits where lockfiles change immediately after we commit
+                    // Stabilization Delay
                     await new Promise((resolve) => setTimeout(resolve, 2000));
-
                     this.versionBumpCompleted = true;
                 }
             }
 
-            // 4. Stage ALL changes (including version files if bumped)
-            const stagedAll = await stageAllChanges();
-            if (!stagedAll) {
-                vscode.window.showErrorMessage("Failed to stage changes");
-                this.versionBumpInProgress = false;
-                this.versionBumpCompleted = false;
-                return;
-            }
-
-            // 4b. Force add files present in .gitattributes IF smartGitignore is enabled
-            // This ensures files like .env are staged even if they are in .gitignore (e.g. for git-seal)
-            const config = vscode.workspace.getConfiguration("gitAiCommitter");
-            const smartGitignore = config.get<boolean>("smartGitignore", false);
-
-            // Only perform force-add if the user has enabled smart handling
-            if (smartGitignore) {
-                try {
-                    const attributedPatterns =
-                        await this.getPatternsFromGitattributes();
-                    if (attributedPatterns.length > 0) {
-                        // We use force: true to override .gitignore
-                        // simple-git add() might not accept options object in all versions, so we use raw()
-                        await git.raw([
-                            "add",
-                            "--force",
-                            "--",
-                            ...attributedPatterns,
-                        ]);
-                    }
-                } catch (error) {
-                    console.log(
-                        "Note: Force adding attributed files dealt with strict pathspec or missing files."
-                    );
-                }
-            }
-
-            // 5. Get diff AFTER staging (includes version changes if any)
-            const currentDiff = await getGitDiff();
-            if (!currentDiff) {
-                return;
-            }
-
-            // 6. IMMEDIATE ACTION: Commit with placeholder and push to save work
-            // This ensures code is safe on remote immediately
-            const placeholderMessage =
-                "Work in progress... (AI generating summary)";
-            const commitSuccess = await commitChanges(placeholderMessage);
-
-            if (!commitSuccess) {
-                // If immediate commit fails, we stop here (likely no changes or git error)
-                return;
-            }
-
-            // Push immediate commit
-            await pushChanges(); // Normal push
-
-            // 7. BACKGROUND ACTION: Generate AI message and amend
-            // We don't await this part so the main flow returns quickly
-            // The AI generation happens in background
-            this.generateAndAmendInBackground(currentDiff).catch((err) => {
-                console.error("Background message generation failed:", err);
-                vscode.window.showWarningMessage(
-                    "Failed to update commit message with AI summary. Check console for details."
+            // 8. Stage ALL changes AGAIN (to include the new version bump)
+            const stageAgain = await stageAllChanges();
+            if (!stageAgain) {
+                vscode.window.showErrorMessage(
+                    "Failed to stage changes after version bump"
                 );
-            });
+                return;
+            }
+
+            // 9. Commit & Push
+            const commitSuccess = await commitChanges(commitMessage);
+            if (!commitSuccess) {
+                return;
+            }
+
+            await pushChanges();
+            vscode.window.setStatusBarMessage(
+                "Changes committed and pushed.",
+                5000
+            );
         } catch (error: any) {
             if (error.message === "No changes to commit") {
                 this.versionBumpInProgress = false; // Reset flag on error
@@ -176,52 +128,6 @@ export class CommitService {
             // Always reset version bump flags after commit attempt
             this.versionBumpInProgress = false;
             this.versionBumpCompleted = false;
-        }
-    }
-
-    // New method to handle the background AI generation and amend process
-    private async generateAndAmendInBackground(diff: string) {
-        try {
-            // 1. Generate commit message from staged changes using failover system
-            const provider = await getPreferredAIProvider();
-
-            if (!provider) {
-                // If no provider, we just leave the placeholder message
-                return;
-            }
-
-            // This might take a few seconds
-            let commitMessage = await generateCommitMessageWithFailover(
-                diff,
-                provider
-            );
-
-            if (!commitMessage) {
-                // Message generation failed after all attempts - leave placeholder
-                return;
-            }
-
-            // 2. Amend the previous commit
-            // This replaces the "Work in progress..." commit with the real message
-            // AND includes any files that might have been modified since the initial commit
-            // (though we should be careful about that? No, amend usually stages what's in the index,
-            // but we want to just update the message really. current implementation of amendCommit uses git commit --amend.
-            // If the user modified files *after* the initial commit but didn't stage them, they won't be included.
-            // If they staged them, they will be included in the amended commit. This is acceptable behavior for "Autosave".)
-            const amendSuccess = await amendCommit(commitMessage);
-
-            if (amendSuccess) {
-                // 3. Force push (with lease) to update remote
-                // We must force push because we rewrote history (amended the last commit)
-                await pushChanges(true);
-                vscode.window.setStatusBarMessage(
-                    "AI Commit Message Updated",
-                    5000
-                );
-            }
-        } catch (error) {
-            console.error("Error in background amend:", error);
-            throw error;
         }
     }
 
