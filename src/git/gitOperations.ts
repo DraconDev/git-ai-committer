@@ -43,8 +43,33 @@ export async function commitChanges(message: string): Promise<boolean> {
         await git.commit(message);
         return true;
     } catch (error) {
+        // If commit fails because there are no changes, just return false silently
+        // This can happen if we race condition with other tools
+        if (
+            error instanceof Error &&
+            error.message.includes("nothing to commit")
+        ) {
+            return false;
+        }
+
         vscode.window.showErrorMessage(
             `Failed to commit changes: ${
+                error instanceof Error ? error.message : "Unknown error"
+            }`
+        );
+        return false;
+    }
+}
+
+export async function amendCommit(message: string): Promise<boolean> {
+    try {
+        // --amend replaces the last commit with the staged changes and new message
+        // --no-edit would keep the old message, but we want to update it
+        await git.commit(message, { "--amend": null });
+        return true;
+    } catch (error) {
+        vscode.window.showErrorMessage(
+            `Failed to amend commit: ${
                 error instanceof Error ? error.message : "Unknown error"
             }`
         );
@@ -62,9 +87,10 @@ export async function commitReset(): Promise<void> {
     }
 }
 
-export async function pushChanges() {
+export async function pushChanges(force: boolean = false) {
     try {
-        await git.push();
+        const options = force ? ["--force-with-lease"] : [];
+        await git.push(options);
     } catch (error: any) {
         if (error.message && error.message.includes("no upstream branch")) {
             try {
@@ -76,7 +102,12 @@ export async function pushChanges() {
                     vscode.window.showInformationMessage(
                         `Setting upstream for branch '${currentBranch}' and pushing...`
                     );
-                    await git.push(["--set-upstream", "origin", currentBranch]);
+                    await git.push([
+                        "--set-upstream",
+                        "origin",
+                        currentBranch,
+                        ...options,
+                    ]);
                     return;
                 }
             } catch (innerError) {
