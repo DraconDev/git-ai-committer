@@ -56,7 +56,7 @@ export async function generateGeminiMessage(
         if (!model || modelOverride) {
             const apiKey = getApiKey();
             if (!apiKey) {
-                vscode.window.showErrorMessage("Gemini API key not configured");
+                // Don't show error - let failover handle it
                 return null;
             }
             initializeModel(apiKey, modelOverride);
@@ -100,9 +100,7 @@ export async function generateGeminiMessage(
             stack: error.stack,
             errorType: error.constructor.name,
         });
-        vscode.window.showErrorMessage(
-            `Failed to generate commit message: ${error.message}`
-        );
+        // Don't show error here - let failover system handle final user notification
         return null;
     }
 }
