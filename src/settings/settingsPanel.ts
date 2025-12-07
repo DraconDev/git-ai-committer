@@ -77,7 +77,7 @@ export async function showSettingsMenu() {
         placeHolder: "Select a category to configure",
     });
 
-    if (!selection) return;
+    if (!selection) {return;}
 
     switch (selection.label) {
         case "$(key) API Keys & Models":
@@ -152,7 +152,7 @@ async function showApiKeysMenu() {
         placeHolder: "Select a provider to configure",
     });
 
-    if (!selection || selection.label === "$(arrow-left) Back") return;
+    if (!selection || selection.label === "$(arrow-left) Back") {return;}
 
     switch (selection.label) {
         case "$(sparkle) Google Gemini":
@@ -219,7 +219,7 @@ async function configureProvider(
         placeHolder: "What would you like to configure?",
     });
 
-    if (!selection) return;
+    if (!selection) {return;}
 
     if (selection.label === "$(key) Set API Key") {
         const newKey = await vscode.window.showInputBox({
@@ -272,7 +272,7 @@ async function showProviderPriorityMenu() {
         placeHolder: "Configure failover order",
     });
 
-    if (!selection || selection.label === "$(arrow-left) Back") return;
+    if (!selection || selection.label === "$(arrow-left) Back") {return;}
 
     if (selection.label === "$(star-full) Primary Provider") {
         await selectProvider(
@@ -344,7 +344,7 @@ async function showTimingMenu() {
         placeHolder: "Configure timing",
     });
 
-    if (!selection || selection.label === "$(arrow-left) Back") return;
+    if (!selection || selection.label === "$(arrow-left) Back") {return;}
 
     if (selection.label === "$(watch) Inactivity Delay") {
         await setNumberSetting(
@@ -427,7 +427,7 @@ async function showPatternsEditor(configKey: string, title: string) {
         placeHolder: `${patterns.length} patterns configured`,
     });
 
-    if (!selection || selection.label === "$(arrow-left) Back") return;
+    if (!selection || selection.label === "$(arrow-left) Back") {return;}
 
     if (selection.label === "$(add) Add Pattern") {
         const newPattern = await vscode.window.showInputBox({
