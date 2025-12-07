@@ -5,6 +5,7 @@ import { getPreferredAIProvider } from "../ai/aiService";
 import { generateGeminiMessage } from "../ai/geminiService";
 import { git } from "../extension";
 import {
+    amendCommit, // Added
     commitChanges,
     getGitDiff,
     pushChanges,
@@ -191,30 +192,30 @@ export class CommitService {
                 return;
             }
 
-            // 6. Generate commit message from staged changes using failover system
-            const provider = await getPreferredAIProvider();
+            // 6. IMMEDIATE ACTION: Commit with placeholder and push to save work
+            // This ensures code is safe on remote immediately
+            const placeholderMessage =
+                "Work in progress... (AI generating summary)";
+            const commitSuccess = await commitChanges(placeholderMessage);
 
-            if (!provider) {
-                vscode.window.showErrorMessage("No AI provider selected");
+            if (!commitSuccess) {
+                // If immediate commit fails, we stop here (likely no changes or git error)
                 return;
             }
 
-            let commitMessage = await generateCommitMessageWithFailover(
-                currentDiff,
-                provider
-            );
+            // Push immediate commit
+            await pushChanges(); // Normal push
+            this.lastCommitAttemptTime = 0; // Reset failure state on successful push
 
-            if (!commitMessage) {
-                // Message generation failed after all attempts - don't commit
-                return;
-            }
-
-            // 7. Commit all and push
-            const commitSuccess = await commitChanges(commitMessage);
-            if (commitSuccess) {
-                await pushChanges();
-                this.lastCommitAttemptTime = 0; // Reset failure state
-            }
+            // 7. BACKGROUND ACTION: Generate AI message and amend
+            // We don't await this part so the main flow returns quickly
+            // The AI generation happens in background
+            this.generateAndAmendInBackground(currentDiff).catch((err) => {
+                console.error("Background message generation failed:", err);
+                vscode.window.showWarningMessage(
+                    "Failed to update commit message with AI summary. Check console for details."
+                );
+            });
         } catch (error: any) {
             if (error.message === "No changes to commit") {
                 this.versionBumpInProgress = false; // Reset flag on error
@@ -228,6 +229,52 @@ export class CommitService {
             // Always reset version bump flags after commit attempt
             this.versionBumpInProgress = false;
             this.versionBumpCompleted = false;
+        }
+    }
+
+    // New method to handle the background AI generation and amend process
+    private async generateAndAmendInBackground(diff: string) {
+        try {
+            // 1. Generate commit message from staged changes using failover system
+            const provider = await getPreferredAIProvider();
+
+            if (!provider) {
+                // If no provider, we just leave the placeholder message
+                return;
+            }
+
+            // This might take a few seconds
+            let commitMessage = await generateCommitMessageWithFailover(
+                diff,
+                provider
+            );
+
+            if (!commitMessage) {
+                // Message generation failed after all attempts - leave placeholder
+                return;
+            }
+
+            // 2. Amend the previous commit
+            // This replaces the "Work in progress..." commit with the real message
+            // AND includes any files that might have been modified since the initial commit
+            // (though we should be careful about that? No, amend usually stages what's in the index,
+            // but we want to just update the message really. current implementation of amendCommit uses git commit --amend.
+            // If the user modified files *after* the initial commit but didn't stage them, they won't be included.
+            // If they staged them, they will be included in the amended commit. This is acceptable behavior for "Autosave".)
+            const amendSuccess = await amendCommit(commitMessage);
+
+            if (amendSuccess) {
+                // 3. Force push (with lease) to update remote
+                // We must force push because we rewrote history (amended the last commit)
+                await pushChanges(true);
+                vscode.window.setStatusBarMessage(
+                    "AI Commit Message Updated",
+                    5000
+                );
+            }
+        } catch (error) {
+            console.error("Error in background amend:", error);
+            throw error;
         }
     }
 
