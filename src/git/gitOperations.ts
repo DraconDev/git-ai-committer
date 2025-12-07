@@ -88,8 +88,8 @@ export async function commitReset(): Promise<void> {
 }
 
 export async function pushChanges(force: boolean = false) {
+    const options = force ? ["--force-with-lease"] : [];
     try {
-        const options = force ? ["--force-with-lease"] : [];
         await git.push(options);
     } catch (error: any) {
         if (error.message && error.message.includes("no upstream branch")) {
