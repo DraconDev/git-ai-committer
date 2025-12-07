@@ -16,14 +16,11 @@ export class VersionService {
 
     private static readonly VERSION_FILES = [
         "package.json", // Node.js
-        "package-lock.json", // npm lock file
-        "pnpm-lock.yaml", // pnpm lock file
-        "yarn.lock", // Yarn lock file
+        "package-lock.json", // npm lock file (Supported)
         "pyproject.toml", // Python
         "build.gradle", // Gradle
         "pom.xml", // Maven
         "Cargo.toml", // Rust
-        "Cargo.lock", // Rust lock file
         "composer.json", // PHP
         "project.clj", // Clojure
         "*.csproj", // .NET
