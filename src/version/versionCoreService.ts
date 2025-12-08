@@ -1,6 +1,5 @@
 import * as fs from "fs";
 import * as path from "path";
-import * as vscode from "vscode";
 
 export class VersionService {
     private static instance: VersionService;
@@ -41,23 +40,29 @@ export class VersionService {
         });
     }
 
-    async detectVersionFiles(): Promise<string[]> {
-        const workspaceFolders = vscode.workspace.workspaceFolders;
-        if (!workspaceFolders) {
-            return [];
-        }
-
+    async detectVersionFiles(repoPath: string): Promise<string[]> {
         // Common version files across different ecosystems
         const versionFiles = VersionService.VERSION_FILES;
 
         const detectedFiles: string[] = [];
 
-        // Check for each version file in the workspace
+        // Check for each version file in the repo root
         for (const filePattern of versionFiles) {
             try {
-                const files = await vscode.workspace.findFiles(filePattern);
-                if (files.length > 0) {
-                    detectedFiles.push(path.basename(files[0].fsPath));
+                if (filePattern.startsWith("*.")) {
+                    // Start of rudimentary glob matching for extension
+                    const entries = fs.readdirSync(repoPath);
+                    const suffix = filePattern.slice(1);
+                    for (const entry of entries) {
+                        if (entry.endsWith(suffix)) {
+                            detectedFiles.push(entry);
+                        }
+                    }
+                } else {
+                    const filePath = path.join(repoPath, filePattern);
+                    if (fs.existsSync(filePath)) {
+                        detectedFiles.push(filePattern);
+                    }
                 }
             } catch (error) {
                 console.error(`Error searching for ${filePattern}:`, error);
@@ -66,17 +71,15 @@ export class VersionService {
         return detectedFiles;
     }
 
-    async getCurrentVersion(versionFile: string): Promise<string | null> {
-        const workspaceFolders = vscode.workspace.workspaceFolders;
-        if (!workspaceFolders) {
-            return null;
-        }
-
+    async getCurrentVersion(
+        repoPath: string,
+        versionFile: string
+    ): Promise<string | null> {
         try {
-            const filePath = path.join(
-                workspaceFolders[0].uri.fsPath,
-                versionFile
-            );
+            const filePath = path.join(repoPath, versionFile);
+            if (!fs.existsSync(filePath)) {
+                return null;
+            }
             const fileContent = fs.readFileSync(filePath, "utf8");
 
             // Handle different file types
@@ -159,20 +162,17 @@ export class VersionService {
         return /^\d+\.\d+\.\d+$/.test(version);
     }
 
-    async updateVersionFiles(newVersion: string): Promise<string[]> {
-        const workspaceFolders = vscode.workspace.workspaceFolders;
-        if (!workspaceFolders) {
-            return [];
-        }
-
+    async updateVersionFiles(
+        repoPath: string,
+        newVersion: string
+    ): Promise<string[]> {
         try {
-            const versionFiles = await this.detectVersionFiles();
+            const versionFiles = await this.detectVersionFiles(repoPath);
             const updatedFiles: string[] = [];
             for (const versionFile of versionFiles) {
-                const filePath = path.join(
-                    workspaceFolders[0].uri.fsPath,
-                    versionFile
-                );
+                const filePath = path.join(repoPath, versionFile);
+                if (!fs.existsSync(filePath)) continue;
+
                 const oldContent = fs.readFileSync(filePath, "utf8");
                 let fileContent = oldContent;
 
@@ -180,6 +180,7 @@ export class VersionService {
                 switch (path.extname(versionFile)) {
                     case ".json":
                         if (versionFile === "package-lock.json") {
+                            // ... existing logic ...
                             const json = JSON.parse(fileContent);
                             if (json.packages && json.packages[""]) {
                                 json.packages[""].version = newVersion;
