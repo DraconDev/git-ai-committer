@@ -335,17 +335,10 @@ export class CommitService {
     }
 
     public async updateGitattributes(
-        repoPath?: string,
-        git?: ReturnType<typeof simpleGit>
+        repoPath: string,
+        git: ReturnType<typeof simpleGit>
     ): Promise<void> {
         try {
-            // Use provided repoPath or fallback to first workspace folder
-            const targetPath =
-                repoPath || vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-            if (!targetPath) {
-                return;
-            }
-
             const config = vscode.workspace.getConfiguration("gitAiCommitter");
             const gitattributesPatterns = config.get<string[]>(
                 "gitattributesFilePatterns",
@@ -356,10 +349,7 @@ export class CommitService {
                 return;
             }
 
-            const gitattributesFilePath = path.join(
-                targetPath,
-                ".gitattributes"
-            );
+            const gitattributesFilePath = path.join(repoPath, ".gitattributes");
             const fs = require("fs").promises;
 
             let currentContent = "";
@@ -397,13 +387,7 @@ export class CommitService {
 
             await fs.writeFile(gitattributesFilePath, newContent);
 
-            if (git) {
-                try {
-                    await git.add(".gitattributes");
-                } catch (error) {
-                    // OK if not tracked
-                }
-            }
+            await git.add(".gitattributes");
         } catch (error) {
             console.error("Failed to update .gitattributes:", error);
         }
