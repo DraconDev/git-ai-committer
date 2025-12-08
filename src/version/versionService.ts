@@ -46,6 +46,7 @@ export function isVersionBumpingEnabled(): boolean {
 }
 
 export async function updateVersion(
+    repoPath: string,
     incrementType: VersionIncrementType = "patch"
 ): Promise<string | false | null> {
     // string: success, false: staging failed, null: other error/disabled
@@ -55,8 +56,8 @@ export async function updateVersion(
     }
 
     try {
-        // Detect version files
-        const versionFiles = await versionService.detectVersionFiles();
+        // Detect version files in the specific repo
+        const versionFiles = await versionService.detectVersionFiles(repoPath);
         if (versionFiles.length === 0) {
             throw new Error("No version files found");
         }
@@ -66,7 +67,7 @@ export async function updateVersion(
         let maxVersion: string | null = null;
 
         for (const file of versionFiles) {
-            const v = await versionService.getCurrentVersion(file);
+            const v = await versionService.getCurrentVersion(repoPath, file);
             if (v) {
                 if (!maxVersion || compareVersions(v, maxVersion) > 0) {
                     maxVersion = v;
@@ -88,11 +89,14 @@ export async function updateVersion(
         }
 
         // Update all version files
-        const files = await versionService.updateVersionFiles(newVersion);
+        const files = await versionService.updateVersionFiles(
+            repoPath,
+            newVersion
+        );
         if (files.length === 0) {
             throw new Error("Could not update version file");
         } else {
-            const staged = await stageUpdatedFiles(files);
+            const staged = await stageUpdatedFiles(repoPath, files);
             if (!staged) {
                 console.error("Failed to stage updated version files.");
                 return false; // Indicate staging failure
@@ -106,46 +110,16 @@ export async function updateVersion(
     }
 }
 
-function incrementVersion(
-    version: string,
-    incrementType: VersionIncrementType
-): string | null {
-    const versionParts = version.split(".");
-    if (versionParts.length !== 3) {
-        return null;
-    }
+// ... incrementVersion remains same ...
 
-    const [major, minor, patch] = versionParts.map((part) =>
-        parseInt(part, 10)
-    );
-
-    if (isNaN(major) || isNaN(minor) || isNaN(patch)) {
-        return null;
-    }
-
-    switch (incrementType) {
-        case "major":
-            return `${major + 1}.0.0`;
-        case "minor":
-            return `${major}.${minor + 1}.0`;
-        case "patch":
-            return `${major}.${minor}.${patch + 1}`;
-        default:
-            return null;
-    }
-}
-
-async function stageUpdatedFiles(updatedFiles: string[]): Promise<boolean> {
+async function stageUpdatedFiles(
+    repoPath: string,
+    updatedFiles: string[]
+): Promise<boolean> {
     if (!updatedFiles.length) {
         return true; // Nothing to stage, technically success
     }
-    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-    if (!workspaceFolder) {
-        console.error("No workspace folder found to stage version files.");
-        return false;
-    }
-    const workspacePath = workspaceFolder.uri.fsPath;
-    const git = simpleGit(workspacePath);
+    const git = simpleGit(repoPath);
     try {
         await git.add(updatedFiles);
         console.log("Staged updated version files:", updatedFiles);

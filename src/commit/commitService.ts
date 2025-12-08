@@ -112,7 +112,7 @@ export class CommitService {
             // 7. Bump version AFTER generating message (so it's not in the diff for AI)
             if (!this.versionBumpInProgress && !this.versionBumpCompleted) {
                 this.versionBumpInProgress = true;
-                const versionUpdateResult = await updateVersion();
+                const versionUpdateResult = await updateVersion(repoPath);
 
                 if (versionUpdateResult === false) {
                     vscode.window.showErrorMessage("Failed to update version");
