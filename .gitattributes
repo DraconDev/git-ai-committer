@@ -4,4 +4,4 @@
 # .env filter=git-seal diff=git-seal
 
 # Auto-committer gitattributes
-.env filter=git-seal diff=git-seal
+# .env filter=git-seal diff=git-seal
