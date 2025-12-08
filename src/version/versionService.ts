@@ -110,7 +110,34 @@ export async function updateVersion(
     }
 }
 
-// ... incrementVersion remains same ...
+function incrementVersion(
+    version: string,
+    incrementType: VersionIncrementType
+): string | null {
+    const versionParts = version.split(".");
+    if (versionParts.length !== 3) {
+        return null;
+    }
+
+    const [major, minor, patch] = versionParts.map((part) =>
+        parseInt(part, 10)
+    );
+
+    if (isNaN(major) || isNaN(minor) || isNaN(patch)) {
+        return null;
+    }
+
+    switch (incrementType) {
+        case "major":
+            return `${major + 1}.0.0`;
+        case "minor":
+            return `${major}.${minor + 1}.0`;
+        case "patch":
+            return `${major}.${minor}.${patch + 1}`;
+        default:
+            return null;
+    }
+}
 
 async function stageUpdatedFiles(
     repoPath: string,
