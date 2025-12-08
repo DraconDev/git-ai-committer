@@ -196,7 +196,16 @@ export class CommitService {
                     .map((line) => line.trim());
                 const patternsToAdd = ignoredPatterns.filter((pattern) => {
                     const cleanPattern = pattern.trim();
-                    if (patternsInGitattributes.includes(cleanPattern)) {
+                    // Check if this pattern is covered by gitattributes (either exact match or substring)
+                    // e.g. if config has "*.env" and attributes has ".env", we should NOT add "*.env" to gitignore
+                    if (
+                        patternsInGitattributes.some((attr) => {
+                            if (cleanPattern === attr) return true;
+                            if (attr.length > 1 && cleanPattern.includes(attr))
+                                return true;
+                            return false;
+                        })
+                    ) {
                         return false;
                     }
                     return (
