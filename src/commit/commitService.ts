@@ -200,9 +200,15 @@ export class CommitService {
                     // e.g. if config has "*.env" and attributes has ".env", we should NOT add "*.env" to gitignore
                     if (
                         patternsInGitattributes.some((attr) => {
-                            if (cleanPattern === attr) return true;
-                            if (attr.length > 1 && cleanPattern.includes(attr))
+                            if (cleanPattern === attr) {
                                 return true;
+                            }
+                            if (
+                                attr.length > 1 &&
+                                cleanPattern.includes(attr)
+                            ) {
+                                return true;
+                            }
                             return false;
                         })
                     ) {
