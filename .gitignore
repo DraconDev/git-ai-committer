@@ -35,3 +35,4 @@ reference/**
 # Auto-committer ignored files
 .vscode
 
+*.env
