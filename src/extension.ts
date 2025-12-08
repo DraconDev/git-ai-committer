@@ -164,9 +164,12 @@ export async function activate(context: vscode.ExtensionContext) {
             ) {
                 try {
                     // Update gitattributes immediately when patterns change
-                    await commitService.updateGitattributes();
+                    for (const repoPath of detectedRepoPaths) {
+                        const git = simpleGit(repoPath);
+                        await commitService.updateGitattributes(repoPath, git);
+                    }
                     vscode.window.showInformationMessage(
-                        "Git attributes patterns updated successfully!"
+                        "Git attributes patterns updated successfully for all repositories!"
                     );
                 } catch (error) {
                     console.error(
