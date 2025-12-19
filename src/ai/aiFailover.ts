@@ -168,7 +168,7 @@ function logAllFailures(attempts: FailoverAttempt[], startTime: number) {
     });
 }
 
-function showFailureDetails(attempts: FailoverAttempt[]) {
+export function showFailureDetails(attempts: FailoverAttempt[]) {
     const details = attempts
         .map((attempt, index) => {
             const modelInfo = attempt.model ? ` [${attempt.model}]` : "";

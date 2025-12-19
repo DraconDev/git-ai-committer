@@ -93,10 +93,26 @@ export class CommitService {
             const provider = await getPreferredAIProvider();
             let commitMessage: string | null = null;
             if (provider) {
-                commitMessage = await generateCommitMessageWithFailover(
+                const result = await generateCommitMessageWithFailover(
                     currentDiff,
                     provider
                 );
+                commitMessage = result.message;
+
+                if (!commitMessage && result.attempts.length > 0) {
+                    // Show clearer warning with option to view details
+                    const { showFailureDetails } = require("../ai/aiFailover");
+                    vscode.window
+                        .showWarningMessage(
+                            `AI generation failed (Quota/Error). Using timestamp.`,
+                            "View Details"
+                        )
+                        .then((selection) => {
+                            if (selection === "View Details") {
+                                showFailureDetails(result.attempts);
+                            }
+                        });
+                }
             }
 
             if (!commitMessage) {
