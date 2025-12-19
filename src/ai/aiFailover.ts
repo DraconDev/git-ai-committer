@@ -14,6 +14,11 @@ interface FailoverAttempt {
     error?: string;
 }
 
+export interface FailoverResult {
+    message: string | null;
+    attempts: FailoverAttempt[];
+}
+
 /**
  * Generates commit message with automatic AI provider failover
  * Only attempts failover if providers are explicitly configured
@@ -21,7 +26,7 @@ interface FailoverAttempt {
 export async function generateCommitMessageWithFailover(
     diff: string,
     primaryProvider: AIProvider | null
-): Promise<string | null> {
+): Promise<FailoverResult> {
     const attempts: FailoverAttempt[] = [];
     const startTime = Date.now();
 
@@ -30,7 +35,7 @@ export async function generateCommitMessageWithFailover(
         vscode.window.showErrorMessage(
             "No AI provider selected. Please configure an AI provider in settings to generate commit messages."
         );
-        return null;
+        return { message: null, attempts: [] };
     }
 
     // Get all configured provider configs (with models)
@@ -40,7 +45,7 @@ export async function generateCommitMessageWithFailover(
         vscode.window.showErrorMessage(
             "No AI provider selected. Please configure an AI provider in settings to generate commit messages."
         );
-        return null;
+        return { message: null, attempts: [] };
     }
 
     // Use simplified diff (first 50 lines) for all attempts to improve reliability
@@ -52,24 +57,15 @@ export async function generateCommitMessageWithFailover(
         if (message) {
             logSuccess(config.provider, attempts, startTime);
             // Silent failover - user doesn't need to know which provider was used
-            return message;
+            return { message, attempts };
         }
     }
 
     // All attempts failed
     logAllFailures(attempts, startTime);
-    vscode.window
-        .showWarningMessage(
-            `Failed to generate commit message after ${attempts.length} attempts. Skipping commit.`,
-            "View Details"
-        )
-        .then((selection) => {
-            if (selection === "View Details") {
-                showFailureDetails(attempts);
-            }
-        });
 
-    return null;
+    // Return failures so caller can handle UI
+    return { message: null, attempts };
 }
 
 function getProviderName(provider: AIProvider): string {
