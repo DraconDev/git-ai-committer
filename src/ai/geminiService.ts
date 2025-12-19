@@ -33,77 +33,66 @@ export async function generateGeminiMessage(
     diff: string,
     modelOverride?: string
 ): Promise<string | null> {
-    try {
-        // Validate input
-        if (typeof diff !== "string") {
-            throw new TypeError("diff must be a string");
-        }
-
-        // Check git status
-        const status = await git.status();
-        if (!status || typeof status !== "object") {
-            throw new Error("Invalid git status response");
-        }
-
-        if (
-            !status.modified.length &&
-            !status.not_added.length &&
-            !status.deleted.length
-        ) {
-            throw new Error("No changes to commit");
-        }
-
-        if (!model || modelOverride) {
-            const apiKey = getApiKey();
-            if (!apiKey) {
-                // Don't show error - let failover handle it
-                return null;
-            }
-            initializeModel(apiKey, modelOverride);
-        }
-
-        // Validate diff content
-        if (!diff || diff.trim() === "") {
-            throw new Error("No changes to commit");
-        }
-
-        // Generate prompt
-        const prompt = `Generate a concise commit message for the following git diff. Use conventional commit format (type(scope): description). Keep it short and descriptive. Focus on the code changes. Do not mention version bumps or lockfile updates unless they are the ONLY changes. If you must mention them, put them at the very end. Do not include any other text, explanation, or prefixes like 'commit:' or 'text:'. Output ONLY the commit message itself. Here's the diff:\n\n${diff}`;
-
-        // Get API response
-        const result = await model.generateContent(prompt);
-
-        // Validate API response structure
-        if (!result || !result.response) {
-            throw new Error("Empty response from Gemini API");
-        }
-
-        if (
-            !result.response.candidates ||
-            !result.response.candidates[0] ||
-            !result.response.candidates[0].content ||
-            !result.response.candidates[0].content.parts ||
-            !result.response.candidates[0].content.parts[0] ||
-            !result.response.candidates[0].content.parts[0].text
-        ) {
-            throw new Error("No candidates in response from Gemini API");
-        }
-
-        const response = result.response.candidates[0].content.parts[0].text;
-
-        // Clean up the message - remove quotes and newlines, and strip common hallucinations
-        return response
-            .replace(/["'\n\r]+/g, " ")
-            .replace(/^(text|commit|git|output)\s*[:]?\s*/i, "")
-            .trim();
-    } catch (error: any) {
-        console.error("Error generating commit message:", {
-            timestamp: new Date().toISOString(),
-            message: error.message,
-            stack: error.stack,
-            errorType: error.constructor.name,
-        });
-        // Don't show error here - let failover system handle final user notification
-        return null;
+    // Validate input
+    if (typeof diff !== "string") {
+        throw new TypeError("diff must be a string");
     }
+
+    // Check git status
+    const status = await git.status();
+    if (!status || typeof status !== "object") {
+        throw new Error("Invalid git status response");
+    }
+
+    if (
+        !status.modified.length &&
+        !status.not_added.length &&
+        !status.deleted.length
+    ) {
+        throw new Error("No changes to commit");
+    }
+
+    if (!model || modelOverride) {
+        const apiKey = getApiKey();
+        if (!apiKey) {
+            // Don't show error - let failover handle it
+            return null;
+        }
+        initializeModel(apiKey, modelOverride);
+    }
+
+    // Validate diff content
+    if (!diff || diff.trim() === "") {
+        throw new Error("No changes to commit");
+    }
+
+    // Generate prompt
+    const prompt = `Generate a concise commit message for the following git diff. Use conventional commit format (type(scope): description). Keep it short and descriptive. Focus on the code changes. Do not mention version bumps or lockfile updates unless they are the ONLY changes. If you must mention them, put them at the very end. Do not include any other text, explanation, or prefixes like 'commit:' or 'text:'. Output ONLY the commit message itself. Here's the diff:\n\n${diff}`;
+
+    // Get API response
+    const result = await model.generateContent(prompt);
+
+    // Validate API response structure
+    if (!result || !result.response) {
+        throw new Error("Empty response from Gemini API");
+    }
+
+    if (
+        !result.response.candidates ||
+        !result.response.candidates[0] ||
+        !result.response.candidates[0].content ||
+        !result.response.candidates[0].content.parts ||
+        !result.response.candidates[0].content.parts[0] ||
+        !result.response.candidates[0].content.parts[0].text
+    ) {
+        throw new Error("No candidates in response from Gemini API");
+    }
+
+    const response = result.response.candidates[0].content.parts[0].text;
+
+    // Clean up the message - remove quotes and newlines, and strip common hallucinations
+    return response
+        .replace(/["'\n\r]+/g, " ")
+        .replace(/^(text|commit|git|output)\s*[:]?\s*/i, "")
+        .trim();
 }
