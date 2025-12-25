@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { cleanCommitMessage } from "./aiUtils";
 
 export const DEFAULT_ANTHROPIC_MODEL = "claude-3-5-sonnet-20240620";
 
@@ -67,9 +68,6 @@ export async function generateAnthropicMessage(
     }
 
     const message = data.content[0].text.trim();
-    // Clean up the message - remove quotes and newlines, and strip common hallucinations
-    return message
-        .replace(/["'\n\r]+/g, " ")
-        .replace(/^(text|commit|git|output)\s*[:]?\s*/i, "")
-        .trim();
+    // Clean up the message using shared utility
+    return cleanCommitMessage(message);
 }

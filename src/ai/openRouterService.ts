@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { cleanCommitMessage } from "./aiUtils";
 
 export const DEFAULT_OPENROUTER_MODEL =
     "google/gemini-2.0-flash-lite-preview-02-05:free";
@@ -78,9 +79,6 @@ export async function generateOpenRouterMessage(
 
     const message = data.choices[0].message.content.trim();
 
-    // Clean up the message - remove quotes and newlines, and strip common hallucinations
-    return message
-        .replace(/["'\n\r]+/g, " ")
-        .replace(/^(text|commit|git|output)\s*[:]?\s*/i, "")
-        .trim();
+    // Clean up the message using shared utility
+    return cleanCommitMessage(message);
 }
