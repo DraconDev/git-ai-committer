@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as vscode from "vscode";
 import { git } from "../extension";
+import { cleanCommitMessage } from "./aiUtils";
 
 // Shared Gemini model configuration
 export const GEMINI_MODEL_NAME = "gemini-flash-lite-latest";
@@ -90,9 +91,6 @@ export async function generateGeminiMessage(
 
     const response = result.response.candidates[0].content.parts[0].text;
 
-    // Clean up the message - remove quotes and newlines, and strip common hallucinations
-    return response
-        .replace(/["'\n\r]+/g, " ")
-        .replace(/^(text|commit|git|output)\s*[:]?\s*/i, "")
-        .trim();
+    // Clean up the message using shared utility
+    return cleanCommitMessage(response);
 }
