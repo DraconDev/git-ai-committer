@@ -1,37 +1,44 @@
-out
-dist
-node_modules
-.vscode-test/
-*.vsix
-
-# Auto-committer ignored files
-*.tmp
-*.temp
+# --- BEGIN DRACON MANAGED BLOCK ---
+# managed by dracon-warden
+**/.freeze
+**/dracon-sync-incidents.jsonl
 *.log
-*.cache
-*.dll
-*.exe
-*.kilocode
-node_modules/
-
-# Auto-committer ignored files
-*.vscode
-
-# Auto-committer ignored files
-.vscode/**
-.idea/**
-.vs/**
-node_modules/**
-.git/**
-dist/**
-build/**
-*.swp
-*.swo
 .DS_Store
-Thumbs.db
-.wxt
-reference/**
-
-# Auto-committer ignored files
-.vscode
-
+.direnv/
+.dracon/*
+.git/
+.venv/
+__pycache__/
+build/
+dist/
+node_modules/
+target/
+!*.env
+!.env
+!.env.*
+!config.json
+!config/services.json
+!config/services.test.json
+!config/licenses.json
+!config/licenses.test.json
+!plan/pages/snapshots/*.json
+!plan/pages/templates/*.json
+!.cargo/config.toml
+!*.pem
+!*.key
+!*.age
+!test_secret.txt
+!secrets/**
+!*.pub
+!.dracon/data/
+!.dracon/data/keys/
+!.dracon/data/keys/*.pub
+!Cargo.lock
+!Cargo.toml
+!clippy.toml
+!deny.toml
+!flake.lock
+!flake.nix
+!rust-toolchain.toml
+!rustfmt.toml
+# --- END DRACON MANAGED BLOCK ---
